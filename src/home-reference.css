@@ -1,0 +1,528 @@
+.reference-home { height: calc(100vh - 88px); overflow: auto; padding: 14px 45px 30px 14px; background: #070b0a; }
+.home-top-grid { display: grid; grid-template-columns: minmax(0, 2.24fr) minmax(360px, 1fr); gap: 12px; height: 412px; }
+.reference-hero, .today-panel, .my-day-panel, .work-panel, .team-panel { position: relative; overflow: hidden; border: 1px solid #202826; border-radius: 13px; background: #090e0d; }
+.reference-hero { isolation: isolate; }
+.hero-art { position: absolute; z-index: 0; top: 0; right: 0; width: 75%; height: 100%; background: url('/evergreen-tree.png') right 57% / 105% 129% no-repeat; opacity: .8; mix-blend-mode: screen; -webkit-mask-image: linear-gradient(to right, transparent 0%, rgba(0,0,0,.5) 16%, #000 34%, #000 100%); mask-image: linear-gradient(to right, transparent 0%, rgba(0,0,0,.5) 16%, #000 34%, #000 100%); }
+.hero-team { position: absolute; z-index: 4; top: 30px; right: 34px; display: flex; align-items: center; }.hero-team .avatar { margin-left: -7px; }.hero-team > span { display: grid; place-items: center; width: 39px; height: 39px; margin-left: -4px; border-radius: 50%; background: #222927; color: #d5dad8; font-size: 12px; }
+.hero-timer { --timer-progress: 0%; position: absolute; z-index: 4; right: 64px; top: 97px; display: grid; place-items: center; width: 228px; height: 228px; border-radius: 50%; background: conic-gradient(from 8deg, #08e59a 0 var(--timer-progress), #303936 var(--timer-progress) 100%); }.hero-timer::before { content: ''; position: absolute; inset: 10px; border-radius: 50%; background: #080d0c; }.hero-timer.paused { filter: saturate(.55); }.hero-timer > div { position: relative; display: grid; justify-items: center; }.hero-timer small { color: #aeb8b4; font-size: 11px; }.hero-timer strong { margin: 1px 0 0; font: 300 96px/.94 "Arial Narrow", "Roboto Condensed", sans-serif; letter-spacing: -5px; }.hero-timer span { font-size: 13px; }
+.hero-copy { position: relative; z-index: 5; width: 62%; padding: 30px 0 0 41px; }
+.hero-copy h1 { margin: 0; color: #f2f4f2; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Inter, sans-serif; font-size: 48px; font-weight: 650; line-height: 1.07; letter-spacing: -1.2px; }.hero-copy > p { margin: 10px 0 18px; color: #b9c3bf; font-size: 17px; font-weight: 400; line-height: 1.3; }
+.hero-chips { display: flex; gap: 9px; }.hero-chips span { display: flex; align-items: center; gap: 8px; height: 37px; padding: 0 15px; border: 1px solid rgba(255,255,255,.025); border-radius: 20px; background: rgba(24,30,28,.88); color: #d0d6d3; font-size: 12px; }.hero-chips svg { width: 17px; height: 17px; }
+.hero-buttons { position: relative; display: flex; gap: 11px; margin-top: 88px; }.hero-buttons > button { display: flex; align-items: center; justify-content: center; gap: 10px; height: 48px; padding: 0 24px; border: 1px solid #26302d; border-radius: 9px; background: rgba(12,18,16,.94); color: #eef1ef; font-size: 16px; }.hero-buttons > button:first-child { width: 149px; border-color: #06cc88; background: #08c982; color: #05120d; font-weight: 650; }.hero-buttons > button:nth-child(3) { width: 60px; padding: 0; }.hero-buttons svg { width: 18px; }.hero-buttons > button:nth-child(3) svg { width: 20px; }.session-menu { position: absolute; z-index: 10; top: 54px; left: 322px; display: grid; width: 170px; padding: 6px; border: 1px solid #29322f; border-radius: 8px; background: #0c1210; box-shadow: 0 16px 45px rgba(0,0,0,.45); }.session-menu button { height: 34px; padding: 0 9px; border: 0; border-radius: 5px; background: transparent; color: #b9c2bf; font-size: 11px; text-align: left; }.session-menu button:hover { background: #141d1a; color: #fff; }
+.focus-note { display: flex; align-items: center; gap: 18px; margin-top: 30px; color: #f0f2f1; }.focus-note > svg { width: 29px; height: 29px; stroke-width: 2; }.focus-note span { display: grid; gap: 3px; }.focus-note strong { font-size: 14px; font-weight: 500; }.focus-note small { color: #aab5b1; font-size: 12px; }
+
+.today-panel { padding: 0 17px; }.today-panel > header { display: grid; grid-template-columns: 36px 1fr auto; align-items: center; height: 62px; padding: 0 4px; }.today-panel > header svg { width: 26px; }.today-panel > header strong { font-size: 17px; font-weight: 520; }.today-panel > header time { color: #b9c3bf; font-size: 13px; }
+.today-list { display: grid; gap: 1px; }.today-list > button, .today-progress { display: flex; align-items: center; min-height: 76px; padding: 0 13px; border: 1px solid #1b2321; border-radius: 12px; background: #0b100f; text-align: left; }.today-list > button { width: 100%; }.today-list > button > svg:first-child { flex: 0 0 auto; width: 31px; height: 31px; margin-right: 21px; stroke-width: 1.6; }.today-list > button .today-accent { color: #08e59a; }.today-list > button > span { display: grid; gap: 4px; min-width: 0; flex: 1; }.today-list small { color: #9ca7a3; font-size: 11px; font-weight: 400; }.today-list strong { overflow: hidden; color: #eff1f0; font-size: 14px; font-weight: 470; text-overflow: ellipsis; white-space: nowrap; }.today-list > button > b { margin-left: auto; color: #f0f2f1; font-size: 14px; font-weight: 450; }.today-list > button > svg:last-child { width: 18px; margin-left: 12px; }.today-list .check-accent { width: 25px !important; height: 25px !important; margin: 0 18px 0 -2px !important; padding: 4px; border: 2px solid #08e59a; border-radius: 50%; color: #08e59a; }
+.today-progress { min-height: 87px; gap: 22px; }.progress-ring-small { width: 42px; height: 42px; flex: 0 0 auto; border: 8px solid #27302d; border-top-color: #08e59a; border-right-color: #08e59a; border-radius: 50%; rotate: 35deg; }.today-progress > div { flex: 1; }.today-progress small { display: flex; justify-content: space-between; }.today-progress small b { color: #08e59a; font-size: 13px; }.today-progress i { display: block; height: 9px; margin-top: 8px; overflow: hidden; border-radius: 6px; background: #252d2b; }.today-progress i em { display: block; width: 0; height: 100%; border-radius: inherit; background: #08e59a; }.today-progress p { margin: 7px 0 0; color: #9ca7a3; font-size: 12px; }
+
+.home-bottom-grid { display: grid; grid-template-columns: minmax(0, 1.66fr) minmax(0, 1.34fr) minmax(300px, 1fr); gap: 12px; height: 330px; margin-top: 12px; }.home-bottom-grid header, .work-panel header, .team-panel header { display: flex; align-items: center; height: 46px; padding: 0 22px; }.home-bottom-grid header > svg:first-child { width: 25px; margin-right: 17px; }.home-bottom-grid header strong { font-size: 16px; font-weight: 520; }.home-bottom-grid header > span { margin-left: auto; color: #a7b1ad; font-size: 12px; }.home-bottom-grid header > svg:last-child { width: 21px; margin-left: 17px; }.home-bottom-grid header button { display: flex; align-items: center; gap: 7px; margin-left: auto; border: 0; background: none; color: #b7c0bd; font-size: 11px; }.home-bottom-grid header button svg { width: 15px; }
+.my-day-panel { padding-bottom: 13px; }.my-day-list { padding: 0 17px; }.my-day-list > button { display: grid; grid-template-columns: 30px minmax(0,1fr) auto 75px 18px 25px; align-items: center; width: 100%; height: 41px; padding: 0 6px; border: 0; border-top: 1px solid #18201e; background: none; text-align: left; }.day-check { display: grid; place-items: center; width: 26px; height: 26px; border: 2px solid #c2cbc8; border-radius: 5px; }.day-check.done { border-color: #08e59a; background: #08d992; color: white; }.day-check svg { width: 16px; stroke-width: 3; }.my-day-list strong { overflow: hidden; color: #eef1ef; font-size: 12px; font-weight: 450; text-overflow: ellipsis; white-space: nowrap; }.my-day-list em { height: 28px; padding: 5px 18px; border-radius: 16px; color: white; font-size: 12px; font-style: normal; }.tag-orkto { background: #ff592b; }.tag-marketing { background: #8e2ab4; }.tag-work { background: #38414d; }.my-day-list time { color: #c3ccc8; font-size: 11px; text-align: right; }.task-dot { width: 12px; height: 12px; justify-self: center; border-radius: 50%; background: #d3e4f4; }.my-day-list button:first-child .task-dot { background: #08e59a; }.my-day-list button > svg { width: 18px; }
+.add-day-task { display: grid; grid-template-columns: 31px 1fr 36px 20px; align-items: center; width: calc(100% - 34px); height: 47px; margin: 4px 17px 0; padding: 0 13px; border: 1px solid #1b2421; border-radius: 9px; background: #0d1312; color: #b8c1be; font-size: 14px; text-align: left; }.add-day-task svg { width: 24px; }.add-day-task kbd { display: grid; place-items: center; height: 25px; margin-left: 3px; border-radius: 5px; background: #242a28; color: #e8ecea; }
+
+.work-panel { display: grid; grid-template-rows: 143px 1fr; }.objectives-block { border-bottom: 1px solid #1d2523; }.objective-row { display: grid; grid-template-columns: 45px minmax(0,1fr) 37px 83px; align-items: center; height: 46px; margin: 0 17px; border-top: 1px solid #18201e; }.objective-icon { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 8px; color: white; font-size: 19px; }.objective-icon.green { background: linear-gradient(145deg,#08a66f,#07533b); }.objective-icon.violet { background: linear-gradient(145deg,#9b5cff,#5417dd); }.objective-icon svg { width: 19px; }.objective-row > div { display: grid; gap: 2px; min-width: 0; }.objective-row strong { color: #edf0ee; font-size: 12px; font-weight: 520; }.objective-row small { overflow: hidden; color: #86918d; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }.objective-row > b { color: #d7ddda; font-size: 11px; font-weight: 450; }.objective-row > i { height: 9px; overflow: hidden; border-radius: 6px; background: #252d2b; }.objective-row > i em { display: block; height: 100%; border-radius: inherit; background: #08e59a; }.objective-row:nth-child(3) > i em { background: #d5e6f4; }
+.recent-block header { height: 45px; }.recent-row { display: grid; grid-template-columns: 28px 20px minmax(0,1fr) 48px; align-items: start; min-height: 40px; padding: 0 20px; }.recent-row > i { width: 17px; height: 17px; margin-top: 2px; border-radius: 50%; }.recent-row > i.green { background: #08e59a; }.recent-row > i.yellow { background: #ffe500; }.recent-row > i.pale { background: #d5e6f4; }.recent-row > span { color: #d5e2ef; font-size: 19px; line-height: 16px; }.recent-row p { margin: 0; color: #cbd2cf; font-size: 11px; line-height: 1.25; }.recent-row p small { display: block; color: #8a9591; font-size: 10px; }.recent-row time { color: #a9b3af; font-size: 10px; text-align: right; }
+
+.team-panel { padding-bottom: 13px; }.team-panel header { height: 46px; }.team-row { display: grid; grid-template-columns: 48px minmax(0,1fr) auto; align-items: center; min-height: 53px; padding: 0 21px; border-top: 1px solid #17201d; }.team-row .avatar { width: 44px !important; height: 44px !important; }.team-row p { margin: 0 0 4px; color: #e4e8e6; font-size: 12px; }.team-row p b { margin-left: 5px; color: #08e59a; font-size: 10px; font-weight: 520; }.team-row p b.yellow { color: #f6eb00; }.team-row p b.blue { color: #10a8f5; }.team-row span { display: block; overflow: hidden; color: #9da8a4; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }.team-row time { align-self: start; margin-top: 13px; color: #b4bfba; font-size: 10px; }.join-room { display: flex; align-items: center; justify-content: center; gap: 15px; width: calc(100% - 34px); height: 47px; margin: 8px 17px 0; border: 0; border-radius: 8px; background: #064832; color: #08e59a; font-size: 13px; }.join-room svg { width: 25px; }
+
+@media (max-width: 1600px) {
+  .home-top-grid { grid-template-columns: minmax(0, 2.25fr) minmax(330px, 1fr); }
+  .today-panel { padding-inline: 12px; }.today-list > button > svg:first-child { margin-right: 14px; }.home-bottom-grid { grid-template-columns: 1.66fr 1.34fr 1fr; }
+  .hero-copy h1 { font-size: 48px; }
+  .hero-copy > p { font-size: 15px; }
+}
+@media (max-width: 1200px) {
+  .reference-home { padding-right: 14px; }.home-top-grid { grid-template-columns: 1fr; height: auto; }.reference-hero { min-height: 412px; }.today-panel { min-height: 412px; }.home-bottom-grid { grid-template-columns: 1fr 1fr; height: auto; }.my-day-panel, .work-panel, .team-panel { min-height: 330px; }.team-panel { grid-column: 1 / -1; }
+}
+@media (max-width: 700px) {
+  .reference-home { height: calc(100vh - 66px); }.hero-copy { width: 100%; padding: 30px 24px; }.hero-copy h1 { font-size: 39px; }.hero-copy > p { font-size: 14px; }.hero-art { opacity: .26; width: 100%; }.hero-timer { right: 20px; transform: scale(.82); }.home-bottom-grid { grid-template-columns: 1fr; }.team-panel { grid-column: auto; }.day-task { grid-template-columns: 30px minmax(0,1fr) auto 20px; }.day-task time, .day-task .task-dot { display: none; }
+}
+
+.today-list > button { min-height: 58px; }
+.today-list > button:first-child { min-height: 76px; }
+.day-task { display: grid; grid-template-columns: 52px 163px 90px minmax(0,1fr) 75px 18px 25px; align-items: center; width: 100%; height: 41px; padding: 0 6px; border-top: 1px solid #18201e; }.day-task > button { border: 0; background: none; }.day-task .day-check { display: grid; place-items: center; width: 26px; height: 26px; padding: 0; border: 2px solid #c2cbc8; border-radius: 5px; color: white; }.day-task .day-check.done { border-color: #08e59a; background: #08d992; }.day-task .day-title { overflow: hidden; padding-left: 0; color: #eef1ef; font-size: 13px; font-weight: 450; text-align: left; text-overflow: ellipsis; white-space: nowrap; }.day-task em { height: 29px; padding: 5px 18px; border-radius: 16px; color: white; font-size: 12px; font-style: normal; }.day-task time { color: #c3ccc8; font-size: 11px; text-align: right; }.day-task .day-more { display: grid; place-items: center; padding: 0; color: #e8ecea; }.day-task .day-more svg { width: 18px; }.day-task:first-child .task-dot { background: #08e59a; }
+
+@media (max-width: 700px) {
+  .day-task { grid-template-columns: 42px minmax(0, 1fr) auto 25px; }
+  .day-task .project-spacer, .day-task .day-flex, .day-task time, .day-task .task-dot { display: none; }
+}
+.join-room.joined { border: 1px solid #1a6c51; background: #0c211a; color: #a9b9b3; }
+
+/* Final fidelity overrides: preserve the source asset's aspect ratio and the reference's compact columns. */
+.hero-art { width: 100%; background: url('/evergreen-tree.png') right -5px top -70px / 650px 520px no-repeat; -webkit-mask-image: linear-gradient(to right, transparent 0%, rgba(0,0,0,.5) 33%, #000 48%, #000 100%); mask-image: linear-gradient(to right, transparent 0%, rgba(0,0,0,.5) 33%, #000 48%, #000 100%); }
+.hero-timer strong { font-family: "Bahnschrift Condensed", "Arial Narrow", sans-serif; font-size: 88px; font-stretch: condensed; letter-spacing: -6px; }
+.day-task.no-project .day-title { grid-column: 2 / 4; }
+.day-task.no-project .project-spacer { display: none; }
+.day-task .day-title { font-size: 14px; }
+.objective-row strong { font-size: 13px; }
+.objective-row small { font-size: 11px; }
+.objective-row > b { font-size: 12px; }
+.recent-row p { font-size: 12px; }
+.recent-row p small, .recent-row time { font-size: 11px; }
+.team-row p { font-size: 13px; }
+.team-row p b, .team-row time { font-size: 11px; }
+.team-row span { font-size: 12px; }
+
+/* Same-viewport visual calibration against the 1776 × 887 product reference. */
+.reference-hero, .today-panel, .my-day-panel, .work-panel, .team-panel { border-color: #1b2321; }
+.hero-art { background: url('/evergreen-tree.png') right -8px top -84px / 720px 520px no-repeat; opacity: .65; -webkit-mask-image: linear-gradient(to right, transparent 0%, rgba(0,0,0,.38) 39%, #000 53%, #000 100%); mask-image: linear-gradient(to right, transparent 0%, rgba(0,0,0,.38) 39%, #000 53%, #000 100%); }
+.hero-buttons > button:nth-child(2) { width: 152px; padding-inline: 18px; }
+.focus-note { margin-top: 25px; }
+.hero-timer strong { font-family: "Agency FB", "Bahnschrift Condensed", "Arial Narrow", sans-serif; font-size: 96px; letter-spacing: -7px; }
+
+.today-list > button:nth-child(3) { min-height: 53px; }
+.today-list > button:nth-child(4) { min-height: 64px; }
+.today-list > button:nth-child(5) { min-height: 62px; }
+.today-list small { color: #a5afab; font-size: 12px; }
+.today-list strong { font-size: 15px; }
+.today-panel > header strong { font-size: 18px; }
+.today-progress i, .objective-row > i { height: 8px; }
+
+.add-day-task { margin-top: 13px; background: #0b1110; }
+.objective-row { grid-template-columns: 57px minmax(0, 1fr) 42px 87px; }
+.objective-row strong { font-size: 14px; }
+.objective-row > b { font-size: 13px; }
+.recent-row { grid-template-columns: 48px 32px minmax(0, 1fr) 48px; min-height: 36px; }
+.recent-row > i { width: 15px; height: 15px; }
+.recent-row > span { position: relative; }
+.recent-row:not(:last-child) > span::after { content: ''; position: absolute; left: 3px; top: 15px; width: 1px; height: 23px; background: #26302d; }
+.recent-row p { font-size: 13px; }
+.recent-row time { font-size: 12px; }
+.team-row { grid-template-columns: 63px minmax(0, 1fr) auto; padding-inline: 18px; }
+.team-row p { font-size: 14px; font-weight: 500; }
+.team-row span { font-size: 13px; }
+.join-room { margin-top: 12px; }
+.home-bottom-grid { margin-top: 13px; }
+.home-bottom-grid header > span, .home-bottom-grid header button { font-size: 12px; }
+.today-panel > header { grid-template-columns: 49px 1fr auto; }
+.today-list > button > svg:first-child { margin-right: 32px; }
+.my-day-panel > header { padding-left: 26px; padding-right: 16px; }
+.my-day-panel > header > svg:first-child { margin-right: 25px; }
+.add-day-task { grid-template-columns: 47px 1fr 28px 20px; padding-inline: 15px; }
+@media (max-width: 1600px) {
+  .today-list > button > svg:first-child { margin-right: 18px; }
+}
+
+@media (min-width: 1201px) and (max-width: 1600px) {
+  .reference-home { height: calc(100vh - 76px); padding: 11px 36px 18px 11px; }
+  .home-top-grid { grid-template-columns: minmax(0, 2.32fr) minmax(288px, 1fr); gap: 12px; height: 334px; }
+  .reference-hero, .today-panel, .my-day-panel, .work-panel, .team-panel { border-radius: 10px; }
+  .hero-copy { width: 66%; padding: 22px 0 0 33px; }
+  .hero-copy h1 { font-size: 46px; line-height: 1.07; letter-spacing: -1.1px; }
+  .hero-copy > p { margin: 8px 0 13px; font-size: 17px; line-height: 1.2; }
+  .hero-chips { gap: 7px; }
+  .hero-chips span { gap: 6px; height: 30px; padding-inline: 12px; border-radius: 16px; font-size: 10px; }
+  .hero-chips svg { width: 14px; height: 14px; }
+  .hero-buttons { gap: 9px; margin-top: 56px; }
+  .hero-buttons > button { gap: 8px; height: 39px; padding-inline: 18px; border-radius: 7px; font-size: 13px; }
+  .hero-buttons > button:first-child { width: 121px; }
+  .hero-buttons > button:nth-child(2) { width: 123px; padding-inline: 14px; }
+  .hero-buttons > button:nth-child(3) { width: 49px; }
+  .hero-buttons svg { width: 15px; }
+  .hero-buttons > button:nth-child(3) svg { width: 19px; }
+  .focus-note { gap: 14px; margin-top: 18px; }
+  .focus-note > svg { width: 24px; height: 24px; }
+  .focus-note span { gap: 2px; }
+  .focus-note strong { font-size: 11px; }
+  .focus-note small { font-size: 10px; }
+  .hero-art { background: url('/evergreen-tree.png') right -12px top -66px / 650px 421px no-repeat; opacity: .62; }
+  .hero-team { top: 24px; right: 27px; }
+  .hero-team .avatar { width: 34px !important; height: 34px !important; margin-left: -6px; font-size: 8px !important; }
+  .hero-team > span { width: 34px; height: 34px; font-size: 10px; }
+  .hero-timer { right: 43px; top: 72px; width: 196px; height: 196px; }
+  .hero-timer::before { inset: 8px; }
+  .hero-timer small { font-size: 9px; }
+  .hero-timer strong { font-size: 82px; letter-spacing: -6px; }
+  .hero-timer span { font-size: 11.5px; }
+  .today-panel { padding-inline: 14px; }
+  .today-panel > header { grid-template-columns: 39px 1fr auto; height: 50px; padding-inline: 3px; }
+  .today-panel > header svg { width: 21px; }
+  .today-panel > header strong { font-size: 16px; }
+  .today-panel > header time { font-size: 11px; }
+  .today-list > button, .today-progress { padding-inline: 10px; border-radius: 9px; }
+  .today-list > button:first-child { min-height: 62px; }
+  .today-progress { min-height: 71px; gap: 17px; }
+  .today-list > button:nth-child(3) { min-height: 44px; }
+  .today-list > button:nth-child(4) { min-height: 52px; }
+  .today-list > button:nth-child(5) { min-height: 50px; }
+  .today-list > button > svg:first-child { width: 26px; height: 26px; margin-right: 18px; }
+  .today-list > button > svg:last-child { width: 14px; margin-left: 9px; }
+  .today-list small { font-size: 9.5px; }
+  .today-list strong, .today-list > button > b { font-size: 13px; }
+  .today-list .check-accent { width: 20px !important; height: 20px !important; margin: 0 14px 0 -1px !important; padding: 3px; }
+  .progress-ring-small { width: 34px; height: 34px; border-width: 6px; }
+  .today-progress small b { font-size: 11px; }
+  .today-progress i { height: 7px; margin-top: 6px; }
+  .today-progress p { margin-top: 5px; font-size: 10px; }
+  .home-bottom-grid { grid-template-columns: minmax(0, 1.66fr) minmax(0, 1.34fr) minmax(244px, 1fr); gap: 12px; height: 267px; margin-top: 12px; }
+  .home-bottom-grid header, .work-panel header, .team-panel header { height: 38px; padding-inline: 18px; }
+  .home-bottom-grid header > svg:first-child { width: 20px; margin-right: 14px; }
+  .home-bottom-grid header strong { font-size: 14px; }
+  .home-bottom-grid header > span, .home-bottom-grid header button { font-size: 10px; }
+  .home-bottom-grid header > svg:last-child { width: 17px; margin-left: 14px; }
+  .home-bottom-grid header button svg { width: 12px; }
+  .my-day-panel > header { padding-left: 21px; padding-right: 13px; }
+  .my-day-panel > header > svg:first-child { margin-right: 20px; }
+  .my-day-list { padding-inline: 14px; }
+  .day-task { grid-template-columns: 42px 132px 73px minmax(0,1fr) 61px 15px 20px; height: 34px; padding-inline: 5px; }
+  .day-task .day-check { width: 22px; height: 22px; border-width: 1.5px; border-radius: 4px; }
+  .day-check svg { width: 13px; }
+  .day-task .day-title { font-size: 12px; }
+  .day-task em { height: 24px; padding: 4px 14px; border-radius: 13px; font-size: 10.5px; }
+  .day-task time { font-size: 9px; }
+  .task-dot { width: 9px; height: 9px; }
+  .day-task .day-more svg { width: 15px; }
+  .add-day-task { grid-template-columns: 38px 1fr 32px 17px; width: calc(100% - 28px); height: 39px; margin: 7px 14px 0; padding-inline: 12px; border-radius: 7px; font-size: 11.5px; }
+  .add-day-task svg { width: 19px; }
+  .add-day-task kbd { height: 20px; border-radius: 4px; }
+  .work-panel { grid-template-rows: 116px 1fr; }
+  .objective-row { grid-template-columns: 46px minmax(0,1fr) 34px 70px; height: 37px; margin-inline: 14px; }
+  .objective-icon { width: 33px; height: 33px; border-radius: 6px; font-size: 16px; }
+  .objective-icon svg { width: 15px; }
+  .objective-row strong { font-size: 11.5px; }
+  .objective-row small { font-size: 9.5px; }
+  .objective-row > b { font-size: 10px; }
+  .objective-row > i { height: 6px; }
+  .recent-block header { height: 36px; }
+  .recent-row { grid-template-columns: 38px 26px minmax(0,1fr) 39px; min-height: 29px; padding-inline: 16px; }
+  .recent-row > i { width: 12px; height: 12px; }
+  .recent-row > span { font-size: 15px; line-height: 13px; }
+  .recent-row p { font-size: 11px; line-height: 1.2; }
+  .recent-row p small, .recent-row time { font-size: 9px; }
+  .recent-row:not(:last-child) > span::after { top: 12px; height: 18px; }
+  .team-panel header { height: 38px; }
+  .team-row { grid-template-columns: 53px minmax(0,1fr) auto; min-height: 45px; padding-inline: 14px; }
+  .team-row .avatar { width: 39px !important; height: 39px !important; font-size: 8px !important; }
+  .team-row p { margin-bottom: 3px; font-size: 12px; }
+  .team-row p b { margin-left: 4px; font-size: 8.5px; }
+  .team-row span { font-size: 10.5px; }
+  .team-row time { margin-top: 10px; font-size: 8px; }
+  .join-room { gap: 12px; width: calc(100% - 28px); height: 40px; margin: 5px 14px 0; border-radius: 7px; font-size: 11.5px; }
+  .join-room svg { width: 20px; }
+}
+
+.reference-home svg { stroke-width: 1.8; }
+.today-progress svg.progress-ring-small { border: 0; color: #08e59a; rotate: 0deg; stroke-width: 1.7; }
+.today-list svg.check-accent { border: 0; padding: 0; }
+
+/* Pixel polish: calm surfaces, clearer hierarchy and consistent interaction states. */
+.reference-hero, .today-panel, .my-day-panel, .work-panel, .team-panel {
+  border-color: #18211e;
+  background: #090e0d;
+}
+.hero-copy h1 {
+  color: #f0f3f1;
+  font-weight: 600;
+  letter-spacing: -1.35px;
+  text-wrap: balance;
+}
+.hero-copy > p { color: #aeb9b5; }
+.hero-chips span {
+  border-color: rgba(223,235,230,.045);
+  background: rgba(20,27,24,.88);
+  color: #c2cbc7;
+  box-shadow: inset 0 1px rgba(255,255,255,.018);
+}
+.hero-chips svg { color: #a5b0ac; }
+.hero-buttons > button {
+  border-color: #222c28;
+  background: rgba(11,17,15,.95);
+  color: #e5eae7;
+  transition: border-color .15s ease, background .15s ease, color .15s ease;
+  white-space: nowrap;
+}
+.hero-buttons > button:hover { border-color: #33403b; background: #111916; color: #fff; }
+.hero-buttons > button:first-child {
+  border-color: #12ca8a;
+  background: #0dca89;
+  box-shadow: inset 0 1px rgba(255,255,255,.14);
+}
+.hero-buttons > button:first-child:hover { border-color: #1bd99a; background: #13d392; }
+.focus-note { color: #e6ebe8; }
+.focus-note > svg { color: #e7ece9; }
+.focus-note strong { font-weight: 540; }
+.focus-note small { color: #929e99; }
+.hero-timer { background: conic-gradient(from 8deg, #10d994 0 var(--timer-progress), #2a3430 var(--timer-progress) 100%); }
+.hero-timer small { color: #a4afab; letter-spacing: .015em; }
+.hero-timer span { color: #e5e9e7; }
+
+.today-panel > header strong, .home-bottom-grid header strong { color: #edf1ef; }
+.today-panel > header time, .home-bottom-grid header > span { color: #a3aeaa; }
+.today-list > button, .today-progress {
+  border-color: #18211e;
+  background: #0a100e;
+  transition: border-color .15s ease, background .15s ease;
+}
+.today-list > button:hover { border-color: #25302c; background: #0d1412; }
+.today-list small { color: #929e99; }
+.today-list strong { color: #e9edeb; font-weight: 480; }
+.today-list > button > svg:first-child { color: #e0e6e3; }
+.today-list > button .today-accent, .today-list .check-accent { color: #10d994; }
+.today-progress svg.progress-ring-small { color: #10d994; }
+.today-progress i, .objective-row > i { background: #222b28; }
+.today-progress i em, .objective-row > i em { background: #10d994; }
+.today-progress small b { color: #10d994; }
+.today-progress p { color: #929e99; }
+
+.home-bottom-grid header, .work-panel header, .team-panel header { border-color: #161e1b; }
+.home-bottom-grid header > svg:first-child { color: #e1e7e4; }
+.home-bottom-grid header button { color: #aab5b0; transition: color .15s ease; }
+.home-bottom-grid header button:hover { color: #eef2f0; }
+.day-task { border-color: #151e1b; transition: background .14s ease; }
+.day-task:hover { background: rgba(255,255,255,.018); }
+.day-task .day-check { border-color: #9da9a4; }
+.day-task .day-check.done { border-color: #10d994; background: #10cc8c; }
+.day-task .day-title { color: #e7ece9; font-weight: 460; }
+.day-task time { color: #aab5b0; }
+.day-task .day-more { color: #a5afab; }
+.day-task .day-more:hover { color: #f0f3f1; }
+.task-dot { background: #c2d4e4; box-shadow: 0 0 0 2px rgba(194,212,228,.035); }
+.day-task:first-child .task-dot { background: #10d994; }
+.tag-orkto { background: #dc6542; }
+.tag-marketing { background: #7f3b9f; }
+.tag-work { background: #35404a; }
+.add-day-task {
+  border-color: #18211e;
+  background: #0a100e;
+  color: #aeb9b4;
+  transition: border-color .15s ease, background .15s ease, color .15s ease;
+}
+.add-day-task:hover { border-color: #293530; background: #0d1512; color: #d8dfdc; }
+.add-day-task kbd {
+  border: 1px solid #28312e;
+  background: #1a211e;
+  color: #d6ddda;
+  box-shadow: inset 0 1px rgba(255,255,255,.03);
+}
+
+.objectives-block { border-color: #18211e; }
+.objective-row { border-color: #151e1b; }
+.objective-row strong { color: #e8ecea; font-weight: 540; }
+.objective-row small { color: #899590; }
+.objective-row > b { color: #cbd3cf; }
+.objective-icon.green { background: linear-gradient(145deg,#0a9466,#07503a); box-shadow: inset 0 1px rgba(255,255,255,.07); }
+.objective-icon.violet { background: linear-gradient(145deg,#8750e8,#4e1bc0); box-shadow: inset 0 1px rgba(255,255,255,.08); }
+.objective-row:nth-child(3) > i em { background: #c7d8e6; }
+.recent-row > i.green { background: #10d994; }
+.recent-row > i.yellow { background: #e6d719; }
+.recent-row > i.pale { background: #c8d9e7; }
+.recent-row p { color: #c7cfcc; }
+.recent-row p small { color: #818d88; }
+.recent-row time { color: #98a39f; }
+.recent-row:not(:last-child) > span::after { background: #202a26; }
+
+.team-row { border-color: #151e1b; transition: background .14s ease; }
+.team-row:hover { background: rgba(255,255,255,.016); }
+.team-row p { color: #e5eae7; }
+.team-row p b { color: #10d994; font-weight: 560; }
+.team-row p b.yellow { color: #ded71b; }
+.team-row p b.blue { color: #2ca6df; }
+.team-row span { color: #919d98; }
+.team-row time { color: #a3aeaa; }
+.join-room {
+  border: 1px solid #075f43;
+  background: #06432f;
+  color: #13dc98;
+  box-shadow: inset 0 1px rgba(255,255,255,.025);
+  transition: border-color .15s ease, background .15s ease, color .15s ease;
+}
+.join-room:hover { border-color: #0a7955; background: #07503a; color: #22e4a2; }
+
+.reference-home button:focus-visible {
+  outline: 2px solid rgba(16,217,148,.58);
+  outline-offset: 2px;
+}
+.reference-home svg { stroke-linecap: round; stroke-linejoin: round; }
+
+/* Data-aware empty states preserve the approved composition without filler data. */
+.hero-copy .hero-empty-copy { margin: 4px 0 0; color: #88948f; font-size: 12px; line-height: 1.3; }
+.hero-timer.idle { filter: saturate(.42); }
+.hero-timer.idle small { color: #8d9994; }
+.hero-timer.idle span { color: #818c88; }
+.home-empty-state { display: flex; flex-direction: column; justify-content: center; gap: 5px; color: #77827e; }
+.home-empty-state strong { color: #abb5b1; font-weight: 520; }
+.home-empty-state span { color: #717c78; }
+.my-day-empty { min-height: 164px; padding: 0 24px; }
+.my-day-empty strong { font-size: 13px; }
+.my-day-empty span { font-size: 11px; }
+.compact-empty { height: 69px; padding: 0 22px; }
+.compact-empty strong { font-size: 11px; }
+.compact-empty button { display: flex; align-items: center; gap: 5px; width: fit-content; padding: 0; border: 0; background: transparent; color: #0fcf8d; font-size: 10px; }
+.compact-empty button svg { width: 12px; }
+.recent-empty { height: 110px; padding: 0 22px; }
+.recent-empty strong { font-size: 11px; }
+.recent-empty span { font-size: 9.5px; }
+.team-empty { padding: 15px 18px 10px; color: #75807c; font-size: 10px; }
+
+@media (min-width: 1201px) and (max-width: 1600px) {
+  .hero-copy .hero-empty-copy { margin-top: 2px; font-size: 10px; }
+  .hero-copy .hero-empty-copy + .hero-buttons { margin-top: 49px; }
+  .hero-buttons > button:first-child { width: 128px; padding-inline: 14px; }
+  .my-day-empty { min-height: 164px; padding-inline: 20px; }
+  .compact-empty { height: 78px; padding-inline: 18px; }
+  .recent-empty { height: 108px; padding-inline: 18px; }
+}
+
+/* Optical spacing system — one rhythm for all Home surfaces. */
+.reference-home {
+  --home-space-1: 4px;
+  --home-space-2: 8px;
+  --home-space-3: 12px;
+  --home-space-4: 16px;
+  --home-space-5: 20px;
+  --home-space-6: 24px;
+  --home-space-8: 32px;
+  --home-card-pad: 20px;
+  --home-header-height: 40px;
+  --home-icon-slot: 20px;
+  --home-divider: rgba(235, 244, 240, .065);
+}
+
+/* Shared bottom-card header baseline and icon slot. */
+.home-bottom-grid header,
+.work-panel header,
+.team-panel header,
+.my-day-panel > header {
+  height: var(--home-header-height);
+  padding: 0 var(--home-card-pad);
+  border: 0;
+}
+.home-bottom-grid header > svg:first-child,
+.work-panel header > svg:first-child,
+.team-panel header > svg:first-child,
+.my-day-panel > header > svg:first-child {
+  display: block;
+  flex: 0 0 var(--home-icon-slot);
+  width: var(--home-icon-slot);
+  height: var(--home-icon-slot);
+  margin: 0 var(--home-space-3) 0 0;
+}
+.home-bottom-grid header strong,
+.work-panel header strong,
+.team-panel header strong {
+  font-size: 14px;
+  font-weight: 590;
+  line-height: 20px;
+}
+.home-bottom-grid header > span,
+.home-bottom-grid header button {
+  line-height: 20px;
+}
+.home-bottom-grid header > svg:last-child {
+  width: 18px;
+  height: 18px;
+  margin-left: var(--home-space-3);
+}
+
+/* Empty content follows document flow from the top instead of floating centrally. */
+.home-empty-state { justify-content: flex-start; gap: var(--home-space-2); }
+.home-empty-state strong { font-size: 12px; line-height: 16px; }
+.home-empty-state span { font-size: 10.5px; line-height: 16px; }
+.my-day-panel { display: flex; flex-direction: column; }
+.my-day-panel > header { flex: 0 0 var(--home-header-height); border-bottom: 1px solid var(--home-divider); }
+.my-day-empty { min-height: 0; padding: var(--home-space-6) var(--home-card-pad) 0; }
+.add-day-task { margin-top: auto; margin-bottom: 0; }
+
+/* Objectives closes cleanly; Recent Work starts after its own breathing room. */
+.work-panel { grid-template-rows: 116px 1fr; }
+.objectives-block { border-bottom: 1px solid var(--home-divider); }
+.compact-empty { height: auto; padding: var(--home-space-4) var(--home-card-pad) 0; }
+.compact-empty button { gap: var(--home-space-1); font-size: 10.5px; line-height: 16px; }
+.recent-block { padding-top: var(--home-space-3); }
+.recent-block header { height: var(--home-header-height); }
+.recent-empty { height: auto; padding: var(--home-space-4) var(--home-card-pad) 0; }
+
+/* Team sequence: header, member, empty note, secondary action. */
+.team-panel { padding-bottom: var(--home-space-3); }
+.team-panel > header { border-bottom: 1px solid var(--home-divider); }
+.team-panel > .team-row:first-of-type { margin-top: var(--home-space-3); border-top: 0; }
+.team-row {
+  grid-template-columns: 48px minmax(0, 1fr) auto;
+  min-height: 48px;
+  padding: 0 var(--home-space-4);
+}
+.team-row .avatar { width: 38px !important; height: 38px !important; }
+.team-row p { display: flex; align-items: baseline; gap: 6px; margin: 0 0 var(--home-space-1); font-size: 12px; line-height: 16px; }
+.team-row p b { margin: 0; font-size: 9px; line-height: 16px; }
+.team-row span { font-size: 10.5px; line-height: 14px; }
+.team-row time { margin-top: var(--home-space-3); font-size: 9px; line-height: 12px; }
+.team-empty { padding: var(--home-space-5) var(--home-card-pad) var(--home-space-4); font-size: 10.5px; line-height: 16px; }
+.join-room {
+  gap: var(--home-space-2);
+  width: calc(100% - 32px);
+  height: 36px;
+  margin: 0 var(--home-space-4);
+  border-radius: 7px;
+  background: #063d2c;
+  font-size: 11px;
+}
+.join-room svg { width: 18px; height: 18px; }
+
+/* Today uses one row grid and a fixed optical icon column. */
+.today-panel { padding: 0 var(--home-space-3); }
+.today-panel > header {
+  grid-template-columns: 32px 1fr auto;
+  height: 48px;
+  padding: 0 var(--home-space-2);
+  border: 0;
+}
+.today-panel > header svg { width: 20px; height: 20px; }
+.today-panel > header strong { font-size: 15px; line-height: 20px; }
+.today-panel > header time { font-size: 10.5px; line-height: 16px; }
+.today-list { gap: var(--home-space-1); }
+.today-list > button,
+.today-progress,
+.today-static-row {
+  min-height: 0 !important;
+  height: 52px;
+  padding: 0 var(--home-space-3);
+  border-radius: 8px;
+}
+.today-static-row { display: flex; align-items: center; width: 100%; border: 1px solid #18211e; background: #0a100e; text-align: left; }
+.today-static-row > svg:first-child { flex: 0 0 22px; width: 22px; height: 22px; margin-right: var(--home-space-4); }
+.today-static-row > span { display: grid; gap: var(--home-space-1); min-width: 0; flex: 1; }
+.today-progress { height: 62px; gap: 0; }
+.today-list > button > svg:first-child,
+.today-progress > svg:first-child,
+.today-list .check-accent {
+  flex: 0 0 22px;
+  width: 22px !important;
+  height: 22px !important;
+  margin: 0 var(--home-space-4) 0 0 !important;
+  padding: 0;
+}
+.today-list > button > span { gap: var(--home-space-1); }
+.today-list small { font-size: 9.5px; line-height: 12px; }
+.today-list strong,
+.today-list > button > b { font-size: 12.5px; line-height: 16px; }
+.today-list > button > svg:last-child { width: 14px; height: 14px; margin-left: var(--home-space-2); }
+.today-progress i { margin-top: var(--home-space-2); }
+.today-progress p { margin-top: var(--home-space-1); font-size: 9.5px; line-height: 12px; }
+
+/* The timer's visual center is the number, not the bounding box. */
+.hero-timer > div { align-content: center; }
+.hero-timer small { margin-bottom: var(--home-space-1); line-height: 12px; }
+.hero-timer strong { margin: 0; line-height: .9; }
+.hero-timer span { margin-top: var(--home-space-2); line-height: 16px; }
+.focus-note span { gap: var(--home-space-1); }
+
+@media (min-width: 1201px) and (max-width: 1600px) {
+  .home-bottom-grid header,
+  .work-panel header,
+  .team-panel header,
+  .my-day-panel > header { height: var(--home-header-height); padding-inline: var(--home-card-pad); }
+  .home-bottom-grid header > svg:first-child,
+  .my-day-panel > header > svg:first-child { width: var(--home-icon-slot); height: var(--home-icon-slot); margin-right: var(--home-space-3); }
+  .my-day-empty { min-height: 0; padding: var(--home-space-6) var(--home-card-pad) 0; }
+  .compact-empty { height: auto; padding: var(--home-space-4) var(--home-card-pad) 0; }
+  .recent-empty { height: auto; padding: var(--home-space-4) var(--home-card-pad) 0; }
+  .recent-block header { height: var(--home-header-height); }
+  .team-panel header { height: var(--home-header-height); }
+  .team-row { grid-template-columns: 48px minmax(0,1fr) auto; min-height: 48px; padding-inline: var(--home-space-4); }
+  .team-row .avatar { width: 38px !important; height: 38px !important; }
+  .team-row p { margin-bottom: var(--home-space-1); font-size: 12px; }
+  .team-row p b { margin-left: 0; font-size: 9px; }
+  .team-row span { font-size: 10.5px; }
+  .team-row time { margin-top: var(--home-space-3); font-size: 9px; }
+  .join-room { gap: var(--home-space-2); width: calc(100% - 32px); height: 36px; margin: 0 var(--home-space-4); font-size: 11px; }
+  .join-room svg { width: 18px; height: 18px; }
+}
