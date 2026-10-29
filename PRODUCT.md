@@ -9,3 +9,5 @@ Entrada: login de contas existentes; ativação de conta apenas a partir de conv
 Preservar identidade Evergreen preta/esmeralda, produtividade local e dados existentes. Modo local é pessoal, separado e sem acesso ao conteúdo da holding. Não inventar dados, sucesso ou comprovação remota. Sem push, deploy, gastos ou ações destrutivas sem autorização explícita.
 
 Estado: núcleo da primeira migração validado no Supabase dedicado dlxsakabwtpdimolsmgd. Migrações de produtividade e acesso interno implementadas/testadas localmente, ainda NOT_APPLIED remotamente. Testes SQL/Auth de fixture não substituem Auth hospedado, SMTP, Storage ou Presence. Ver docs/VALIDATION.md e docs/INTERNAL-ACCESS.md.
+
+Evergreen World R1 adiciona uma projeção isométrica dos mesmos dados e ações do Work. É extensão da plataforma interna, com diretório2D acessível, sem equipe ou presença fictícia. Nesta entrega FaseB local, sem novo deploy; personalização/avatares/voz ficam para fases posteriores.

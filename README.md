@@ -1,5 +1,7 @@
 # Evergreen — uso interno da holding
 
+**World R1 (local):** nova sala isométrica na branch `codex/evergreen-world-r1`, acessível pelo seletor **Work / World** no topo. A versão publicada na Vercel ainda não contém World. Rode `npm ci` e `npm run dev`; use os dados locais existentes ou uma sessão autorizada. Sem WebGL2, selecione **Diretório 2D**. Arquitetura, testes e limites em `docs/WORLD-R1-ARCHITECTURE.md` e `docs/WORLD-R1-VALIDATION.md`.
+
 Plataforma privada de trabalho da holding, sem planos ou cobrança. Entrada por convite; veja `docs/INTERNAL-ACCESS.md` para provisionar o primeiro responsável e aplicar a proteção de cadastro no banco.
 
 React + TypeScript + Vite. Produtividade local preservada; núcleo de colaboração implementado com Supabase Auth, PostgreSQL e Postgres Changes.

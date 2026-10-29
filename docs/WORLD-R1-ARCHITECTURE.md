@@ -57,3 +57,5 @@ npm run test:local -- http://localhost:5173
 npm run test:mobile -- http://localhost:5173
 
 Testes automatizados geram fixtures somente em output/world e contextos descartáveis. Não removem dados do navegador pessoal nem executam chamadas em produção. O script de modelo usa o suporte de remoção de tipos do Node22 com flag experimental; não adiciona um segundo transpiler.
+
+WorldEntry.tsx contém também a falha de import do próprio WorldPane. WorldBoundary aceita fallback leve com Voltar ao Work. A recuperação de import de cena usa Recarregar3D (reload da página, conservando dados persistidos) para evitar reutilizar uma promise lazy rejeitada. Testes cobrem as duas falhas de download separadamente.

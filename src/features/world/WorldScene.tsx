@@ -79,7 +79,7 @@ function CameraRig({ layout, selection, members, projects, command, labels, metr
       node.style.transform = `translate(${x}px,${y - 20}px) translate(-50%,-100%)`; node.style.visibility = scratch.z > -1 && scratch.z < 1 && x > 0 && x < size.width && y > 0 && y < size.height ? 'visible' : 'hidden'
       node.dataset.screenX = String(x); node.dataset.screenY = String(y)
     })
-    if (metrics.current) { metrics.current.dataset.frames = String(frames.current); metrics.current.dataset.drawCalls = String(gl.info.render.calls); metrics.current.dataset.triangles = String(gl.info.render.triangles); metrics.current.dataset.dpr = String(gl.getPixelRatio()); metrics.current.dataset.cameraZoom = String(ortho.zoom) }
+    if (metrics.current) { metrics.current.dataset.frames = String(frames.current); metrics.current.dataset.drawCalls = String(gl.info.render.calls); metrics.current.dataset.triangles = String(gl.info.render.triangles); metrics.current.dataset.dpr = String(gl.getPixelRatio()); metrics.current.dataset.cameraZoom = String(ortho.zoom);metrics.current.dataset.targetX=String(orbit.target.x);metrics.current.dataset.targetZ=String(orbit.target.z) }
     if (dt > .045 && dt < .25) slow.current++; if (dt < .25) samples.current++
     if (samples.current >= 30) { if (slow.current > 15) onSlow(); samples.current = 0; slow.current = 0 }
   })
