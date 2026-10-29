@@ -11,3 +11,6 @@ Preservar identidade Evergreen preta/esmeralda, produtividade local e dados exis
 Estado: núcleo da primeira migração validado no Supabase dedicado dlxsakabwtpdimolsmgd. Migrações de produtividade e acesso interno implementadas/testadas localmente, ainda NOT_APPLIED remotamente. Testes SQL/Auth de fixture não substituem Auth hospedado, SMTP, Storage ou Presence. Ver docs/VALIDATION.md e docs/INTERNAL-ACCESS.md.
 
 Evergreen World R1 adiciona uma projeção isométrica dos mesmos dados e ações do Work. É extensão da plataforma interna, com diretório2D acessível, sem equipe ou presença fictícia. Nesta entrega FaseB local, sem novo deploy; personalização/avatares/voz ficam para fases posteriores.
+
+
+Atualização29/10: a porta visual agora é Evergreen Vision, com um cofre único para Economy2D independente. Founders é centro estratégico do grupo, com vínculo formal e capacidades por empresa. Identity centraliza Supabase Auth no servidor com PKCE/passkeys/e-mail, cookies HttpOnly e reautenticação financeira; configuração e validação hospedadas pendentes. Cargo é perfil, não autorização. Ver docs/SECURITY-CONTROLS.md e docs/PLATFORM-VALIDATION.md.

@@ -1,4 +1,7 @@
-import { useCallback, useEffect, useState } from 'react'
+import {useSurface} from './features/navigation'
+import {usePersonalProfile,PersonalProfile} from './state/usePersonalProfile'
+const Economy=lazy(()=>import('./features/economy/Economy'))
+import { lazy, Suspense, useCallback, useEffect, useState } from 'react'
 import { AppShell } from './components/AppShell'
 import { CommandPalette } from './components/CommandPalette'
 import { EntityDialog } from './components/EntityDialog'
@@ -6,7 +9,7 @@ import { FocusDialog } from './components/FocusDialog'
 import { EndFocusDialog, SessionCompleteDialog } from './components/FocusSessionDialogs'
 import { HomePage } from './pages/HomePage'
 import { TasksPage } from './pages/TasksPage'
-import { currentUser, initialPeople, initialTeamMembers } from './data/initialData'
+import { initialTeamMembers } from './data/initialData'
 import { getFocusElapsedMs, useFocusSession } from './state/useFocusSession'
 import { useWorkspaceStore } from './state/useWorkspaceStore'
 import type { FocusSessionDraft, WorkspaceActivity } from './types'
@@ -15,7 +18,10 @@ import { localWorldData } from './features/world/adapters'
 import { WorldEntry } from "./features/world/WorldEntry"
 
 export function App() {
-  const [world,setWorld]=useState(false)
+  const [surface,navigateSurface]=useSurface(true)
+  const world=surface==='vision',setWorld=(value:boolean)=>navigateSurface(value?'vision':'hub')
+  const [currentUser,saveProfile]=usePersonalProfile()
+  const initialPeople=[currentUser]
   const [worldTask,setWorldTask]=useState<string|undefined>()
   const [worldProject,setWorldProject]=useState<string|undefined>()
   const [page, setPage] = useState<'home' | 'tasks'>('home')
@@ -67,10 +73,12 @@ export function App() {
     focus.reset()
   }
 
+  if(surface==='economy')return <Suspense fallback={<p role='status'>Abrindo Economy…</p>}><Economy workspaceId='' name='Espaço pessoal' email='' onBack={()=>navigateSurface('vision')}/></Suspense>
   return <AppShell world={world} onWorldChange={setWorld} page={page} setPage={next=>{setWorld(false);setPage(next)}} onOpenPalette={() => setPalette(true)} projects={workspace.projects} currentUser={currentUser} onNewProject={() => setProjectDialog(true)} onOpenFocus={() => requestFocus()}>
+    <PersonalProfile person={currentUser} onSave={saveProfile}/>
     {workspace.storageError && <p role="alert" className="collab-error">{workspace.storageError}</p>}
     {focus.storageError && <p role="alert" className="collab-error">{focus.storageError}</p>}
-    {world ? <WorldEntry onExit={()=>setWorld(false)} data={localWorldData({tasks:workspace.tasks,projects:workspace.projects,activities:workspace.activities,focus:focus.session,userId:currentUser.id})} actions={{onOpenTask:id=>{setWorldTask(id);setWorld(false);setPage('tasks')},onOpenProject:id=>{setWorldProject(id);setWorldTask(undefined);setWorld(false);setPage('tasks')},onCompleteTask:async id=>{workspace.completeTask(id,true)},onFocusTask:requestFocus,onCreateTask:createTask}}/> : page === 'tasks' ? <TasksPage openTaskId={worldTask} initialProjectId={worldProject} requestCreate={createSignal} consumeCreate={() => setCreateSignal(0)} openInboxSignal={inboxSignal} tasks={workspace.tasks} inbox={workspace.inbox} setInbox={workspace.setInbox} people={initialPeople} projects={workspace.projects} objectives={workspace.objectives} currentUser={currentUser} onCreateTask={workspace.createTask} onUpdateTask={workspace.updateTask} onDeleteTask={workspace.deleteTask} onCompleteTask={workspace.completeTask} onCreateProject={() => setProjectDialog(true)} onCreateObjective={() => setObjectiveDialog(true)} onStartFocus={requestFocus} /> : <HomePage tasks={workspace.tasks} objectives={workspace.objectives} activities={workspace.activities} teamMembers={initialTeamMembers} currentUser={currentUser} focusSession={focus.session} openTasks={() => setPage('tasks')} addTask={createTask} createObjective={() => setObjectiveDialog(true)} openFocus={() => requestFocus()} pauseFocus={focus.pause} resumeFocus={focus.resume} requestEndFocus={() => setEndDialog(true)} completeFocus={focus.complete} />}
+    {world ? <WorldEntry onExit={()=>setWorld(false)} data={localWorldData({tasks:workspace.tasks,projects:workspace.projects,activities:workspace.activities,focus:focus.session,userId:currentUser.id})} actions={{onOpenEconomy:()=>navigateSurface('economy'),onOpenTask:id=>{setWorldTask(id);setWorld(false);setPage('tasks')},onOpenProject:id=>{setWorldProject(id);setWorldTask(undefined);setWorld(false);setPage('tasks')},onCompleteTask:async id=>{workspace.completeTask(id,true)},onFocusTask:requestFocus,onCreateTask:createTask}}/> : page === 'tasks' ? <TasksPage openTaskId={worldTask} initialProjectId={worldProject} requestCreate={createSignal} consumeCreate={() => setCreateSignal(0)} openInboxSignal={inboxSignal} tasks={workspace.tasks} inbox={workspace.inbox} setInbox={workspace.setInbox} people={initialPeople} projects={workspace.projects} objectives={workspace.objectives} currentUser={currentUser} onCreateTask={workspace.createTask} onUpdateTask={workspace.updateTask} onDeleteTask={workspace.deleteTask} onCompleteTask={workspace.completeTask} onCreateProject={() => setProjectDialog(true)} onCreateObjective={() => setObjectiveDialog(true)} onStartFocus={requestFocus} /> : <HomePage tasks={workspace.tasks} objectives={workspace.objectives} activities={workspace.activities} teamMembers={initialTeamMembers} currentUser={currentUser} focusSession={focus.session} openTasks={() => setPage('tasks')} addTask={createTask} createObjective={() => setObjectiveDialog(true)} openFocus={() => requestFocus()} pauseFocus={focus.pause} resumeFocus={focus.resume} requestEndFocus={() => setEndDialog(true)} completeFocus={focus.complete} />}
     <CommandPalette open={palette} onClose={() => setPalette(false)} onCreate={createTask} onSearchTasks={searchTasks} onInbox={openInbox} onStartFocus={() => requestFocus()} onCreateObjective={() => { setPalette(false); setObjectiveDialog(true) }} />
     <EntityDialog open={projectDialog} title="New project" placeholder="Project name" actionLabel="Create project" onClose={() => setProjectDialog(false)} onCreate={workspace.createProject} />
     <EntityDialog open={objectiveDialog} title="Create objective" placeholder="Objective title" actionLabel="Create objective" onClose={() => setObjectiveDialog(false)} onCreate={workspace.createObjective} />

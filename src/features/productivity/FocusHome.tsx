@@ -1,3 +1,4 @@
+import {usePublicProfiles} from './Avatars'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { HomePage } from '../../pages/HomePage'
 import { FocusDialog } from '../../components/FocusDialog'
@@ -19,9 +20,10 @@ export function FocusHome({workspaceId,userId,name,members,records,domain,online
  const zone=domain.profile?.timezone??Intl.DateTimeFormat().resolvedOptions().timeZone
  const dayKey=new Date().toLocaleDateString('en-CA',{timeZone:zone})
  const ownMs=domain.focus.filter(f=>f.user_id===userId&&new Date(f.started_at).toLocaleDateString('en-CA',{timeZone:zone})===dayKey).reduce((n,f)=>n+(f.status==='completed'?f.elapsed_ms:Math.min(f.mode==='timer'?f.duration_ms??Infinity:Infinity,Math.max(0,(f.paused_at?Date.parse(f.paused_at):Date.now())-Date.parse(f.started_at)-f.paused_ms))),0)
- const currentUser:Person={id:userId,name,initials:name.slice(0,2).toUpperCase(),tone:'#27664d'}
+ const publicProfiles=usePublicProfiles()
+ const currentUser:Person={id:userId,name:publicProfiles[userId]?.name||name,jobTitle:publicProfiles[userId]?.jobTitle,avatarUrl:publicProfiles[userId]?.url,initials:name.slice(0,2).toUpperCase(),tone:'#27664d'}
  const tasks:Task[]=records.filter(r=>r.kind==='task'&&!r.archived_at).map(r=>({id:r.id,title:r.title,description:r.description,status:r.status,priority:r.priority??'normal',assigneeId:r.assignee_id??undefined,projectId:r.project_id??undefined,objectiveId:r.objective_id??undefined,createdAt:r.created_at,dueDate:r.due_date??undefined,checklist:domain.checklist.filter(i=>i.record_id===r.id)}))
- const teamMembers:TeamMember[]=members.filter(m=>m.user_id!==userId).map(m=>{const focus=domain.focus.find(f=>f.user_id===m.user_id&&f.status==='running');return {id:m.user_id,name:m.display_name,initials:m.display_name.slice(0,2).toUpperCase(),tone:'#27664d',presence:online[m.user_id]==='online'?(focus?'focusing':'online'):'offline',focusStartedAt:focus?Date.parse(focus.started_at)+focus.paused_ms:undefined,focusLabel:focus?.title}})
+ const teamMembers:TeamMember[]=members.filter(m=>m.user_id!==userId).map(m=>{const focus=domain.focus.find(f=>f.user_id===m.user_id&&f.status==='running');return {id:m.user_id,name:publicProfiles[m.user_id]?.name||m.display_name,jobTitle:publicProfiles[m.user_id]?.jobTitle,avatarUrl:publicProfiles[m.user_id]?.url,initials:m.display_name.slice(0,2).toUpperCase(),tone:'#27664d',presence:online[m.user_id]==='online'?(focus?'focusing':'online'):'offline',focusStartedAt:focus?Date.parse(focus.started_at)+focus.paused_ms:undefined,focusLabel:focus?.title}})
  const activities=domain.activity.map(a=>({id:a.id,title:a.type==='focus_completed'?'Focus session completed':a.type.replaceAll('_',' '),description:a.title,createdAt:Date.parse(a.created_at),tone:'green' as const,durationMs:a.type==='focus_completed'?domain.focus.find(f=>f.id===a.resource_id)?.elapsed_ms:undefined}))
  const run=async(action:string,data:Record<string,unknown>={})=>{setPending(true);setError('');try{await repo.focus(workspaceId,action,data);await refresh();return true}catch(e){setError(failure(e));return false}finally{setPending(false)}}
  async function start(draft:FocusSessionDraft){if(await run('start',{title:draft.title,description:draft.description,mode:draft.mode,duration_ms:draft.durationMs,task_id:draft.taskId,objective_id:draft.objectiveId})){setStarting(false);setAutoComplete(false)}}

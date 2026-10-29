@@ -1,3 +1,4 @@
+> **Atualização local 29/10:** World passa a Vision; cofre único → Economy2D; Founders com grants de empresa; Identity via BFF e cookies HttpOnly. Esta versão NÃO foi aplicada no Supabase hospedado nem publicada. Configuração, controles e limites em [SECURITY-CONTROLS](docs/SECURITY-CONTROLS.md); evidências e suites em [PLATFORM-VALIDATION](docs/PLATFORM-VALIDATION.md). As instruções/histórico abaixo antecedem essa arquitetura; para preparar um novo ambiente use o roteiro de segurança, sem reaplicar migrações já hospedadas.
 # Evergreen — uso interno da holding
 
 **World R1 (local):** nova sala isométrica na branch `codex/evergreen-world-r1`, acessível pelo seletor **Work / World** no topo. A versão publicada na Vercel ainda não contém World. Rode `npm ci` e `npm run dev`; use os dados locais existentes ou uma sessão autorizada. Sem WebGL2, selecione **Diretório 2D**. Arquitetura, testes e limites em `docs/WORLD-R1-ARCHITECTURE.md` e `docs/WORLD-R1-VALIDATION.md`.

@@ -24,8 +24,8 @@ try {
  for(const width of [320,375,390,430,768,1440]) {
   fixture.messages=[];fixture.records=[]
   const context=await browser.newContext({viewport:{width,height:900},hasTouch:width<=768})
-  await context.route('https://fixture.supabase.invalid/**',async route=>{
-   const req=route.request(),url=new URL(req.url()),table=url.pathname.split('/').at(-1).replace('eg_',''),method=req.method()
+  await context.route('**/api/backend?**',async route=>{
+   const req=route.request(),url=new URL(new URL(req.url()).searchParams.get('path'),'https://fixture.supabase.invalid'),table=url.pathname.split('/').at(-1).replace('eg_',''),method=req.method()
    const headers={'content-type':'application/json','access-control-allow-origin':'*','access-control-allow-headers':'*','access-control-allow-methods':'*'}
    if(method==='OPTIONS') return route.fulfill({status:200,headers,body:''})
    let rows=fixture[table]??[],payload=req.postDataJSON()
@@ -49,6 +49,9 @@ try {
    }
    return route.fulfill({status:200,headers,body:JSON.stringify(payload??{})})
   })
+  await context.route('**/api/realtime?**',route=>route.fulfill({status:200,contentType:'text/event-stream',body:'data: {"type":"status","status":"CHANNEL_ERROR"}\n\n'}))
+  await context.route('**/api/identity/config',route=>route.fulfill({contentType:'application/json',body:'{"google":false,"passkeys":false}'}))
+  await context.route('**/api/identity/sessions',route=>route.fulfill({contentType:'application/json',body:'{"sessions":[]}'}))
   const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error'&&!m.text().includes('WebSocket'))console.log(m.text())})
   await page.goto(`${origin}/output/playwright/fixture.html`,{waitUntil:'networkidle'})
   await page.locator('.collab-top nav').waitFor({state:'attached'}).catch(async e=>{console.log(JSON.stringify({errors,body:await page.locator('body').innerText()}));await page.screenshot({path:'output/playwright/productivity-initial-failure.png'});throw e});await page.getByRole('navigation',{name:width<=768?'Navegação mobile':'Navegação desktop'}).getByRole('button',{name:'Conversas',exact:true}).click()
@@ -86,8 +89,8 @@ try {
    page.once('dialog',dialog=>dialog.dismiss());await focus.click();assert.equal(await editor.getByLabel('Title',{exact:true}).inputValue(),'Unsaved fixture title')
    await focus.focus();page.once('dialog',dialog=>dialog.accept());await page.keyboard.press('Enter')
    await page.getByRole('dialog',{name:'Start Focus',exact:true}).waitFor();await page.keyboard.press('Escape')
-   await page.getByRole('group',{name:'Modo do Evergreen'}).getByRole('button',{name:'World',exact:true}).click()
-   await page.getByRole('heading',{name:'Evergreen World',exact:true}).waitFor();await page.getByRole('button',{name:'Diretório 2D',exact:true}).click()
+   await page.getByRole('group',{name:'Modo do Evergreen'}).getByRole('button',{name:'Vision',exact:true}).click()
+   await page.getByRole('heading',{name:'Evergreen Vision',exact:true}).waitFor();await page.getByRole('button',{name:'Diretório 2D',exact:true}).click()
    await page.getByRole('button',{name:'Ver estação de Fixture Alice',exact:true}).click()
    await page.getByRole('button',{name:`Concluir UI fixture task ${width}`,exact:true}).click()
    await page.getByRole('progressbar',{name:'Progresso das tarefas selecionadas'}).waitFor()
@@ -102,4 +105,3 @@ try {
  }
  writeFileSync('output/collaboration-ui-results.json',JSON.stringify({environment:'Playwright REST response fixtures ONLY; does not prove auth, persistence or Realtime',results},null,2));console.log(JSON.stringify(results,null,2))
 } finally {await browser.close();server.kill()}
-

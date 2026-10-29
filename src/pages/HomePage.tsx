@@ -60,7 +60,7 @@ export function HomePage({ tasks, objectives, activities, teamMembers, currentUs
   const activeTasks = tasks.filter(task => task.status !== 'done')
   const currentPriority = activeTasks.find(task => task.priority === 'urgent' || task.priority === 'high') ?? activeTasks[0]
   const nextAction = activeTasks.find(task => task.status === 'in-progress') ?? activeTasks.find(task => task.status === 'todo')
-  const firstName = currentUser.name.trim().split(/\s+/)[0] || 'João'
+  const firstName = currentUser.name.trim().split(/\s+/)[0] || 'Você'
   const greeting = getGreeting(timezone?Number(new Intl.DateTimeFormat('en-US',{timeZone:timezone,hour:'numeric',hourCycle:'h23'}).format(new Date())):new Date().getHours())
   const todayLabel = new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'short', day: 'numeric',timeZone:timezone }).format(new Date())
 
@@ -117,8 +117,8 @@ export function HomePage({ tasks, objectives, activities, teamMembers, currentUs
 
       <section className="team-panel">
         <header><UsersRound /><strong>Team in Focus</strong></header>
-        <div className="team-row"><AssigneeAvatar person={currentUser} size="lg" /><div><p>You ({firstName}) <b>● {connected===undefined?'Local':!connected ? 'Offline' : focusSession.status === 'running' ? 'Focusing' : focusSession.status === 'paused' ? 'Paused' : 'Online'}</b></p><span>{focusSession.status === 'idle' ? 'Available' : `${elapsedMinutes}m in this session`}</span></div>{focusSession.status !== 'idle' && <time>{elapsedMinutes}m</time>}</div>
-        {teamMembers.filter(member => member.id !== currentUser.id).map(member => <div className="team-row" key={member.id}><AssigneeAvatar person={member} size="lg" /><div><p>{member.name} <b>● {member.presence === 'focusing' ? 'Focusing' : member.presence === 'online' ? 'Online' : 'Offline'}</b></p><span>{member.focusLabel ?? 'Available'}</span></div>{member.focusStartedAt && <time>{Math.floor((Date.now() - member.focusStartedAt) / 60000)}m</time>}</div>)}
+        <div className="team-row"><AssigneeAvatar person={currentUser} size="lg" /><div><p>You ({firstName}) <b>● {connected===undefined?'Local':!connected ? 'Offline' : focusSession.status === 'running' ? 'Focusing' : focusSession.status === 'paused' ? 'Paused' : 'Online'}</b></p><span>{currentUser.jobTitle&&<>{currentUser.jobTitle} · </>}{focusSession.status === 'idle' ? 'Available' : `${elapsedMinutes}m in this session`}</span></div>{focusSession.status !== 'idle' && <time>{elapsedMinutes}m</time>}</div>
+        {teamMembers.filter(member => member.id !== currentUser.id).map(member => <div className="team-row" key={member.id}><AssigneeAvatar person={member} size="lg" /><div><p>{member.name} <b>● {member.presence === 'focusing' ? 'Focusing' : member.presence === 'online' ? 'Online' : 'Offline'}</b></p><span>{member.jobTitle&&<>{member.jobTitle} · </>}{member.focusLabel ?? 'Available'}</span></div>{member.focusStartedAt && <time>{Math.floor((Date.now() - member.focusStartedAt) / 60000)}m</time>}</div>)}
         {teamMembers.filter(member => member.id !== currentUser.id).length === 0 && <div className="team-empty">No one else is here yet.</div>}
         <button className="join-room" disabled={!onInvite} onClick={onInvite} title={onInvite?'Invite a teammate':'Abra colaboração para criar convites reais'}><UserRoundPlus /> {onInvite?'Invite member':'Invites require collaboration'}</button>
       </section>

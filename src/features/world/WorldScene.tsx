@@ -1,3 +1,5 @@
+import {ExecutiveTerminal} from './ExecutiveTerminal'
+import { FinancialVault } from './FinancialVault'
 import { Canvas, useFrame, useThree, type ThreeEvent } from '@react-three/fiber'
 import { useEffect, useLayoutEffect, useMemo, useRef, type RefObject } from 'react'
 import { BoxGeometry, Color, CylinderGeometry, InstancedMesh, MeshStandardMaterial, Object3D, OrthographicCamera, SphereGeometry, Vector3, MOUSE, TOUCH, type BufferGeometry } from 'three'
@@ -7,6 +9,8 @@ import { completion, type WorldMember, type WorldProject, type WorldSelection, t
 
 interface Item { at: [number, number, number]; size: [number, number, number]; color: string; pick?: Exclude<WorldSelection, null>; turn?: number }
 interface Props {
+  onOpenFounders?:()=>void;
+  vaultOpening?:boolean;onOpenVault?:()=>void;onVaultOpened?:()=>void;onVaultHover?:(value:boolean)=>void
   members: WorldMember[]; projects: WorldProject[]; tasks: WorldTask[]; selection: WorldSelection
   onSelect: (selection: WorldSelection) => void; layout: ReturnType<typeof layoutWorld>; low: boolean; reduced: boolean; visible: boolean
   command: CameraCommand; labels: RefObject<Record<string, HTMLDivElement | null>>; metrics: RefObject<HTMLDivElement | null>
@@ -29,7 +33,7 @@ function CameraRig({ layout, selection, members, projects, command, labels, metr
   const { camera, gl, size, invalidate } = useThree(), controls = useRef<OrbitControls | null>(null)
   const desired = useRef(new Vector3()), targetZoom = useRef(24), animating = useRef(false), resetting = useRef(false), frames = useRef(0), slow = useRef(0), samples = useRef(0)
   const baseZoom = Math.min(size.width / (layout.width * 1.27), size.height / (layout.depth * .74 + layout.width * .35)) * .88
-  const anchors = useMemo(() => [...members.map((m, i) => ({ key: 'member:' + m.id, point: new Vector3(layout.stations[i][0], 1.52, layout.stations[i][2] - .32) })), ...projects.map((p, i) => ({ key: 'project:' + p.id, point: new Vector3(layout.rooms[i][0], .6, layout.rooms[i][2]) }))], [members, projects, layout])
+  const anchors = useMemo(() => [{key:'vault',point:new Vector3(layout.width/2-2.1,2.7,layout.depth/2-2.2)},...members.map((m, i) => ({ key: 'member:' + m.id, point: new Vector3(layout.stations[i][0], 1.52, layout.stations[i][2] - .32) })), ...projects.map((p, i) => ({ key: 'project:' + p.id, point: new Vector3(layout.rooms[i][0], .6, layout.rooms[i][2]) }))], [members, projects, layout])
   useEffect(() => {
     const orbit = new OrbitControls(camera, gl.domElement)
     controls.current = orbit; orbit.enableDamping = !reduced; orbit.dampingFactor = .12; orbit.enablePan = true
@@ -77,6 +81,7 @@ function CameraRig({ layout, selection, members, projects, command, labels, metr
       const node = labels.current[key]; if (!node) return
       scratch.copy(point).project(camera); const x = (scratch.x + 1) * size.width / 2, y = (-scratch.y + 1) * size.height / 2
       node.style.transform = `translate(${x}px,${y - 20}px) translate(-50%,-100%)`; node.style.visibility = scratch.z > -1 && scratch.z < 1 && x > 0 && x < size.width && y > 0 && y < size.height ? 'visible' : 'hidden'
+      if(key==='vault'){scratch.set(layout.width/2-2.1,1.3,layout.depth/2-2.2+.85).project(camera);node.dataset.pickX=String((scratch.x+1)*size.width/2);node.dataset.pickY=String((-scratch.y+1)*size.height/2)}
       node.dataset.screenX = String(x); node.dataset.screenY = String(y)
     })
     if (metrics.current) { metrics.current.dataset.frames = String(frames.current); metrics.current.dataset.drawCalls = String(gl.info.render.calls); metrics.current.dataset.triangles = String(gl.info.render.triangles); metrics.current.dataset.dpr = String(gl.getPixelRatio()); metrics.current.dataset.cameraZoom = String(ortho.zoom);metrics.current.dataset.targetX=String(orbit.target.x);metrics.current.dataset.targetZ=String(orbit.target.z) }
@@ -145,7 +150,7 @@ function Office(props: Props) {
       const progress = completion(tasks.filter(t => t.projectId === p.id))
       if (progress) add(screen, [x - .4 + progress / 250, .8, z - .309], [progress / 125, .045, .01], '#92d5c7', pick)
     })
-    for (const [x, z] of [[-layout.width / 2 + .65, -layout.depth / 2 + .7], [layout.width / 2 - .8, -layout.depth / 2 + .8], [-layout.width / 2 + .8, layout.depth / 2 - .8], [layout.width / 2 - .8, layout.depth / 2 - .8]]) {
+    for (const [x, z] of [[-layout.width / 2 + .65, -layout.depth / 2 + .7], [layout.width / 2 - .8, -layout.depth / 2 + .8], [-layout.width / 2 + .8, layout.depth / 2 - .8]]) {
       add(planters, [x, .33, z], [.33, .65, .33], '#8c8970'); add(metal, [x, 1, z], [.055, 1.3, .055], '#675f3c')
       add(plants, [x, 1.65, z], [.58, .76, .52], '#467f52'); add(plants, [x + .26, 1.35, z + .13], [.44, .47, .4], '#55915c'); add(plants, [x - .24, 1.5, z - .1], [.4, .52, .41], '#376d46')
     }
@@ -164,6 +169,8 @@ function Office(props: Props) {
     <Batch items={batches.screen} geometry={resources.box} material={resources.luminous} onSelect={onSelect} shadow={false} />
     <Batch items={batches.planters} geometry={resources.cylinder} material={resources.matte} onSelect={onSelect} />
     <Batch items={batches.plants} geometry={resources.sphere} material={resources.matte} onSelect={onSelect} />
+    {props.onOpenVault&&<FinancialVault at={[layout.width/2-2.1,0,layout.depth/2-2.2]} opening={!!props.vaultOpening} reduced={props.reduced} onOpen={props.onOpenVault} onOpened={props.onVaultOpened||(()=>{})} onHover={props.onVaultHover||(()=>{})}/>}
+    {props.onOpenFounders&&<ExecutiveTerminal at={[layout.width/2-1.6,0,-layout.depth/2+1.8]} onOpen={props.onOpenFounders}/>}
     <CameraRig {...props} />
   </group>
 }

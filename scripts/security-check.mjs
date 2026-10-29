@@ -18,7 +18,7 @@ await pg.exec(`create role anon; create role authenticated;
  grant usage on schema storage to authenticated;grant select,insert,delete on storage.objects to authenticated;`)
 // Internal-access migration deliberately requires an already provisioned owner.
 const internalMigration='20261027160000_internal_holding_access.sql'
-for (const path of readdirSync('supabase/migrations').filter(p => p.endsWith('.sql')&&p!==internalMigration).sort()) await pg.exec(readFileSync(`supabase/migrations/${path}`, 'utf8'))
+for (const path of readdirSync('supabase/migrations').filter(p => p.endsWith('.sql')&&p!==internalMigration&&p<'20261029100000').sort()) await pg.exec(readFileSync(`supabase/migrations/${path}`, 'utf8'))
 checks.push('migration replay')
 const a = '00000000-0000-4000-8000-000000000001', b = '00000000-0000-4000-8000-000000000002', c = '00000000-0000-4000-8000-000000000003'
 for (const [id,email] of [[a,'a@test.invalid'],[b,'b@test.invalid'],[c,'c@test.invalid']]) await pg.query('insert into auth.users(id,email,email_confirmed_at) values($1,$2,now())',[id,email])

@@ -14,12 +14,18 @@
     "test:e2e:real": "node scripts/e2e-real.mjs",
     "test:preservation": "node scripts/local-preservation-check.mjs",
     "test:world:model": "node --experimental-strip-types scripts/world-model-check.mjs",
-    "test:world": "node scripts/world-check.mjs"
+    "test:world": "node scripts/world-check.mjs",
+    "test:platform:security": "node scripts/platform-security-check.mjs",
+    "test:identity": "node scripts/identity-check.mjs",
+    "test:platform:ui": "node scripts/platform-browser-check.mjs",
+    "test:local:regression": "node scripts/local-regression-check.mjs"
   },
   "dependencies": {
     "@react-three/fiber": "9.8.2",
+    "@supabase/ssr": "0.12.7",
     "@supabase/supabase-js": "2.118.0",
     "@vitejs/plugin-react": "latest",
+    "cookie": "2.0.1",
     "lucide-react": "latest",
     "react": "latest",
     "react-dom": "latest",
@@ -28,6 +34,7 @@
   },
   "devDependencies": {
     "@electric-sql/pglite": "0.5.12",
+    "@types/node": "22.18.6",
     "@types/react": "latest",
     "@types/react-dom": "latest",
     "@types/three": "0.186.0",

@@ -2,6 +2,7 @@ import { Circle, CircleDashed, CircleDotDashed, CheckCircle2, Signal, Target } f
 import type { Person, Priority, TaskStatus } from '../types'
 
 export function AssigneeAvatar({ person, size = 'md' }: { person: Person; size?: 'sm' | 'md' | 'lg' }) {
+  if(person.avatarUrl)return <img className={"avatar avatar-"+size} src={person.avatarUrl} alt={person.name} style={{width:size==="lg"?44:size==="sm"?24:28,height:size==="lg"?44:size==="sm"?24:28,borderRadius:"50%",objectFit:"cover"}}/>
   const sizes = { sm: 'h-6 w-6 text-[8px]', md: 'h-7 w-7 text-[9px]', lg: 'h-11 w-11 text-[10px]' }
   return (
     <span className={`avatar avatar-${person.id} avatar-${size} ${sizes[size]}`} style={{ '--avatar': person.tone } as React.CSSProperties} title={person.name}>

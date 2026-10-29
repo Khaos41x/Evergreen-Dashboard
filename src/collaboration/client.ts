@@ -1,11 +1,18 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient, type SupabaseClient } from '@supabase/supabase-js'
+import { identity } from '../features/identity/client'
+import { ServerChannel } from '../features/identity/ServerChannel'
 
 const url = import.meta.env.VITE_SUPABASE_URL as string | undefined
 const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined
-// Only a publishable client key belongs in this bundle. Authorization lives in RLS.
-export const supabase = url && key ? createClient(url, key, {
-  auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, flowType: 'pkce' },
-}) : null
+// Data SDK only. User credentials/tokens stay in HttpOnly server cookies.
+const dataClient=url&&key?createClient(url,key,{
+ auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false},
+ global:{fetch:async(input,init)=>{const upstream=new URL(typeof input==='string'?input:input instanceof URL?input.href:input.url);if(upstream.origin!==new URL(url).origin)throw new Error('Destino de dados não autorizado.');const headers=new Headers(init?.headers);headers.delete('authorization');headers.delete('apikey');const response=await fetch('/api/backend?path='+encodeURIComponent(upstream.pathname+upstream.search),{...init,headers,credentials:'same-origin',cache:'no-store'});if(response.status===401)window.dispatchEvent(new Event('evergreen:session-expired'));return response}},
+}):null
+export const supabase=dataClient?{
+ from:dataClient.from.bind(dataClient),rpc:dataClient.rpc.bind(dataClient),storage:dataClient.storage,
+ auth:identity,channel:(name:string)=>new ServerChannel(name),removeChannel:(channel:ServerChannel)=>channel.unsubscribe(),
+} as unknown as SupabaseClient:null
 
 export function db() {
   if (!supabase) throw new Error('Supabase não configurado. Defina VITE_SUPABASE_URL e VITE_SUPABASE_PUBLISHABLE_KEY e reinicie o Vite.')

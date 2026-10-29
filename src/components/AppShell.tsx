@@ -1,3 +1,4 @@
+import {EvergreenBrand} from './EvergreenBrand'
 import { useState, type ReactNode } from 'react'
 import { Activity, Bell, CirclePlay, House, Menu, Orbit, Plus, Search, SquareCheckBig, TriangleAlert, UsersRound, X } from 'lucide-react'
 import { AssigneeAvatar } from './ui'
@@ -6,14 +7,6 @@ import { WorldModeSwitch } from '../features/world/WorldModeSwitch'
 import '../features/world/world.css'
 
 type Page = 'home' | 'tasks'
-
-function EvergreenMark() {
-  return (
-    <svg viewBox="0 0 36 56" className="h-11 w-8 text-emerald" fill="none" aria-hidden="true">
-      <path d="M18 3v50M18 5 5 20m13-8 13 14M18 17 3 34m15-10 16 17M18 30 5 46m13-9 12 13" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
 
 const nav = [
   { id: 'home', label: 'Home', icon: House }, { id: 'tasks', label: 'Tasks', icon: SquareCheckBig },
@@ -34,7 +27,7 @@ function Sidebar({ page, setPage, mobileOpen, close, projects, currentUser, onNe
   }
   return (
     <aside className={`sidebar ${mobileOpen ? 'sidebar-open' : ''}`}>
-      <div className="brand"><EvergreenMark /><span>Evergreen</span><button className="mobile-close" onClick={close}><X /></button></div>
+      <div className="brand"><EvergreenBrand/><button className="mobile-close" onClick={close}><X /></button></div>
       <nav className="main-nav" aria-label="Primary navigation">
         {nav.map(({ id, label, icon: Icon }) => (
           <button key={id} className={`nav-item ${page === id ? 'active' : ''}`} onClick={() => navigate(id)}>

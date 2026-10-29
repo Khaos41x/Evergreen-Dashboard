@@ -4,8 +4,8 @@ import type { InboxItem, Objective, Person, Project, Task, TeamMember, Workspace
 // The authenticated profile may replace this fallback without changing consumers.
 export const currentUser: Person = {
   id: 'joao',
-  name: 'João',
-  initials: 'JO',
+  name: 'Você',
+  initials: 'VC',
   tone: '#b87852',
 }
 

@@ -3,6 +3,8 @@ export type Priority = 'low' | 'normal' | 'high' | 'urgent'
 export type TabKey = 'my-tasks' | 'team' | 'inbox' | 'completed'
 
 export interface Person {
+  jobTitle?: string
+  avatarUrl?: string
   id: string
   name: string
   initials: string

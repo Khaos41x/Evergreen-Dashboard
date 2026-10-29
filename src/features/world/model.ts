@@ -11,6 +11,7 @@ export interface WorldData {
 }
 export type WorldSelection = { kind: 'member' | 'project'; id: string } | null
 export interface WorldActions {
+  onOpenEconomy?:()=>void; onOpenFounders?:()=>void
   onOpenTask: (id: string) => void; onOpenProject: (id: string) => void
   onCompleteTask?: (id: string) => Promise<void>; onFocusTask?: (id: string) => void
   onOpenChannel?: (id: string) => void; onCreateTask?: () => void
