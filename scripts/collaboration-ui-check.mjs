@@ -86,10 +86,19 @@ try {
    page.once('dialog',dialog=>dialog.dismiss());await focus.click();assert.equal(await editor.getByLabel('Title',{exact:true}).inputValue(),'Unsaved fixture title')
    await focus.focus();page.once('dialog',dialog=>dialog.accept());await page.keyboard.press('Enter')
    await page.getByRole('dialog',{name:'Start Focus',exact:true}).waitFor();await page.keyboard.press('Escape')
+   await page.getByRole('group',{name:'Modo do Evergreen'}).getByRole('button',{name:'World',exact:true}).click()
+   await page.getByRole('heading',{name:'Evergreen World',exact:true}).waitFor();await page.getByRole('button',{name:'Diretório 2D',exact:true}).click()
+   await page.getByRole('button',{name:'Ver estação de Fixture Alice',exact:true}).click()
+   await page.getByRole('button',{name:`Concluir UI fixture task ${width}`,exact:true}).click()
+   await page.getByRole('progressbar',{name:'Progresso das tarefas selecionadas'}).waitFor()
+   await page.waitForFunction(()=>document.querySelector('.world-progress progress')?.value===100)
+   await page.getByRole('group',{name:'Modo do Evergreen'}).getByRole('button',{name:'Work',exact:true}).click()
+   await nav.getByRole('button',{name:'Tarefas',exact:true}).click();await page.getByRole('tab',{name:'Completed',exact:true}).click()
+   await page.getByText(`UI fixture task ${width}`,{exact:true}).waitFor()
   }
   await nav.getByRole('button',{name:width<=768?'Ajustes':'Configurações',exact:true}).click();await page.getByRole('heading',{name:'Configurações',exact:true}).waitFor();assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false)
   await page.screenshot({path:`output/playwright/fixture-settings-${width}.png`,fullPage:true})
-  assert.deepEqual(errors,[]);results.push({width,chatSendEditDelete:true,recordCreate:true,chatEditorSettingsNoOverflow:true,editorFocusReturn:true,mobileDrawerKeyboard:width<=768,searchRaceAndTaskFocus:width===390?'PASS':'covered at 390',pageErrors:errors});await context.close()
+  assert.deepEqual(errors,[]);results.push({width,chatSendEditDelete:true,recordCreate:true,chatEditorSettingsNoOverflow:true,editorFocusReturn:true,mobileDrawerKeyboard:width<=768,worldMutationSharedWithWork:width===390?'PASS (REST fixture)':'covered at 390',searchRaceAndTaskFocus:width===390?'PASS':'covered at 390',pageErrors:errors});await context.close()
  }
  writeFileSync('output/collaboration-ui-results.json',JSON.stringify({environment:'Playwright REST response fixtures ONLY; does not prove auth, persistence or Realtime',results},null,2));console.log(JSON.stringify(results,null,2))
 } finally {await browser.close();server.kill()}

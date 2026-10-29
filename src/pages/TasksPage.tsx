@@ -12,7 +12,9 @@ import { SuggestTaskDialog } from '../components/SuggestTaskDialog'
 const tabs: { id: TabKey; label: string }[] = [{ id: 'my-tasks', label: 'My tasks' }, { id: 'team', label: 'Team' }, { id: 'inbox', label: 'Inbox' }, { id: 'completed', label: 'Completed' }]
 const rank = { urgent: 0, high: 1, normal: 2, low: 3 }
 
-export function TasksPage({ requestCreate, consumeCreate, openInboxSignal, tasks, inbox, setInbox, people, projects, objectives, currentUser, onCreateTask, onUpdateTask, onDeleteTask, onCompleteTask, onCreateProject, onCreateObjective, onStartFocus }: {
+export function TasksPage({ requestCreate, consumeCreate, openInboxSignal, tasks, inbox, setInbox, people, projects, objectives, currentUser, onCreateTask, onUpdateTask, onDeleteTask, onCompleteTask, onCreateProject, onCreateObjective, onStartFocus,openTaskId,initialProjectId }: {
+  openTaskId?:string
+  initialProjectId?:string
   requestCreate: number
   consumeCreate: () => void
   openInboxSignal: number
@@ -42,6 +44,8 @@ export function TasksPage({ requestCreate, consumeCreate, openInboxSignal, tasks
   const [prefill, setPrefill] = useState('')
   const [handoff, setHandoff] = useState(false)
   const [suggest, setSuggest] = useState(false)
+  useEffect(()=>{if(openTaskId)setSelected(tasks.find(t=>t.id===openTaskId)??null)},[openTaskId])
+  useEffect(()=>{if(initialProjectId){setProject(initialProjectId);setTab('team')}},[initialProjectId])
 
   useEffect(() => { if (requestCreate) { setNewStatus('todo'); setPrefill(''); setNewOpen(true); consumeCreate() } }, [requestCreate, consumeCreate])
   useEffect(() => { if (openInboxSignal) setTab('inbox') }, [openInboxSignal])

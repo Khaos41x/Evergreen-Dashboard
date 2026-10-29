@@ -1,0 +1,83 @@
+// Local browser + software WebGL. Fixtures are confined to this test harness.
+import { chromium } from 'playwright-core'
+import { mkdirSync, writeFileSync } from 'node:fs'
+import { spawn } from 'node:child_process'
+import assert from 'node:assert/strict'
+mkdirSync('output/world',{recursive:true})
+const initial={tasks:[{id:'world-task-a',title:'Fixture — testar integração World',description:'Dados sintéticos para teste local.',status:'todo',priority:'high',assigneeId:'joao',projectId:'world-project-a',checklist:[],createdAt:'2026-10-28T10:00:00Z'},{id:'world-task-b',title:'Fixture — revisar escopo',description:'',status:'done',priority:'normal',assigneeId:'joao',projectId:'world-project-a',checklist:[],createdAt:'2026-10-28T10:00:00Z',completedAt:'2026-10-28T11:00:00Z'}],projects:[{id:'world-project-a',name:'Projeto QA local'}],objectives:[],inbox:[],activities:[]}
+writeFileSync('output/world/local.html',`<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><div id="root"></div><script type="module">import React from 'react';import{createRoot}from'react-dom/client';import{App}from'/src/App.tsx';import'/src/styles.css';import'/src/styles-extra.css';import'/src/home-reference.css';createRoot(document.getElementById('root')).render(React.createElement(App));</script>`)
+const fixtureMembers=Array.from({length:15},(_,i)=>({id:'qa-'+String(i).padStart(2,'0'),name:['Ana QA','Bruno QA','Carla QA','Davi QA','Elisa QA','Fábio QA'][i%6]+' '+(i+1),presence:i%3===0?'focusing':i%3===1?'online':'unknown'}))
+const fixtureProjects=Array.from({length:8},(_,i)=>({id:'project-'+i,name:['Operações QA','Estratégia QA','Produto QA'][i%3]+' '+(i+1),description:'Dados sintéticos de revisão, não são dados da holding.'}))
+const fixtureData={scope:'qa-a',name:'QA sintético · fixtures',source:'workspace',userId:'qa-00',members:fixtureMembers,projects:fixtureProjects,tasks:fixtureMembers.map((m,i)=>({id:'task-'+i,title:'Tarefa QA '+(i+1),assigneeId:m.id,projectId:fixtureProjects[i%8].id,status:i%4===0?'done':'todo',progress:i%4===0?100:0,canComplete:i%4!==0})),activity:[],channels:[{id:'qa-channel',name:'canal-qa'}]}
+writeFileSync('output/world/team.html',`<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><div id="root"></div><script type="module">import React,{useState}from'react';import{createRoot}from'react-dom/client';import WorldPane from'/src/features/world/WorldPane.tsx';import'/src/styles.css';import'/src/collaboration/collaboration.css';function Harness(){const[data,setData]=useState(${JSON.stringify(fixtureData)});return React.createElement(React.Fragment,null,React.createElement('button',{onClick:()=>setData({scope:'qa-b',name:'Outro workspace QA',source:'workspace',userId:'other',members:[],projects:[],tasks:[],activity:[],channels:[]})},'Trocar escopo QA'),React.createElement(WorldPane,{data,actions:{onOpenTask:()=>{},onOpenProject:()=>{},onCompleteTask:async()=>{throw new Error('Fixture: atualização recusada pelo servidor')},onOpenChannel:()=>{}}}))}createRoot(document.getElementById('root')).render(React.createElement(Harness));</script>`)
+const server=spawn(process.execPath,['node_modules/vite/bin/vite.js','--config','scripts/vite-fixture.config.ts','--host','127.0.0.1','--port','5190','--strictPort'],{windowsHide:true,stdio:['ignore','pipe','pipe']})
+let logs='';server.stdout.on('data',d=>logs+=d);server.stderr.on('data',d=>logs+=d)
+await new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(new Error(logs)),20000);server.stdout.on('data',d=>{if(String(d).includes('5190')){clearTimeout(timer);resolve()}});server.on('error',reject)})
+let browser;const results=[]
+const origin='http://127.0.0.1:5190'
+try{
+ browser=await chromium.launch({executablePath:process.env.BROWSER_PATH??'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',headless:true,args:['--use-angle=swiftshader','--enable-unsafe-swiftshader']})
+ for(const width of[320,390,768,1440]){
+  const context=await browser.newContext({viewport:{width,height:1000},hasTouch:width<=768,reducedMotion:'reduce'})
+  await context.addInitScript(value=>{if(!localStorage.getItem('evergreen.workspace.v1'))localStorage.setItem('evergreen.workspace.v1',JSON.stringify(value))},initial)
+  const page=await context.newPage(),errors=[],requested=[];page.on('pageerror',e=>errors.push(e.message));page.on('request',r=>requested.push(r.url()))
+  await page.goto(origin+'/output/world/local.html',{waitUntil:'networkidle'})
+  assert.equal(requested.some(url=>/WorldScene|@react-three|\/three\./.test(url)),false,'3D requested before opening World')
+  await page.getByRole('group',{name:'Modo do Evergreen'}).getByRole('button',{name:'World',exact:true}).click()
+  const renderer=page.getByTestId('world-renderer')
+  await page.waitForFunction(()=>Number(document.querySelector('[data-testid=world-renderer]')?.getAttribute('data-frames'))>0,{timeout:30000})
+  assert.ok(await page.locator('canvas').isVisible(),'WebGL canvas is not visible')
+  await page.getByRole('button',{name:'Ver estação de Você · local',exact:true}).click()
+  await page.getByRole('region',{name:'Detalhes da seleção'}).waitFor().catch(()=>{})
+  await page.getByRole('button',{name:'Concluir Fixture — testar integração World',exact:true}).click()
+  await page.waitForFunction(()=>JSON.parse(localStorage.getItem('evergreen.workspace.v1')).tasks.find(t=>t.id==='world-task-a').status==='done')
+  assert.equal(await page.getByRole('progressbar',{name:'Progresso das tarefas selecionadas'}).getAttribute('value'),'100')
+  await page.getByRole('button',{name:'Fixture — testar integração World Concluída',exact:true}).click()
+  await page.getByRole('complementary',{name:'Task details',exact:true}).waitFor();await page.keyboard.press('Escape')
+  await page.getByRole('group',{name:'Modo do Evergreen'}).getByRole('button',{name:'World',exact:true}).click()
+  await renderer.waitFor();await page.getByRole('button',{name:'Ver sala de Projeto QA local',exact:true}).click()
+  await page.getByRole('button',{name:'Abrir projeto no Work',exact:true}).click();assert.equal(await page.getByRole('heading',{name:'Tasks',exact:true}).isVisible(),true)
+  await page.reload();await page.getByRole('group',{name:'Modo do Evergreen'}).getByRole('button',{name:'World',exact:true}).click();await page.getByRole('button',{name:'Ver estação de Você · local',exact:true}).click()
+  assert.equal(await page.getByRole('progressbar',{name:'Progresso das tarefas selecionadas'}).getAttribute('value'),'100')
+  await page.getByRole('button',{name:'Diretório 2D',exact:true}).click();assert.equal(await page.locator('canvas').count(),0)
+  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,`local overflow ${width}`)
+  assert.deepEqual(errors,[]);results.push({width,localMutationsPersist:true,taskAndProjectOpenWork:true,lazy3D:true,alternative2D:true,pageErrors:errors});await context.close()
+ }
+ for(const width of[390,1440]){
+  const page=await browser.newPage({viewport:{width,height:1000},reducedMotion:'reduce',hasTouch:width<=768}),errors=[];page.on('pageerror',e=>errors.push(e.message))
+  await page.goto(origin+'/output/world/team.html')
+  await page.waitForFunction(()=>Number(document.querySelector('[data-testid=world-renderer]')?.getAttribute('data-frames'))>0)
+  // A real raycast on the monitor, using its projected position after camera fit.
+  const node=page.locator('[data-world-node="member:qa-00"]')
+  await node.waitFor({state:'attached'});await page.waitForFunction(()=>!!document.querySelector('[data-world-node="member:qa-00"]')?.getAttribute('data-screen-x'))
+  const canvas=page.locator('canvas'),box=await canvas.boundingBox()
+  const point=await node.evaluate(el=>({x:Number(el.dataset.screenX),y:Number(el.dataset.screenY)}))
+  if(width<=768)await page.touchscreen.tap(box.x+point.x,box.y+point.y);else await page.mouse.click(box.x+point.x,box.y+point.y)
+  await page.locator('.world-details h2').filter({hasText:'Ana QA 1'}).waitFor()
+  await page.getByRole('button',{name:'Ver estação de Bruno QA 2',exact:true}).focus();await page.keyboard.press('Enter')
+  await page.getByRole('button',{name:'Concluir Tarefa QA 2',exact:true}).click();await page.getByRole('alert').filter({hasText:'atualização recusada'}).waitFor();assert.equal(await page.getByRole('button',{name:'Concluir Tarefa QA 2',exact:true}).isEnabled(),true)
+  await page.getByRole('button',{name:'Aproximar',exact:true}).click()
+  await page.getByRole('button',{name:'Recentralizar câmera',exact:true}).click()
+  await page.waitForTimeout(600)
+  const metrics=await page.getByTestId('world-renderer').evaluate(el=>({...el.dataset}))
+  assert.ok(Number(metrics.drawCalls)<=180);assert.ok(Number(metrics.triangles)<=100000);assert.ok(Number(metrics.dpr)<=1.5)
+  const before=Number(metrics.frames);await page.waitForTimeout(350);const after=Number(await page.getByTestId('world-renderer').getAttribute('data-frames'));assert.ok(after-before<=2,`Idle rendering: ${after-before} frames`)
+  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);if(width>768){await page.getByLabel('Qualidade gráfica',{exact:true}).selectOption('high');await page.waitForTimeout(250)}await page.screenshot({path:`output/world/world-${width}.png`,fullPage:true})
+  await page.getByRole('button',{name:'Próximas estações',exact:true}).click();await page.getByRole('button',{name:/Ver estação de Ana QA 13/}).waitFor()
+  await page.getByRole('button',{name:'Próximas salas',exact:true}).click();await page.getByRole('button',{name:/Ver sala de Operações QA 7/}).waitFor()
+  await page.locator('canvas').evaluate(el=>el.dispatchEvent(new Event('webglcontextlost',{cancelable:true})));await page.getByText('A cena 3D ficou indisponível.',{exact:false}).waitFor();assert.equal(await page.locator('canvas').count(),0);await page.getByRole('button',{name:'Sala 3D',exact:true}).click();await page.locator('canvas').waitFor();await page.getByRole('button',{name:'Trocar escopo QA',exact:true}).click();await page.getByText('Outro workspace QA',{exact:false}).waitFor();assert.equal(await page.locator('.world-details h2').filter({hasText:'Bruno QA'}).count(),0)
+  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false)
+  assert.deepEqual(errors,[]);results.push({width,environment:'synthetic team fixture / software WebGL',monitorRaycast:true,keyboardSelection:true,touchSelection:width<=768,failedMutationPreserved:true,pagination:true,scopeIsolation:true,contextLossRecovery:true,metrics,idleExtraFrames:after-before,pageErrors:errors});await page.close()
+ }
+ const fallback=await browser.newPage({viewport:{width:390,height:900}})
+ await fallback.addInitScript(()=>{const original=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(type,...args){if(type==='webgl2')return null;return original.call(this,type,...args)}})
+ await fallback.goto(origin+'/output/world/team.html');await fallback.getByText('Este dispositivo não disponibilizou WebGL2.',{exact:false}).waitFor();await fallback.getByRole('button',{name:'Ver estação de Ana QA 1',exact:true}).click();await fallback.locator('.world-details h2').filter({hasText:'Ana QA 1'}).waitFor();await fallback.screenshot({path:'output/world/fallback-390.png',fullPage:true});await fallback.close()
+ results.push({webglUnavailableFallback:true,directoryActionsWithoutGPU:true})
+ const motion=await browser.newPage({viewport:{width:1440,height:1000},reducedMotion:'no-preference'})
+ await motion.goto(origin+'/output/world/team.html');await motion.getByRole('button',{name:'Ver estação de Bruno QA 2',exact:true}).click();await motion.waitForTimeout(1800)
+ const motionRenderer=motion.getByTestId('world-renderer'),motionFrame=Number(await motionRenderer.getAttribute('data-frames'));await motion.waitForTimeout(350);const restingFrame=Number(await motionRenderer.getAttribute('data-frames'));assert.ok(restingFrame-motionFrame<=2,'Smooth camera did not settle')
+ await motion.evaluate(()=>{Object.defineProperty(document,'hidden',{value:true,configurable:true});document.dispatchEvent(new Event('visibilitychange'))});await motion.waitForTimeout(100);const hiddenFrame=Number(await motionRenderer.getAttribute('data-frames'));await motion.waitForTimeout(350);assert.equal(Number(await motionRenderer.getAttribute('data-frames')),hiddenFrame)
+ await motion.close();results.push({smoothCameraSettles:true,backgroundRenderingSuspended:true})
+ writeFileSync('output/world/world-results.json',JSON.stringify({environment:'Local persistence and isolated synthetic UI fixtures, software WebGL; hosted synchronization NOT_VERIFIED',results},null,2));console.log(JSON.stringify(results,null,2))
+}catch(e){console.log(logs.slice(-1200));for(const context of browser?.contexts()??[])for(const page of context.pages()){await page.screenshot({path:'output/world/failure.png',fullPage:true}).catch(()=>{});console.log((await page.locator('body').innerText()).slice(-3000))}throw e}finally{await browser?.close();server.kill()}
+

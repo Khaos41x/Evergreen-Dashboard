@@ -9,10 +9,10 @@ import type { CloudFocus } from './models'
 import { productivityRepository as repo } from './repository'
 import { failure } from '../../collaboration/client'
 export function focusSession(f:CloudFocus):FocusSession{return {mode:f.mode,status:f.status,startedAt:Date.parse(f.started_at),pausedAt:f.paused_at?Date.parse(f.paused_at):null,accumulatedPausedMs:f.paused_ms,durationMs:f.duration_ms,title:f.title,description:f.description,taskId:f.task_id??undefined,objectiveId:f.objective_id??undefined}}
-export function FocusHome({workspaceId,userId,name,members,records,domain,online,onTasks,onObjective,onInvite,refresh,focusRequest=0,initialTaskId}:{workspaceId:string;userId:string;name:string;members:Member[];records:RecordItem[];domain:ReturnType<typeof useProductivity>;online:Record<string,'online'|'away'>;onTasks:()=>void;onObjective:()=>void;onInvite:()=>void;refresh:()=>Promise<void>;focusRequest?:number;initialTaskId?:string}){
+export function FocusHome({workspaceId,userId,name,members,records,domain,online,onTasks,onObjective,onInvite,refresh,focusRequest=0,initialTaskId,onConsumeFocusRequest}:{workspaceId:string;userId:string;name:string;members:Member[];records:RecordItem[];domain:ReturnType<typeof useProductivity>;online:Record<string,'online'|'away'>;onTasks:()=>void;onObjective:()=>void;onInvite:()=>void;refresh:()=>Promise<void>;focusRequest?:number;initialTaskId?:string;onConsumeFocusRequest?:()=>void}){
  const [starting,setStarting]=useState(false),[ending,setEnding]=useState(false),[error,setError]=useState(''),[pending,setPending]=useState(false)
  const active=domain.focus.find(f=>f.user_id===userId&&f.status!=='completed')
- useEffect(()=>{if(focusRequest)setStarting(true)},[focusRequest])
+ useEffect(()=>{if(focusRequest){setStarting(true);onConsumeFocusRequest?.()}},[focusRequest])
  const [autoComplete,setAutoComplete]=useState(false)
  const complete=useCallback(()=>setAutoComplete(true),[])
  const session=useMemo<FocusSession>(()=>active?focusSession(active):{mode:'timer',status:'idle',startedAt:null,pausedAt:null,accumulatedPausedMs:0,durationMs:null,title:'',description:''},[active])

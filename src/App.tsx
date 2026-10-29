@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useState } from 'react'
 import { AppShell } from './components/AppShell'
 import { CommandPalette } from './components/CommandPalette'
 import { EntityDialog } from './components/EntityDialog'
@@ -11,7 +11,13 @@ import { getFocusElapsedMs, useFocusSession } from './state/useFocusSession'
 import { useWorkspaceStore } from './state/useWorkspaceStore'
 import type { FocusSessionDraft, WorkspaceActivity } from './types'
 
+import { localWorldData } from './features/world/adapters'
+const WorldPane=lazy(()=>import('./features/world/WorldPane'))
+
 export function App() {
+  const [world,setWorld]=useState(false)
+  const [worldTask,setWorldTask]=useState<string|undefined>()
+  const [worldProject,setWorldProject]=useState<string|undefined>()
   const [page, setPage] = useState<'home' | 'tasks'>('home')
   const [palette, setPalette] = useState(false)
   const [createSignal, setCreateSignal] = useState(0)
@@ -25,9 +31,9 @@ export function App() {
   const focus = useFocusSession()
 
   const requestFocus = useCallback((taskId?: string) => {
-    setPage('home'); setPalette(false); setFocusTaskId(taskId); setFocusDialog(true)
+    setWorld(false); setPage('home'); setPalette(false); setFocusTaskId(taskId); setFocusDialog(true)
   }, [])
-  const createTask = useCallback(() => { setPage('tasks'); setPalette(false); setCreateSignal(value => value + 1) }, [])
+  const createTask = useCallback(() => { setWorld(false); setPage('tasks'); setPalette(false); setCreateSignal(value => value + 1) }, [])
   const searchTasks = useCallback(() => {
     setPage('tasks'); setPalette(false)
     window.setTimeout(() => document.querySelector<HTMLInputElement>('#task-search')?.focus(), 0)
@@ -46,7 +52,7 @@ export function App() {
     return () => window.removeEventListener('keydown', handler)
   }, [page, focus.session.status, requestFocus, createTask])
 
-  const openInbox = () => { setPage('tasks'); setPalette(false); setInboxSignal(value => value + 1) }
+  const openInbox = () => { setWorld(false); setPage('tasks'); setPalette(false); setInboxSignal(value => value + 1) }
   const startFocus = (draft: FocusSessionDraft) => { focus.start(draft); setFocusDialog(false); setPage('home') }
   const activityForFocus = (durationMs: number, note?: string, depth?: 'distracted' | 'normal' | 'deep'): WorkspaceActivity => ({ id: `activity-${crypto.randomUUID()}`, title: 'You finished a focus session', description: [focus.session.title, `${Math.max(1, Math.round(durationMs / 60000))}m focused`, depth, note].filter(Boolean).join(' · '), createdAt: Date.now(), tone: 'green', durationMs, taskId: focus.session.taskId, objectiveId: focus.session.objectiveId, focusDepth: depth })
   const confirmEnd = () => {
@@ -61,10 +67,10 @@ export function App() {
     focus.reset()
   }
 
-  return <AppShell page={page} setPage={setPage} onOpenPalette={() => setPalette(true)} projects={workspace.projects} currentUser={currentUser} onNewProject={() => setProjectDialog(true)} onOpenFocus={() => requestFocus()}>
+  return <AppShell world={world} onWorldChange={setWorld} page={page} setPage={next=>{setWorld(false);setPage(next)}} onOpenPalette={() => setPalette(true)} projects={workspace.projects} currentUser={currentUser} onNewProject={() => setProjectDialog(true)} onOpenFocus={() => requestFocus()}>
     {workspace.storageError && <p role="alert" className="collab-error">{workspace.storageError}</p>}
     {focus.storageError && <p role="alert" className="collab-error">{focus.storageError}</p>}
-    {page === 'tasks' ? <TasksPage requestCreate={createSignal} consumeCreate={() => setCreateSignal(0)} openInboxSignal={inboxSignal} tasks={workspace.tasks} inbox={workspace.inbox} setInbox={workspace.setInbox} people={initialPeople} projects={workspace.projects} objectives={workspace.objectives} currentUser={currentUser} onCreateTask={workspace.createTask} onUpdateTask={workspace.updateTask} onDeleteTask={workspace.deleteTask} onCompleteTask={workspace.completeTask} onCreateProject={() => setProjectDialog(true)} onCreateObjective={() => setObjectiveDialog(true)} onStartFocus={requestFocus} /> : <HomePage tasks={workspace.tasks} objectives={workspace.objectives} activities={workspace.activities} teamMembers={initialTeamMembers} currentUser={currentUser} focusSession={focus.session} openTasks={() => setPage('tasks')} addTask={createTask} createObjective={() => setObjectiveDialog(true)} openFocus={() => requestFocus()} pauseFocus={focus.pause} resumeFocus={focus.resume} requestEndFocus={() => setEndDialog(true)} completeFocus={focus.complete} />}
+    {world ? <Suspense fallback={<div className="world-loading" role="status">Abrindo Evergreen World…</div>}><WorldPane data={localWorldData({tasks:workspace.tasks,projects:workspace.projects,activities:workspace.activities,focus:focus.session,userId:currentUser.id})} actions={{onOpenTask:id=>{setWorldTask(id);setWorld(false);setPage('tasks')},onOpenProject:id=>{setWorldProject(id);setWorldTask(undefined);setWorld(false);setPage('tasks')},onCompleteTask:async id=>{workspace.completeTask(id,true)},onFocusTask:requestFocus,onCreateTask:createTask}}/></Suspense> : page === 'tasks' ? <TasksPage openTaskId={worldTask} initialProjectId={worldProject} requestCreate={createSignal} consumeCreate={() => setCreateSignal(0)} openInboxSignal={inboxSignal} tasks={workspace.tasks} inbox={workspace.inbox} setInbox={workspace.setInbox} people={initialPeople} projects={workspace.projects} objectives={workspace.objectives} currentUser={currentUser} onCreateTask={workspace.createTask} onUpdateTask={workspace.updateTask} onDeleteTask={workspace.deleteTask} onCompleteTask={workspace.completeTask} onCreateProject={() => setProjectDialog(true)} onCreateObjective={() => setObjectiveDialog(true)} onStartFocus={requestFocus} /> : <HomePage tasks={workspace.tasks} objectives={workspace.objectives} activities={workspace.activities} teamMembers={initialTeamMembers} currentUser={currentUser} focusSession={focus.session} openTasks={() => setPage('tasks')} addTask={createTask} createObjective={() => setObjectiveDialog(true)} openFocus={() => requestFocus()} pauseFocus={focus.pause} resumeFocus={focus.resume} requestEndFocus={() => setEndDialog(true)} completeFocus={focus.complete} />}
     <CommandPalette open={palette} onClose={() => setPalette(false)} onCreate={createTask} onSearchTasks={searchTasks} onInbox={openInbox} onStartFocus={() => requestFocus()} onCreateObjective={() => { setPalette(false); setObjectiveDialog(true) }} />
     <EntityDialog open={projectDialog} title="New project" placeholder="Project name" actionLabel="Create project" onClose={() => setProjectDialog(false)} onCreate={workspace.createProject} />
     <EntityDialog open={objectiveDialog} title="Create objective" placeholder="Objective title" actionLabel="Create objective" onClose={() => setObjectiveDialog(false)} onCreate={workspace.createObjective} />

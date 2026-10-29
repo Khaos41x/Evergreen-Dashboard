@@ -2,6 +2,8 @@ import { useState, type ReactNode } from 'react'
 import { Activity, Bell, CirclePlay, House, Menu, Orbit, Plus, Search, SquareCheckBig, TriangleAlert, UsersRound, X } from 'lucide-react'
 import { AssigneeAvatar } from './ui'
 import type { Person, Project } from '../types'
+import { WorldModeSwitch } from '../features/world/WorldModeSwitch'
+import '../features/world/world.css'
 
 type Page = 'home' | 'tasks'
 
@@ -52,13 +54,14 @@ function Sidebar({ page, setPage, mobileOpen, close, projects, currentUser, onNe
   )
 }
 
-function TopBar({ openPalette, openMenu, currentUser }: { openPalette: () => void; openMenu: () => void; currentUser: Person }) {
+function TopBar({ openPalette, openMenu, currentUser, world, onWorldChange }: { openPalette: () => void; openMenu: () => void; currentUser: Person; world:boolean;onWorldChange:(world:boolean)=>void }) {
   return (
     <header className="topbar">
       <button className="menu-trigger" onClick={openMenu} aria-label="Open navigation"><Menu /></button>
       <label className="global-search">
         <Search /><input aria-label="Search anything" placeholder="Search anything..." onFocus={openPalette} readOnly /><kbd>Ctrl</kbd><kbd>K</kbd>
       </label>
+      <WorldModeSwitch world={world} onChange={onWorldChange}/>
       <div className="top-actions">
         <span className="top-action-icon" aria-label="Team"><UsersRound /></span><span className="top-action-icon" aria-label="Activity"><Activity /></span>
         <span className="top-action-icon notification" aria-label="Notifications"><Bell /><i /></span>
@@ -68,13 +71,13 @@ function TopBar({ openPalette, openMenu, currentUser }: { openPalette: () => voi
   )
 }
 
-export function AppShell({ page, setPage, children, onOpenPalette, projects, currentUser, onNewProject, onOpenFocus }: { page: Page; setPage: (page: Page) => void; children: ReactNode; onOpenPalette: () => void; projects: Project[]; currentUser: Person; onNewProject: () => void; onOpenFocus: () => void }) {
+export function AppShell({ page, setPage, children, onOpenPalette, projects, currentUser, onNewProject, onOpenFocus,world,onWorldChange }: { page: Page; setPage: (page: Page) => void; children: ReactNode; onOpenPalette: () => void; projects: Project[]; currentUser: Person; onNewProject: () => void; onOpenFocus: () => void;world:boolean;onWorldChange:(world:boolean)=>void }) {
   const [mobileOpen, setMobileOpen] = useState(false)
   return (
     <div className="app-shell">
       <Sidebar page={page} setPage={setPage} mobileOpen={mobileOpen} close={() => setMobileOpen(false)} projects={projects} currentUser={currentUser} onNewProject={onNewProject} onOpenFocus={onOpenFocus} />
       {mobileOpen && <button className="sidebar-backdrop" aria-label="Close navigation" onClick={() => setMobileOpen(false)} />}
-      <div className="workspace"><TopBar openPalette={onOpenPalette} openMenu={() => setMobileOpen(true)} currentUser={currentUser} />{children}</div>
+      <div className="workspace"><TopBar openPalette={onOpenPalette} openMenu={() => setMobileOpen(true)} currentUser={currentUser} world={world} onWorldChange={onWorldChange}/>{children}</div>
     </div>
   )
 }
