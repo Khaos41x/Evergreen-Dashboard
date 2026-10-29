@@ -7,3 +7,12 @@ vite.config.d.ts
 evergreen-tasks.png
 evergreen-home.png
 *.log
+.env
+.env.*
+!.env.example
+output/
+.impeccable/review/
+.vercel/
+.vercel
+.env*
+!/.env.example

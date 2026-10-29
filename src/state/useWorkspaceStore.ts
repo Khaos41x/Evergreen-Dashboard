@@ -12,22 +12,28 @@ interface PersistedWorkspace {
 
 const storageKey = 'evergreen.workspace.v1'
 
-function loadWorkspace(): PersistedWorkspace {
+function loadWorkspace(): { data: PersistedWorkspace; error: string } {
   const fallback = { tasks: initialTasks, inbox: initialInbox, projects: initialProjects, objectives: initialObjectives, activities: initialActivities }
   try {
     const raw = localStorage.getItem(storageKey)
-    return raw ? { ...fallback, ...JSON.parse(raw) as PersistedWorkspace } : fallback
+    const data = raw ? { ...fallback, ...JSON.parse(raw) as PersistedWorkspace } : fallback
+    if (!['tasks', 'inbox', 'projects', 'objectives', 'activities'].every(key => Array.isArray(data[key as keyof PersistedWorkspace])) || data.tasks.some(task => !task || typeof task.id !== 'string' || typeof task.title !== 'string' || !Array.isArray(task.checklist))) throw new Error('Invalid local data')
+    return { data, error: '' }
   } catch {
-    return fallback
+    return { data: fallback, error: 'Não foi possível ler os dados locais. O original foi preservado e a gravação foi suspensa. Exporte o backup antes de recuperar os dados.' }
   }
 }
 
 export function useWorkspaceStore() {
-  const [workspace, setWorkspace] = useState<PersistedWorkspace>(loadWorkspace)
+  const [initial] = useState(loadWorkspace)
+  const [workspace, setWorkspace] = useState<PersistedWorkspace>(initial.data)
+  const [storageError, setStorageError] = useState(initial.error)
 
   useEffect(() => {
-    localStorage.setItem(storageKey, JSON.stringify(workspace))
-  }, [workspace])
+    if (initial.error) return
+    try { localStorage.setItem(storageKey, JSON.stringify(workspace)); setStorageError('') }
+    catch { setStorageError('O navegador não permitiu salvar os dados locais. Exporte um backup antes de fechar esta página.') }
+  }, [workspace, initial.error])
 
   const createTask = useCallback((task: Task) => setWorkspace(state => ({ ...state, tasks: [task, ...state.tasks] })), [])
   const updateTask = useCallback((task: Task) => setWorkspace(state => ({ ...state, tasks: state.tasks.map(item => item.id === task.id ? task : item) })), [])
@@ -40,5 +46,5 @@ export function useWorkspaceStore() {
   const createObjective = useCallback((title: string) => setWorkspace(state => ({ ...state, objectives: [...state.objectives, { id: `objective-${crypto.randomUUID()}`, title, progress: 0 }] })), [])
   const addActivity = useCallback((activity: WorkspaceActivity) => setWorkspace(state => ({ ...state, activities: [activity, ...state.activities] })), [])
 
-  return { ...workspace, createTask, updateTask, deleteTask, completeTask, addChecklistItem, toggleChecklistItem, setInbox, createProject, createObjective, addActivity }
+  return { ...workspace, storageError, createTask, updateTask, deleteTask, completeTask, addChecklistItem, toggleChecklistItem, setInbox, createProject, createObjective, addActivity }
 }

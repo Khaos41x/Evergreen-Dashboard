@@ -21,7 +21,12 @@ function relativeTime(timestamp: number) {
   return `${Math.floor(hours / 24)}d ago`
 }
 
-export function HomePage({ tasks, objectives, activities, teamMembers, currentUser, focusSession, openTasks, addTask, createObjective, openFocus, pauseFocus, resumeFocus, requestEndFocus, completeFocus }: {
+export function HomePage({ tasks, objectives, activities, teamMembers, currentUser, focusSession, openTasks, addTask, createObjective, openFocus, pauseFocus, resumeFocus, requestEndFocus, completeFocus, timezone, connected, focusedTodayMs, dailyGoalMinutes, onInvite }: {
+  onInvite?:()=>void
+  focusedTodayMs?: number
+  dailyGoalMinutes?: number
+  timezone?: string
+  connected?: boolean
   tasks: Task[]
   objectives: Objective[]
   activities: WorkspaceActivity[]
@@ -38,7 +43,7 @@ export function HomePage({ tasks, objectives, activities, teamMembers, currentUs
   completeFocus: () => void
 }) {
   const [now, setNow] = useState(Date.now())
-  const [inviteCopied, setInviteCopied] = useState(false)
+
 
   useEffect(() => {
     if (focusSession.status !== 'running') return
@@ -50,18 +55,16 @@ export function HomePage({ tasks, objectives, activities, teamMembers, currentUs
   const elapsedMinutes = Math.floor(elapsedMs / 60000)
   const dayStart = new Date(); dayStart.setHours(0, 0, 0, 0)
   const completedFocusMs = activities.reduce((total, activity) => activity.createdAt >= dayStart.getTime() ? total + (activity.durationMs ?? 0) : total, 0)
-  const focusedTodayMinutes = Math.floor((completedFocusMs + elapsedMs) / 60000)
-  const progress = focusSession.mode === 'timer' && focusSession.durationMs ? Math.min(100, (elapsedMs / focusSession.durationMs) * 100) : 0
+  const focusedTodayMinutes = Math.floor((focusedTodayMs ?? (completedFocusMs + elapsedMs)) / 60000)
+  const progress = dailyGoalMinutes ? Math.min(100,100*focusedTodayMinutes/dailyGoalMinutes) : focusSession.mode === 'timer' && focusSession.durationMs ? Math.min(100, (elapsedMs / focusSession.durationMs) * 100) : 0
   const activeTasks = tasks.filter(task => task.status !== 'done')
   const currentPriority = activeTasks.find(task => task.priority === 'urgent' || task.priority === 'high') ?? activeTasks[0]
   const nextAction = activeTasks.find(task => task.status === 'in-progress') ?? activeTasks.find(task => task.status === 'todo')
   const firstName = currentUser.name.trim().split(/\s+/)[0] || 'João'
-  const greeting = getGreeting(new Date().getHours())
-  const todayLabel = new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'short', day: 'numeric' }).format(new Date())
+  const greeting = getGreeting(timezone?Number(new Intl.DateTimeFormat('en-US',{timeZone:timezone,hour:'numeric',hourCycle:'h23'}).format(new Date())):new Date().getHours())
+  const todayLabel = new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'short', day: 'numeric',timeZone:timezone }).format(new Date())
 
-  const copyInvite = async () => {
-    try { await navigator.clipboard.writeText(window.location.href); setInviteCopied(true) } catch { setInviteCopied(false) }
-  }
+
 
   return <main className="reference-home">
     <div className="home-top-grid">
@@ -89,7 +92,7 @@ export function HomePage({ tasks, objectives, activities, teamMembers, currentUs
           <div className="today-progress"><CircleGauge className="progress-ring-small" /><div><small>Focus progress <b>{Math.round(progress)}%</b></small><i><em style={{ width: `${progress}%` }} /></i><p>{focusedTodayMinutes}m focused</p></div></div>
           <button onClick={openTasks}><SquareCheckBig /><span><strong>Tasks remaining</strong></span><b>{activeTasks.length}</b><ChevronRight /></button>
           <button onClick={openTasks}><CirclePlay /><span><small>Next action</small><strong>{nextAction?.title ?? 'No next action'}</strong></span><ChevronRight /></button>
-          <div className="today-static-row"><CircleCheck className="check-accent" /><span><small>Blockers</small><strong>No blockers</strong></span></div>
+          <div className="today-static-row"><CircleCheck className="check-accent" /><span><small>Blockers</small><strong>Not assessed</strong></span></div>
         </div>
       </section>
     </div>
@@ -114,10 +117,10 @@ export function HomePage({ tasks, objectives, activities, teamMembers, currentUs
 
       <section className="team-panel">
         <header><UsersRound /><strong>Team in Focus</strong></header>
-        <div className="team-row"><AssigneeAvatar person={currentUser} size="lg" /><div><p>You ({firstName}) <b>● {focusSession.status === 'running' ? 'Focusing' : focusSession.status === 'paused' ? 'Paused' : 'Online'}</b></p><span>{focusSession.status === 'idle' ? 'Available' : `${elapsedMinutes}m in this session`}</span></div>{focusSession.status !== 'idle' && <time>{elapsedMinutes}m</time>}</div>
+        <div className="team-row"><AssigneeAvatar person={currentUser} size="lg" /><div><p>You ({firstName}) <b>● {connected===undefined?'Local':!connected ? 'Offline' : focusSession.status === 'running' ? 'Focusing' : focusSession.status === 'paused' ? 'Paused' : 'Online'}</b></p><span>{focusSession.status === 'idle' ? 'Available' : `${elapsedMinutes}m in this session`}</span></div>{focusSession.status !== 'idle' && <time>{elapsedMinutes}m</time>}</div>
         {teamMembers.filter(member => member.id !== currentUser.id).map(member => <div className="team-row" key={member.id}><AssigneeAvatar person={member} size="lg" /><div><p>{member.name} <b>● {member.presence === 'focusing' ? 'Focusing' : member.presence === 'online' ? 'Online' : 'Offline'}</b></p><span>{member.focusLabel ?? 'Available'}</span></div>{member.focusStartedAt && <time>{Math.floor((Date.now() - member.focusStartedAt) / 60000)}m</time>}</div>)}
         {teamMembers.filter(member => member.id !== currentUser.id).length === 0 && <div className="team-empty">No one else is here yet.</div>}
-        <button className="join-room" onClick={copyInvite}><UserRoundPlus /> {inviteCopied ? 'Invite link copied' : 'Invite member'}</button>
+        <button className="join-room" disabled={!onInvite} onClick={onInvite} title={onInvite?'Invite a teammate':'Abra colaboração para criar convites reais'}><UserRoundPlus /> {onInvite?'Invite member':'Invites require collaboration'}</button>
       </section>
     </div>
   </main>

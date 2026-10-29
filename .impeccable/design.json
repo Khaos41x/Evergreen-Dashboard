@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-26T17:35:11.6510509Z",
+  "title": "Design System: Evergreen",
+  "extensions": {
+    "typographyMeta": {
+      "body": {
+        "purpose": "Collaboration copy and controls; inputs use 16px.",
+        "displayName": "Interface"
+      },
+      "brand": {
+        "purpose": "Existing collaboration sidebar wordmark; authentication uses 48px Georgia.",
+        "displayName": "Evergreen"
+      }
+    },
+    "breakpoints": [
+      {
+        "name": "collaboration-top-wrap",
+        "value": "1100px"
+      },
+      {
+        "name": "collaboration-mobile",
+        "value": "768px"
+      }
+    ],
+    "motion": [
+      {
+        "name": "reduced-motion-scroll",
+        "value": "auto",
+        "purpose": "Collaboration descendants disable smooth scrolling under prefers-reduced-motion: reduce."
+      }
+    ]
+  },
+  "components": [
+    {
+      "description": "Primary form action with explicit disabled state.",
+      "name": "Collaboration primary button",
+      "css": ".evergreen-primary { display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:44px; padding:9px 14px; border:1px solid var(--emerald); border-radius:8px; background:var(--emerald); color:#04150f; font:650 14px/1.5 Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif; cursor:pointer; } .evergreen-primary:hover:not(:disabled) { background:#36e7ac; color:#04150f; } .evergreen-primary:focus-visible { outline:1px solid rgba(8,229,154,.75); outline-offset:1px; } .evergreen-primary:disabled { background:#1b3026; border-color:#354d40; color:#b4c4bb; cursor:not-allowed; }",
+      "refersTo": "primary-button",
+      "kind": "button",
+      "html": "<button class=\"evergreen-primary\">Save changes</button>"
+    },
+    {
+      "name": "Collaboration field",
+      "html": "<label class=\"evergreen-label\">Channel name<input class=\"evergreen-field\" placeholder=\"Channel name\"></label>",
+      "kind": "input",
+      "description": "Visible field label, dark background and inherited global keyboard focus.",
+      "css": ".evergreen-label { display:grid; gap:7px; margin:12px 0; color:var(--soft); font:14px/1.5 Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif; } .evergreen-field { width:100%; min-height:44px; padding:10px 12px; border:1px solid #35423d; border-radius:8px; background:var(--bg); color:var(--text); font:16px Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif; } .evergreen-field::placeholder { color:#9ba9a2; } .evergreen-field:focus-visible { outline:1px solid rgba(8,229,154,.75); outline-offset:1px; }"
+    }
+  ],
+  "narrative": {
+    "dos": [
+      "Preservar dados e contexto.",
+      "Sinalizar recurso não configurado ou indisponível."
+    ],
+    "overview": "Extensão da interface Evergreen existente: superfícies escuras, divisórias discretas, esmeralda nas ações e marca serifada. Colaboração usa listas planas, histórico e composer, com menu lateral e navegação inferior em telas pequenas.",
+    "keyCharacteristics": [
+      "Superfícies tonais escuras",
+      "Ações esmeralda",
+      "Marca serifada e interface sans",
+      "Estados explícitos de formulário"
+    ],
+    "donts": [
+      "Não usar toast fictício, presença inventada ou contador de notificações fictício.",
+      "Não usar identidade local para autorização remota."
+    ]
+  }
+}

@@ -23,6 +23,8 @@ export function FocusTimer({ session, onComplete }: { session: FocusSession; onC
   useEffect(() => {
     completedRef.current = session.status === 'completed'
     let frame = 0
+    let interval:ReturnType<typeof setInterval>|undefined
+    const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches
     const render = () => {
       const elapsedMs = getFocusElapsedMs(session)
       const nextSeconds = getDisplaySeconds(session, elapsedMs)
@@ -30,7 +32,7 @@ export function FocusTimer({ session, onComplete }: { session: FocusSession; onC
 
       const progress = session.mode === 'timer' && session.durationMs
         ? Math.min(1, elapsedMs / session.durationMs)
-        : session.status === 'idle' ? 0 : (elapsedMs % 60000) / 60000
+        : 0
       ringRef.current?.style.setProperty('--timer-progress', `${progress * 100}%`)
 
       if (session.mode === 'timer' && session.durationMs !== null && elapsedMs >= session.durationMs && session.status === 'running' && !completedRef.current) {
@@ -38,16 +40,17 @@ export function FocusTimer({ session, onComplete }: { session: FocusSession; onC
         onComplete()
         return
       }
-      if (session.status === 'running') frame = requestAnimationFrame(render)
+      if (session.status === 'running'&&!reduced) frame = requestAnimationFrame(render)
     }
     render()
-    return () => cancelAnimationFrame(frame)
+    if(reduced&&session.status==='running')interval=setInterval(render,1000)
+    return () => {cancelAnimationFrame(frame);if(interval)clearInterval(interval)}
   }, [session, onComplete])
 
   const statusLabel = session.status === 'idle' ? 'READY' : session.status === 'paused' ? 'PAUSED' : session.status === 'completed' ? 'COMPLETE' : session.mode === 'timer' ? 'TIMER' : 'STOPWATCH'
   const footer = session.status === 'idle' ? 'Start when ready' : session.mode === 'timer' && session.durationMs !== null ? `of ${Math.round(session.durationMs / 60000)} min` : 'Elapsed time'
 
-  return <div ref={ringRef} className={`hero-timer ${session.status === 'paused' ? 'paused' : ''} ${session.status === 'idle' ? 'idle' : ''}`}>
+  return <div ref={ringRef} className={`hero-timer ${session.mode==='stopwatch'?'stopwatch':''} ${session.status === 'paused' ? 'paused' : ''} ${session.status === 'idle' ? 'idle' : ''}`}>
     <div><small>{statusLabel}</small><strong>{formatSeconds(displaySeconds)}</strong><span>{footer}</span></div>
   </div>
 }

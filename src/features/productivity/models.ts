@@ -1,0 +1,8 @@
+export interface ChecklistEntry { id: string; record_id: string; text: string; completed: boolean; position: number }
+export interface RecordComment { id: string; record_id: string; author_id: string; body: string; created_at: string; edited_at: string | null; deleted: boolean }
+export interface PrivateInbox { id: string; workspace_id: string; user_id: string; title: string; created_at: string }
+export interface Suggestion { id: string; workspace_id: string; sender_id: string; recipient_id: string; title: string; context: string; status: 'pending' | 'accepted' | 'rejected'; task_id: string | null; created_at: string }
+export interface Handoff { id: string; workspace_id: string; task_id: string; sender_id: string; recipient_id: string; completed: string; current_state: string; next_steps: string; created_at: string }
+export interface Notification { id: string; workspace_id: string; recipient_id: string; type: string; title: string; resource_id: string | null; read_at: string | null; created_at: string }
+export interface Activity { id: string; workspace_id: string; actor_id: string; type: string; title: string; resource_id: string | null; created_at: string }
+export interface CloudFocus { id: string; workspace_id: string; user_id: string; title: string; description: string; task_id: string | null; objective_id: string | null; mode: 'timer' | 'stopwatch'; status: 'running' | 'paused' | 'completed'; started_at: string; paused_at: string | null; paused_ms: number; duration_ms: number | null; ended_at: string | null; elapsed_ms: number; depth: 'distracted' | 'normal' | 'deep' | null; note: string }

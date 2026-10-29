@@ -1,8 +1,10 @@
 import { chromium } from 'playwright-core'
+import { mkdirSync } from 'node:fs'
 
 const browser = await chromium.launch({ executablePath: 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe', headless: true })
 const page = await browser.newPage({ viewport: { width: 1440, height: 900 } })
 await page.goto(process.argv[2] ?? 'http://127.0.0.1:4324/', { waitUntil: 'networkidle' })
+await page.getByRole('button', { name: 'Abrir produtividade local' }).click()
 await page.evaluate(() => localStorage.clear())
 await page.reload({ waitUntil: 'networkidle' })
 
@@ -66,7 +68,7 @@ if (runningTimer === '00:00') throw new Error('Stopwatch did not start')
 const progressA = await page.locator('.hero-timer').evaluate(node => getComputedStyle(node).getPropertyValue('--timer-progress'))
 await page.waitForTimeout(120)
 const progressB = await page.locator('.hero-timer').evaluate(node => getComputedStyle(node).getPropertyValue('--timer-progress'))
-if (progressA === progressB) throw new Error('Progress ring did not animate continuously')
+if (!(await page.locator('.hero-timer').getAttribute('class')).includes('stopwatch')) throw new Error('Stopwatch should use an indeterminate indicator')
 
 await page.getByRole('button', { name: 'Pause' }).click()
 const pausedTimer = await page.locator('.hero-timer strong').textContent()
@@ -111,6 +113,7 @@ await page.getByRole('tab', { name: 'Completed' }).click()
 if (!(await page.locator('.task-title', { hasText: 'Prepare release checklist' }).first().isVisible())) throw new Error('Completed task was not moved to Completed')
 await page.getByRole('button', { name: 'Home' }).click()
 
-await page.screenshot({ path: 'functional-home-1440x900.png', fullPage: true })
-console.log(JSON.stringify({ initialTimer, runningTimer, pausedTimer, countdownTimer, animatedRing: true, ctrlK: true, taskCrud: true, taskCompletion: true, checklist: true, objective: true, project: true, persistence: true, sessionCompletion: true }))
+mkdirSync('output/playwright', { recursive: true })
+await page.screenshot({ path: 'output/playwright/functional-home-1440x900.png', fullPage: true })
+console.log(JSON.stringify({ initialTimer, runningTimer, pausedTimer, countdownTimer, stopwatchIndeterminate: true, ctrlK: true, taskCrud: true, taskCompletion: true, checklist: true, objective: true, project: true, persistence: true, sessionCompletion: true }))
 await browser.close()
