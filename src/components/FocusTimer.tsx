@@ -47,8 +47,8 @@ export function FocusTimer({ session, onComplete }: { session: FocusSession; onC
     return () => {cancelAnimationFrame(frame);if(interval)clearInterval(interval)}
   }, [session, onComplete])
 
-  const statusLabel = session.status === 'idle' ? 'READY' : session.status === 'paused' ? 'PAUSED' : session.status === 'completed' ? 'COMPLETE' : session.mode === 'timer' ? 'TIMER' : 'STOPWATCH'
-  const footer = session.status === 'idle' ? 'Start when ready' : session.mode === 'timer' && session.durationMs !== null ? `of ${Math.round(session.durationMs / 60000)} min` : 'Elapsed time'
+  const statusLabel = session.status === 'idle' ? "PRONTO" : session.status === 'paused' ? "PAUSADO" : session.status === 'completed' ? "CONCLUÍDO" : session.mode === 'timer' ? "TEMPORIZADOR" : "CRONÔMETRO"
+  const footer = session.status === 'idle' ? "Comece quando quiser" : session.mode === 'timer' && session.durationMs !== null ? `de ${Math.round(session.durationMs / 60000)} min` : "Tempo decorrido"
 
   return <div ref={ringRef} className={`hero-timer ${session.mode==='stopwatch'?'stopwatch':''} ${session.status === 'paused' ? 'paused' : ''} ${session.status === 'idle' ? 'idle' : ''}`}>
     <div><small>{statusLabel}</small><strong>{formatSeconds(displaySeconds)}</strong><span>{footer}</span></div>

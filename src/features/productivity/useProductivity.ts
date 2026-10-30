@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { db, failure } from '../../collaboration/client'
+import { checked, db, failure } from '../../collaboration/client'
 import { domainTables, loadProductivity } from './repository'
 const empty = {checklist:[],comments:[],inbox:[],suggestions:[],handoffs:[],notifications:[],activity:[],focus:[],areas:[],goals:[],links:[],profile:null}
 export function useProductivity(workspaceId:string,recordIds:string[],enabled=true) {
@@ -12,7 +12,7 @@ export function useProductivity(workspaceId:string,recordIds:string[],enabled=tr
   const refresh=useCallback(async()=>{
     const attempt=++generation.current
     if(!enabled||!workspaceId || scope.current!==workspaceId)return
-    try {const next=await loadProductivity(workspaceId,ids?ids.split(','):[]);if(attempt===generation.current&&scope.current===workspaceId){setData(next);setLoaded(workspaceId);setError('')}}
+    try {await checked(db().rpc('eg_refresh_due_notifications',{p_workspace:workspaceId}));const next=await loadProductivity(workspaceId,ids?ids.split(','):[]);if(attempt===generation.current&&scope.current===workspaceId){setData(next);setLoaded(workspaceId);setError('')}}
     catch(e){if(attempt===generation.current&&scope.current===workspaceId)setError(failure(e))}
     finally{if(attempt===generation.current)setLoading(false)}
   },[workspaceId,ids,enabled])

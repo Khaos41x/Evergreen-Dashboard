@@ -6,12 +6,12 @@ export function HandoffDialog({ open, onClose, onConfirm, currentUser, recipient
   if (!open) return null
   return (
     <div className="overlay high" onMouseDown={onClose}><div className="mini-dialog" onMouseDown={e => e.stopPropagation()}>
-      <div className="mini-title"><h3>Hand off task</h3><button onClick={onClose}><X /></button></div>
-      <div className="handoff-people"><AssigneeAvatar person={currentUser} size="lg" /><span>{currentUser.name}</span><ArrowRight />{recipient ? <><AssigneeAvatar person={recipient} size="lg" /><span>{recipient.name}</span></> : <span>No teammate available</span>}</div>
-      <label>What I did<textarea placeholder="Summarize the work completed…" /></label>
-      <label>Current state<textarea placeholder="What should the next owner know?" /></label>
-      <label>What remains<textarea placeholder="List the next steps…" /></label>
-      <div className="mini-actions"><button onClick={onClose}>Cancel</button><button className="create-button" disabled={!recipient} onClick={onConfirm}>Hand off</button></div>
+      <div className="mini-title"><h3>Transferir tarefa</h3><button onClick={onClose}><X /></button></div>
+      <div className="handoff-people"><AssigneeAvatar person={currentUser} size="lg" /><span>{currentUser.name}</span><ArrowRight />{recipient ? <><AssigneeAvatar person={recipient} size="lg" /><span>{recipient.name}</span></> : <span>Nenhum colega disponível</span>}</div>
+      <label>O que fiz<textarea placeholder="Resuma o trabalho concluído…" /></label>
+      <label>Estado atual<textarea placeholder="O que o próximo responsável precisa saber?" /></label>
+      <label>O que falta<textarea placeholder="Liste os próximos passos…" /></label>
+      <div className="mini-actions"><button onClick={onClose}>Cancelar</button><button className="create-button" disabled={!recipient} onClick={onConfirm}>Transferir</button></div>
     </div></div>
   )
 }

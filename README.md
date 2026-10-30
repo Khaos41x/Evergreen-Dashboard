@@ -1,3 +1,5 @@
+> **Versão local 30/10 — português e cadastro comum:** nova logo, cadastro por e-mail/senha sem convite, primeiro espaço próprio, recuperação e isolamento preservado. Sala de foco e Como usar adicionados. Consulte [mudanças atuais](docs/PT-BR-REGISTRATION.md). Regras antigas de convite obrigatório abaixo são históricas. Nenhuma migração ou publicação desta versão foi executada remotamente.
+
 > **Atualização local 29/10:** World passa a Vision; cofre único → Economy2D; Founders com grants de empresa; Identity via BFF e cookies HttpOnly. Esta versão NÃO foi aplicada no Supabase hospedado nem publicada. Configuração, controles e limites em [SECURITY-CONTROLS](docs/SECURITY-CONTROLS.md); evidências e suites em [PLATFORM-VALIDATION](docs/PLATFORM-VALIDATION.md). As instruções/histórico abaixo antecedem essa arquitetura; para preparar um novo ambiente use o roteiro de segurança, sem reaplicar migrações já hospedadas.
 # Evergreen — uso interno da holding
 

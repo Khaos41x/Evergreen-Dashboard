@@ -14,20 +14,20 @@ for (const width of [320,375,390,430,768,1440]) {
   await page.screenshot({path:`output/playwright/auth-${width}.png`,fullPage:true,animations:'disabled'})
   // A fresh isolated browser context; never clear the user's local storage.
   await page.evaluate(()=>localStorage.setItem('evergreen.workspace.v1',JSON.stringify({tasks:[],projects:[{id:'keep',name:'Preserved project'}],objectives:[],inbox:[],activities:[]})))
-  await page.getByRole('button',{name:'Abrir produtividade pessoal',exact:true}).click()
+  await page.getByRole('button',{name:"Usar apenas neste navegador",exact:true}).click()
   await page.locator('.hero-timer').waitFor({state:'visible'})
   if(width<=768) {
-    const menu=page.getByRole('button',{name:'Open navigation',exact:true}); if(await menu.isVisible()) await menu.click()
+    const menu=page.getByRole('button',{name:"Abrir navegação",exact:true}); if(await menu.isVisible()) await menu.click()
   }
-  await page.getByRole('button',{name:'Tasks',exact:true}).click()
-  await page.getByRole('button',{name:'New task',exact:true}).click()
-  await page.getByPlaceholder('Task title',{exact:true}).fill(`Mobile task ${width}`)
-  await page.getByRole('button',{name:'Create task',exact:true}).click()
+  await page.getByRole('button',{name:"Tarefas",exact:true}).click()
+  await page.getByRole('button',{name:"Nova tarefa",exact:true}).click()
+  await page.getByPlaceholder("Título da tarefa",{exact:true}).fill(`Mobile task ${width}`)
+  await page.getByRole('button',{name:"Criar tarefa",exact:true}).click()
   assert.ok(await page.getByText(`Mobile task ${width}`,{exact:true}).first().isVisible())
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,`Local tasks overflow ${width}`)
   await page.reload({waitUntil:'networkidle'})
-  if(width<=768) {const menu=page.getByRole('button',{name:'Open navigation',exact:true}); if(await menu.isVisible()) await menu.click()}
-  await page.getByRole('button',{name:'Tasks',exact:true}).click()
+  if(width<=768) {const menu=page.getByRole('button',{name:"Abrir navegação",exact:true}); if(await menu.isVisible()) await menu.click()}
+  await page.getByRole('button',{name:"Tarefas",exact:true}).click()
   assert.ok(await page.getByText(`Mobile task ${width}`,{exact:true}).first().isVisible())
   assert.ok((await page.evaluate(()=>localStorage.getItem('evergreen.workspace.v1'))).includes('Preserved project'))
   await page.screenshot({path:`output/playwright/local-tasks-${width}.png`,fullPage:true,animations:'disabled'})

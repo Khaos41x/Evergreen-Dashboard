@@ -1,5 +1,5 @@
 # Evergreen Identity, Economy e Founders — controles e operação
-Data: 2026-10-29. Implementação local, sem aplicação no banco hospedado e sem novo deploy.
+Data: 2026-10-30. Implementação local, sem aplicação no banco hospedado e sem novo deploy.
 
 ## Fronteiras
 Supabase Auth é a única autoridade de identidade. O BFF Node usa @supabase/ssr e SDK oficial; não cria senhas, chaves WebAuthn ou JWT próprios. Navegador recebe apenas identidade pública, workspace autorizado e expiração. Cookies de sessão e verificador PKCE são HttpOnly; Secure em HTTPS/produção, SameSite=Lax, Path=/, sem Domain. Produção usa prefixo __Host-. Lax permite retorno OAuth por navegação GET. Respostas privadas usam no-store, Vary: Cookie e no-referrer.
@@ -8,7 +8,8 @@ O SDK de dados no navegador não persiste nem renova tokens. REST/Storage passam
 
 ## Fluxos de acesso
 - Google: SDK oficial Authorization Code + S256 PKCE, verificador HttpOnly, troca de código no callback do servidor e destinos internos permitidos. Não usa implicit flow.
-- E-mail: OTP/link do Supabase; criação exige token UUID de convite e nome/cargo. O trigger Auth também bloqueia criação sem convite pendente para aquele e-mail. Google pode criar a conta com convite pendente correspondente ao e-mail; aceitar o token e confirmar nome/cargo continua obrigatório para ingressar.
+- Cadastro comum: Supabase auth.signUp com nome, e-mail e senha; cargo opcional e sem convite. A migração normal_registration remove o trigger histórico. Confirmar o e-mail antes de criar espaço próprio. Nova conta não ganha associação, função ou acesso à holding por metadados; o acesso a equipes existentes continua explícito. OTP/link permanece como alternativa de login.
+- Recuperação de senha: resetPasswordForEmail com PKCE, seguido de updateUser no servidor com sessão validada e AMR recente de autenticação ou recuperação. As outras sessões são revogadas. AMR de recuperação isolado não satisfaz a reautenticação financeira.
 - Passkeys: APIs nativas Supabase Auth2.118 e WebAuthn do navegador para registro, autenticação, listagem, renomeação e exclusão. Origem/RP, desafio, assinatura e unicidade são verificados pelo provedor, nunca simulados no produto. Recurso nativo ainda experimental: desativado por padrão até configuração e teste real do projeto. Navegadores sem os parsers WebAuthn modernos devem usar o e-mail alternativo.
 - Senha: compatibilidade com contas Supabase existentes, enviada ao Auth pelo servidor. Nenhuma senha é armazenada localmente.
 - Recuperação: e-mail alternativo, erro de rede explícito, repetição de verificação, erro de código inválido e novo acesso após expiração. Google/passkey não configurados aparecem indisponíveis.
@@ -42,10 +43,10 @@ Transferências entre workspaces exigem vínculo formal ao mesmo grupo e acesso 
 
 ## Preparação de ambiente (não executada remotamente)
 1. Preservar backup e conferir migração inicial já aplicada; não reaplicar a inicial nem usar reset/db push.
-2. Aplicar produtividade pendente, provisionar a conta confirmada do responsável e executar bootstrap-owner.sql conforme revisão. Aplicar a restrição interna depois do owner.
-3. Revisar/aplicar em ordem:20261029100000_identity_server.sql;20261029110000_economy_ledger.sql;20261029120000_founders_governance.sql. Testar em cópia de staging antes de produção.
+2. Aplicar produtividade pendente e revisar a etapa histórica de restrição interna: ela exige responsável confirmado já existente. A consulta atual confirmou que há um, mas a conta indicada do responsável real ainda não está confirmada. O novo fluxo dispensa bootstrap administrativo para novos cadastros/espaços próprios. Não atribuir acesso a empresas existentes automaticamente.
+3. Revisar/aplicar em ordem:20261029100000_identity_server.sql;20261029110000_economy_ledger.sql;20261029120000_founders_governance.sql; por último 20261029225324_normal_registration.sql, que substitui a exigência de convite no cadastro. Testar em cópia de staging antes de produção.
 4. Configurar APP_ORIGIN HTTPS exata, URL/chave publishable no servidor e Redis REST. Nenhuma chave administrativa é necessária no runtime. Variáveis REDIS nunca recebem prefixo VITE_.
-5. Configurar Site URL e redirect exato ORIGIN/api/identity/callback no Supabase. Ativar Google no provedor e validar e-mail verificado/invite e PKCE antes de GOOGLE_AUTH_ENABLED=true.
+5. Configurar Site URL e redirect exato ORIGIN/api/identity/callback no Supabase. Ativar Google no provedor e validar e-mail verificado, isolamento de nova conta e PKCE antes de GOOGLE_AUTH_ENABLED=true.
 6. Confirmar suporte nativo passkeys do projeto, RP ID do domínio e origins HTTPS. Testar registro, autenticação, exclusão, biometria e AMR assinado real antes de PASSKEY_AUTH_ENABLED=true. O provedor é experimental, não declarar disponibilidade sem essa prova.
 7. Validar SMTP/OTP/template com código e link, expiração, redirecionamento e recuperação em desktop/mobile físicos. Validar Redis compartilhado/limites e SSE no plano Vercel. Nenhum e-mail real foi enviado nesta etapa.
 8. Só publicar depois de aprovação explícita, com rollback coordenado entre BFF, cookies e schema. Não publicar o frontend antigo sobre esse backend nem expor evergreen_private no Data API.
@@ -53,7 +54,7 @@ Transferências entre workspaces exigem vínculo formal ao mesmo grupo e acesso 
 ## Evidência e limites
 - Build TypeScript/Vite, SQL/PGlite e suites BFF/DOM locais são testes automatizados.
 - PGlite usa fixtures de auth.users/auth.sessions/JWT/Storage/Realtime. HTTP do BFF usa provedor local de teste com SDK oficial. Interfaces usam respostas de fixture; passkey usa autenticador virtual. Isso não comprova Google, SMTP, Redis gerenciado, Supabase hospedado ou biometria física.
-- Testes novos e migrações não foram executados em produção. Primeiro responsável continua pendente de provisionamento hospedado.
+- Testes novos e migrações não foram executados em produção. A confirmação da conta indicada para responsável continua pendente; novos usuários devem usar o cadastro comum quando a versão for ativada.
 - SSE usa conexões de45s e necessita validação de escala/custo no plano real. Grupos/Founders ainda carregam o snapshot autorizado integral; auditoria UI limita100 eventos e o histórico financeiro pagina50 linhas. Escala empresarial grande exige medir esse snapshot antes de liberação.
 - Fonte3D continua lazy (~947KB minificado,~251KB gzip), com fallback2D e aviso de chunk grande. Métricas locais usam GPU por software, não hardware móvel real.
 
@@ -64,3 +65,7 @@ Transferências entre workspaces exigem vínculo formal ao mesmo grupo e acesso 
 - Vercel Functions, limites de payload: https://vercel.com/docs/functions/limitations
 
 Essas referências descrevem capacidades e limites dos provedores; não substituem a validação hospedada pendente.
+
+## Consulta remota somente de leitura — 30/10/2026
+
+Projeto dlxsakabwtpdimolsmgd: somente oito tabelas do núcleo; funções Identity, Economy, Founders e novos lembretes ausentes. Trigger de convite no Auth ausente; histórico gerenciado de migrações vazio, coerente com a aplicação inicial por SQL Editor. Não reaplicar o núcleo nem usar reset/db push. Esta consulta não alterou produção.

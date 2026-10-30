@@ -19,7 +19,10 @@ export function db() {
   return supabase
 }
 export function failure(error: unknown) {
-  return error instanceof Error ? error.message : typeof error === 'object' && error && 'message' in error ? String(error.message) : String(error)
+  const message=error instanceof Error?error.message:typeof error==='object'&&error&&'message' in error?String(error.message):String(error)
+  if(/Failed to fetch|NetworkError|fetch failed|Load failed/i.test(message))return 'Não foi possível conectar. Verifique a conexão e tente novamente.'
+  if(/JWT expired|Invalid JWT/i.test(message))return 'Sua sessão expirou. Entre novamente.'
+  return message
 }
 export async function checked<R extends { data?: unknown; error: unknown }>(request: PromiseLike<R>): Promise<NonNullable<R['data']>> {
   const { data, error } = await request

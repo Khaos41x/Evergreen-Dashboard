@@ -58,7 +58,7 @@ try {
   await page.getByRole('heading',{name:'# geral',exact:true}).waitFor().catch(async e=>{console.log(JSON.stringify({errors,body:await page.locator('body').innerText()}));await page.screenshot({path:'output/playwright/fixture-failure.png'});throw e})
   if(width<=768) {
    const opener=page.getByRole('button',{name:'Abrir menu',exact:true});await opener.click()
-   assert.ok(await page.getByRole('dialog',{name:'Workspaces e canais'}).isVisible())
+   assert.ok(await page.getByRole('dialog',{name:'Espaços de trabalho e canais'}).isVisible())
    assert.equal(await page.locator('.collab-main').getAttribute('inert'),'')
    await page.keyboard.press('Shift+Tab');assert.ok(await page.evaluate(()=>document.activeElement.closest('.collab-sidebar')!==null))
    await page.screenshot({path:`output/playwright/fixture-drawer-${width}.png`,fullPage:true})
@@ -71,37 +71,51 @@ try {
   await page.getByRole('button',{name:'Excluir',exact:true}).click();await page.getByRole('button',{name:'Confirmar exclusão',exact:true}).click();await page.getByText('Mensagem excluída',{exact:true}).waitFor()
   if(width===390){
    const staleResponse=page.waitForResponse(r=>r.url().includes('stale-search'))
-   await page.getByLabel('Search messages',{exact:true}).fill('stale-search');await page.getByRole('button',{name:'Search',exact:true}).click()
-   await page.getByLabel('Search messages',{exact:true}).fill('fresh-search');await page.getByRole('button',{name:'Search',exact:true}).click()
+   await page.getByLabel("Buscar mensagens",{exact:true}).fill('stale-search');await page.getByRole('button',{name:"Buscar",exact:true}).click()
+   await page.getByLabel("Buscar mensagens",{exact:true}).fill('fresh-search');await page.getByRole('button',{name:"Buscar",exact:true}).click()
    await page.getByText('Fresh search result',{exact:true}).waitFor();await staleResponse
    assert.equal(await page.getByText('Stale search result',{exact:true}).count(),0)
-   await page.getByRole('button',{name:'Clear',exact:true}).click()
+   await page.getByRole('button',{name:"Limpar",exact:true}).click()
   }
   const nav=page.getByRole('navigation',{name:width<=768?'Navegação mobile':'Navegação desktop'})
-  await nav.getByRole('button',{name:width<=768?'Tarefas':'Projetos e tarefas',exact:true}).click();const openEditor=page.getByRole('button',{name:'New task',exact:true});await openEditor.click();await page.keyboard.press('Escape');assert.ok(await openEditor.evaluate(el=>document.activeElement===el));await openEditor.click();const dialog=page.getByRole('dialog');await dialog.getByLabel('Title',{exact:true}).fill(`UI fixture task ${width}`);await dialog.getByLabel('New checklist item').fill('Verify persistence');await dialog.getByRole('button',{name:'Add item',exact:true}).click()
+  await nav.getByRole('button',{name:width<=768?'Tarefas':'Projetos e tarefas',exact:true}).click();const openEditor=page.getByRole('button',{name:"Nova tarefa",exact:true});await openEditor.click();await page.keyboard.press('Escape');assert.ok(await openEditor.evaluate(el=>document.activeElement===el));await openEditor.click();const dialog=page.getByRole('dialog');await dialog.getByLabel("Título",{exact:true}).fill(`UI fixture task ${width}`);await dialog.getByLabel("Novo item da lista").fill('Verify persistence');await dialog.getByRole('button',{name:"Adicionar item",exact:true}).click()
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,`Modal overflow ${width}`)
   await page.screenshot({path:`output/playwright/fixture-editor-${width}.png`,fullPage:true})
-  await dialog.getByRole('button',{name:'Save task'}).click();await page.getByText(`UI fixture task ${width}`,{exact:true}).waitFor();assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false)
+  await dialog.getByRole('button',{name:"Salvar tarefa"}).click();await page.getByText(`UI fixture task ${width}`,{exact:true}).waitFor();assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false)
   if(width===390){
    await page.getByText(`UI fixture task ${width}`,{exact:true}).click()
-   const editor=page.getByRole('dialog',{name:'Task details'}),focus=editor.getByRole('button',{name:'Focus on this task',exact:true})
-   await editor.getByLabel('Title',{exact:true}).fill('Unsaved fixture title')
-   page.once('dialog',dialog=>dialog.dismiss());await focus.click();assert.equal(await editor.getByLabel('Title',{exact:true}).inputValue(),'Unsaved fixture title')
+   const editor=page.getByRole('dialog',{name:"Detalhes da tarefa"}),focus=editor.getByRole('button',{name:"Focar nesta tarefa",exact:true})
+   await editor.getByLabel("Título",{exact:true}).fill('Unsaved fixture title')
+   page.once('dialog',dialog=>dialog.dismiss());await focus.click();assert.equal(await editor.getByLabel("Título",{exact:true}).inputValue(),'Unsaved fixture title')
    await focus.focus();page.once('dialog',dialog=>dialog.accept());await page.keyboard.press('Enter')
-   await page.getByRole('dialog',{name:'Start Focus',exact:true}).waitFor();await page.keyboard.press('Escape')
-   await page.getByRole('group',{name:'Modo do Evergreen'}).getByRole('button',{name:'Vision',exact:true}).click()
-   await page.getByRole('heading',{name:'Evergreen Vision',exact:true}).waitFor();await page.getByRole('button',{name:'Diretório 2D',exact:true}).click()
+   await page.getByRole('dialog',{name:"Iniciar foco",exact:true}).waitFor();await page.keyboard.press('Escape')
+   await page.getByRole('group',{name:'Modo do Evergreen'}).getByRole('button',{name:"Visão",exact:true}).click()
+   await page.getByRole('heading',{name:"Evergreen Visão",exact:true}).waitFor();await page.getByRole('button',{name:'Diretório 2D',exact:true}).click()
    await page.getByRole('button',{name:'Ver estação de Fixture Alice',exact:true}).click()
    await page.getByRole('button',{name:`Concluir UI fixture task ${width}`,exact:true}).click()
    await page.getByRole('progressbar',{name:'Progresso das tarefas selecionadas'}).waitFor()
    await page.waitForFunction(()=>document.querySelector('.world-progress progress')?.value===100)
-   await page.getByRole('group',{name:'Modo do Evergreen'}).getByRole('button',{name:'Work',exact:true}).click()
-   await nav.getByRole('button',{name:'Tarefas',exact:true}).click();await page.getByRole('tab',{name:'Completed',exact:true}).click()
+   await page.getByRole('group',{name:'Modo do Evergreen'}).getByRole('button',{name:"Trabalho",exact:true}).click()
+   await nav.getByRole('button',{name:'Tarefas',exact:true}).click();await page.getByRole('tab',{name:"Concluídas",exact:true}).click()
    await page.getByText(`UI fixture task ${width}`,{exact:true}).waitFor()
   }
   await nav.getByRole('button',{name:width<=768?'Ajustes':'Configurações',exact:true}).click();await page.getByRole('heading',{name:'Configurações',exact:true}).waitFor();assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false)
   await page.screenshot({path:`output/playwright/fixture-settings-${width}.png`,fullPage:true})
-  assert.deepEqual(errors,[]);results.push({width,chatSendEditDelete:true,recordCreate:true,chatEditorSettingsNoOverflow:true,editorFocusReturn:true,mobileDrawerKeyboard:width<=768,worldMutationSharedWithWork:width===390?'PASS (REST fixture)':'covered at 390',searchRaceAndTaskFocus:width===390?'PASS':'covered at 390',pageErrors:errors});await context.close()
+
+  if(width<=768)await page.getByRole('button',{name:'Abrir menu',exact:true}).click();
+  await page.getByRole('navigation',{name:'Navegação principal',exact:true}).getByRole('button',{name:'Sala de foco',exact:true}).click();
+  await page.getByRole('heading',{name:'Sala de foco',exact:true}).waitFor();await page.getByText('Sem sessão ativa',{exact:true}).waitFor();
+  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
+  if([390,1440].includes(width))await page.screenshot({path:'output/playwright/focus-room-'+width+'.png',fullPage:true});
+  await page.getByRole('button',{name:'Iniciar minha sessão',exact:true}).click();await page.getByRole('dialog',{name:'Iniciar foco',exact:true}).waitFor();await page.keyboard.press('Escape');
+  if(width<=768)await page.getByRole('button',{name:'Abrir menu',exact:true}).click();
+  await page.getByRole('navigation',{name:'Navegação principal',exact:true}).getByRole('button',{name:'Como usar',exact:true}).click();
+  await page.getByRole('heading',{name:'Comece pelo que importa.',exact:true}).waitFor();
+  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
+  if([390,1440].includes(width))await page.screenshot({path:'output/playwright/getting-started-'+width+'.png',fullPage:true});
+  await page.getByRole('button',{name:'Criar minha primeira tarefa',exact:false}).click();
+  await page.getByRole('dialog',{name:'Nova tarefa',exact:true}).waitFor();await page.keyboard.press('Escape');
+  assert.deepEqual(errors,[]);results.push({width,focusRoomAndHelp:true,chatSendEditDelete:true,recordCreate:true,chatEditorSettingsNoOverflow:true,editorFocusReturn:true,mobileDrawerKeyboard:width<=768,worldMutationSharedWithWork:width===390?'PASS (REST fixture)':'covered at 390',searchRaceAndTaskFocus:width===390?'PASS':'covered at 390',pageErrors:errors});await context.close()
  }
  writeFileSync('output/collaboration-ui-results.json',JSON.stringify({environment:'Playwright REST response fixtures ONLY; does not prove auth, persistence or Realtime',results},null,2));console.log(JSON.stringify(results,null,2))
 } finally {await browser.close();server.kill()}

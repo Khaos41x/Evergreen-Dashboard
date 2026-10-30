@@ -45,7 +45,7 @@ export function useLiveData(userId: string, workspaceId: string) {
   useEffect(() => {
     setMembers([]); setChannels([]); setRecords([]); setJoined([]); setLoading(true)
     void refresh()
-    const live = db().channel(`workspace-${userId}-${workspaceId}`)
+    const live = db().channel(`espaço de trabalho-${userId}-${workspaceId}`)
     for (const table of ['eg_records', 'eg_members', 'eg_channels']) live.on('postgres_changes', { event: '*', schema: 'public', table, filter: `workspace_id=eq.${workspaceId}` }, () => void refresh())
     live.on('postgres_changes', { event: '*', schema: 'public', table: 'eg_channel_members', filter: `user_id=eq.${userId}` }, () => void refresh())
     live.on('postgres_changes',{event:'*',schema:'public',table:'eg_messages'},()=>void refresh())

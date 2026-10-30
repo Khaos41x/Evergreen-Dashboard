@@ -28,19 +28,39 @@ export async function authActions(req, res, config, context, action, query) {
     const data = checked(await context.client.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: callback, skipBrowserRedirect: true, ...(body.reauth ? { queryParams: { prompt: 'select_account', max_age: '0' } } : {}) } }))
     return reply(200, { url: data.url })
   }
-  if (action === 'email' || action === 'signup') {
-    if (!validEmail(body.email)) throw new HttpError(400, 'INVALID_EMAIL', 'Informe um e-mail válido.')
-    const metadata = action === 'signup' ? { display_name: String(body.name || '').trim(), job_title: String(body.job_title || '').trim(), timezone: String(body.timezone || 'UTC'), evergreen_invite: body.invite } : null
-    if (metadata && (!metadata.display_name || metadata.display_name.length > 80 || !metadata.job_title || metadata.job_title.length > 100 || !/^[0-9a-f-]{36}$/i.test(metadata.evergreen_invite || ''))) throw new HttpError(400, 'INVITE_PROFILE_REQUIRED', 'Informe nome, cargo e convite da empresa.')
-    if (metadata && !checked(await context.client.rpc('eg_identity_check_invite', { p_email: body.email, p_invite: metadata.evergreen_invite }))) throw new HttpError(403, 'INVITE_REQUIRED', 'Convite inválido, expirado ou destinado a outro e-mail.')
-    const current = body.reauth ? await validatedSession(context) : null
-    if (current && body.email.trim().toLowerCase() !== current.user.email?.toLowerCase()) throw new HttpError(403, 'ACCOUNT_MISMATCH', 'Confirme o e-mail da sua conta atual.')
-    flowState(req, res, config, body, current)
-    const result = await context.client.auth.signInWithOtp({ email: body.email.trim(), options: { shouldCreateUser: action === 'signup', emailRedirectTo: callback, ...(metadata ? { data: metadata } : {}), captchaToken: body.captchaToken } })
-    // Login requests do not reveal whether an account exists.
-    if (result.error && action === 'signup') throw result.error
-    if (result.error && !['user_not_found', 'signup_disabled'].includes(result.error.code)) throw result.error
-    return reply(200, { pendingConfirmation: true, message: 'Se sua conta estiver autorizada, você receberá um código ou link de acesso por e-mail.' })
+
+  if (action === 'signup') {
+    if (!validEmail(body.email)) throw new HttpError(400,'INVALID_EMAIL','Informe um e-mail válido.');
+    const metadata={display_name:String(body.name||'').trim(),job_title:String(body.job_title||'').trim(),timezone:String(body.timezone||'UTC')};
+    if (!metadata.display_name || metadata.display_name.length>80 || metadata.job_title.length>100) throw new HttpError(400,'PROFILE_REQUIRED','Informe seu nome; o cargo é opcional.');
+    if (typeof body.password!=='string'||body.password.length<8||body.password.length>128) throw new HttpError(400,'WEAK_PASSWORD','Use uma senha com pelo menos 8 caracteres.');
+    flowState(req,res,config,body);
+    const data=checked(await context.client.auth.signUp({email:body.email.trim(),password:body.password,options:{data:metadata,emailRedirectTo:callback,captchaToken:body.captchaToken}}));
+    return reply(200,{pendingConfirmation:!data.session,session:data.session?publicIdentity(await validatedSession(context,{bootstrap:true,invite:body.invite||null})):null});
+  }
+  if (action === 'recover') {
+    if(!validEmail(body.email))throw new HttpError(400,'INVALID_EMAIL','Informe um e-mail válido.');
+    flowState(req,res,config,{next:'/login?recovery=1'});
+    checked(await context.client.auth.resetPasswordForEmail(body.email.trim(),{redirectTo:callback,captchaToken:body.captchaToken}));
+    return reply(200,{pendingConfirmation:true});
+  }
+  if (action === 'update-password') {
+    const current=await validatedSession(context);
+    if(!current.status.recent_auth&&!current.status.password_recovery)requireRecent(current);
+    if(typeof body.password!=='string'||body.password.length<8||body.password.length>128)throw new HttpError(400,'WEAK_PASSWORD','Use uma senha com pelo menos 8 caracteres.');
+    checked(await context.client.auth.updateUser({password:body.password}));
+    // Revoke other devices after a password reset; keep this verified browser.
+    checked(await context.client.auth.signOut({scope:'others'}));
+    return reply(200,{session:publicIdentity(await validatedSession(context))});
+  }
+  if (action === 'email') {
+    if (!validEmail(body.email)) throw new HttpError(400, 'INVALID_EMAIL', 'Informe um e-mail válido.');
+    const current = body.reauth ? await validatedSession(context) : null;
+    if (current && body.email.trim().toLowerCase() !== current.user.email?.toLowerCase()) throw new HttpError(403, 'ACCOUNT_MISMATCH', 'Confirme o e-mail da sua conta atual.');
+    flowState(req, res, config, body, current);
+    const result = await context.client.auth.signInWithOtp({ email: body.email.trim(), options: { shouldCreateUser: false, emailRedirectTo: callback, captchaToken: body.captchaToken } });
+    if (result.error && !['user_not_found', 'signup_disabled'].includes(result.error.code)) throw result.error;
+    return reply(200, { pendingConfirmation: true, message: 'Se a conta existir, você receberá um código ou link de acesso por e-mail.' });
   }
   if (action === 'verify-email') {
     if (!validEmail(body.email) || !/^\d{6,10}$/.test(body.code || '')) throw new HttpError(400, 'INVALID_OTP', 'Informe o e-mail e o código recebido.')
@@ -56,6 +76,11 @@ export async function authActions(req, res, config, context, action, query) {
     if (!validEmail(body.email) || typeof body.password !== 'string' || body.password.length > 1024) throw new HttpError(400, 'INVALID_CREDENTIALS', 'Informe e-mail e senha.')
     checked(await context.client.auth.signInWithPassword({ email: body.email.trim(), password: body.password }))
     return reply(200, { session: publicIdentity(await validatedSession(context, { bootstrap: true, invite: body.invite || null })) })
+  }
+  if(action==='create-workspace'){
+    await validatedSession(context,{bootstrap:true});
+    const id=checked(await context.client.rpc('eg_create_workspace',{p_name:String(body.name||'').trim()}));
+    return reply(200,{workspaceId:id,session:publicIdentity(await validatedSession(context))});
   }
   if (action === 'accept-invite') {
     if (!/^[0-9a-f-]{36}$/i.test(body.invite || '')) throw new HttpError(400, 'INVITE_REQUIRED', 'Informe um convite válido.')

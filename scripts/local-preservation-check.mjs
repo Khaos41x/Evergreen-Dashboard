@@ -8,7 +8,7 @@ try {
  page.on('console',m=>{if(m.type()==='error')console.log(m.text())})
  await page.goto(process.argv[2]??'http://localhost:5173')
  await page.evaluate(()=>{localStorage.setItem('evergreen.workspace.v1','{corrupt workspace');localStorage.setItem('evergreen.focus-session.v1','{corrupt focus')})
- await page.getByRole('button',{name:'Abrir produtividade pessoal',exact:true}).click()
+ await page.getByRole('button',{name:"Usar apenas neste navegador",exact:true}).click()
  await page.getByText('Não foi possível ler os dados locais.',{exact:false}).waitFor()
  assert.equal(await page.evaluate(()=>localStorage.getItem('evergreen.workspace.v1')),'{corrupt workspace')
  assert.equal(await page.evaluate(()=>localStorage.getItem('evergreen.focus-session.v1')),'{corrupt focus')

@@ -6,7 +6,7 @@ export function FinancialVault({at,opening,reduced,onOpen,onOpened,onHover}:{at:
  useEffect(()=>{clock.current=0;done.current=false;if(opening)invalidate()},[opening,invalidate])
  useFrame((_state,dt)=>{if(!opening||done.current)return;clock.current+=Math.min(dt,.1);const t=reduced?1:Math.min(1,clock.current/.75),ease=1-Math.pow(1-t,3);if(door.current)door.current.rotation.y=-ease*1.72;if(t<1)invalidate();else{done.current=true;onOpened()}})
  const click=(e:ThreeEvent<MouseEvent>)=>{if(e.delta<5){e.stopPropagation();onOpen()}}
- return <group position={at} onClick={click} onPointerOver={e=>{e.stopPropagation();onHover(true);gl.domElement.style.cursor='pointer'}} onPointerOut={()=>{onHover(false);gl.domElement.style.cursor='grab'}} name="Evergreen Economy vault">
+ return <group position={at} onClick={click} onPointerOver={e=>{e.stopPropagation();onHover(true);gl.domElement.style.cursor='pointer'}} onPointerOut={()=>{onHover(false);gl.domElement.style.cursor='grab'}} name="Cofre Evergreen Finanças">
   <pointLight position={[0,3,3]} color="#bbd6c5" intensity={8} distance={7} decay={2}/>
   <mesh position={[0,.1,0]} receiveShadow><boxGeometry args={[2.3,.2,2.1]}/><meshStandardMaterial color="#26342f" metalness={.65} roughness={.33}/></mesh>
   <mesh position={[0,.24,0]}><boxGeometry args={[1.9,.07,1.65]}/><meshStandardMaterial color="#45544b" metalness={.85} roughness={.25}/></mesh>

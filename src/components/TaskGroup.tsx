@@ -10,7 +10,7 @@ export function TaskGroup({ title, status, tasks, people, projects, objectives, 
   return (
     <section className="task-group">
       <div className="group-header">
-        <button className="group-toggle" onClick={() => setOpen(!open)} aria-label={`${open ? 'Collapse' : 'Expand'} ${title}`}><ChevronDown className={open ? '' : '-rotate-90'} /></button>
+        <button className="group-toggle" onClick={() => setOpen(!open)} aria-label={`${open ? "Recolher" : "Expandir"} ${title}`}><ChevronDown className={open ? '' : '-rotate-90'} /></button>
         <span className={`group-state ${groupStyle[status]}`} />
         <h2>{title}</h2><span className="group-count">{tasks.length}</span>
         <button className="group-add" onClick={onAdd} aria-label={`Add task to ${title}`}><Plus /></button>

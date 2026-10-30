@@ -9,7 +9,7 @@ import { TaskDrawer } from '../components/TaskDrawer'
 import { HandoffDialog } from '../components/HandoffDialog'
 import { SuggestTaskDialog } from '../components/SuggestTaskDialog'
 
-const tabs: { id: TabKey; label: string }[] = [{ id: 'my-tasks', label: 'My tasks' }, { id: 'team', label: 'Team' }, { id: 'inbox', label: 'Inbox' }, { id: 'completed', label: 'Completed' }]
+const tabs: { id: TabKey; label: string }[] = [{ id: 'my-tasks', label: "Minhas tarefas" }, { id: 'team', label: "Equipe" }, { id: 'inbox', label: "Caixa de entrada" }, { id: 'completed', label: "Concluídas" }]
 const rank = { urgent: 0, high: 1, normal: 2, low: 3 }
 
 export function TasksPage({ requestCreate, consumeCreate, openInboxSignal, tasks, inbox, setInbox, people, projects, objectives, currentUser, onCreateTask, onUpdateTask, onDeleteTask, onCompleteTask, onCreateProject, onCreateObjective, onStartFocus,openTaskId,initialProjectId }: {
@@ -36,7 +36,7 @@ export function TasksPage({ requestCreate, consumeCreate, openInboxSignal, tasks
   const [tab, setTab] = useState<TabKey>('my-tasks')
   const [query, setQuery] = useState('')
   const [project, setProject] = useState('all')
-  const [sort, setSort] = useState('Priority')
+  const [sort, setSort] = useState("Prioridade")
   const [filters, setFilters] = useState<{ assignee: string; priority: Priority | 'all'; due: 'all' | 'today' | 'week' | 'overdue' | 'none'; status: TaskStatus | 'all' }>({ assignee: 'all', priority: 'all', due: 'all', status: 'all' })
   const [selected, setSelected] = useState<Task | null>(null)
   const [newOpen, setNewOpen] = useState(false)
@@ -75,9 +75,9 @@ export function TasksPage({ requestCreate, consumeCreate, openInboxSignal, tasks
       const week = new Date(); week.setDate(week.getDate() + 7); const weekDate = week.toISOString().slice(0, 10)
       rows = rows.filter(task => filters.due === 'none' ? !task.dueDate : filters.due === 'today' ? task.dueDate === today : filters.due === 'week' ? Boolean(task.dueDate && task.dueDate >= today && task.dueDate <= weekDate) : Boolean(task.dueDate && task.dueDate < today))
     }
-    if (sort === 'Priority') rows.sort((a, b) => rank[a.priority] - rank[b.priority])
-    if (sort === 'Due date') rows.sort((a, b) => (a.dueDate ?? '9999').localeCompare(b.dueDate ?? '9999'))
-    if (sort === 'Recently updated') rows.sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+    if (sort === "Prioridade") rows.sort((a, b) => rank[a.priority] - rank[b.priority])
+    if (sort === "Prazo") rows.sort((a, b) => (a.dueDate ?? '9999').localeCompare(b.dueDate ?? '9999'))
+    if (sort === "Atualização recente") rows.sort((a, b) => b.createdAt.localeCompare(a.createdAt))
     return rows
   }, [tasks, tab, query, project, sort, filters, currentUser.id])
 
@@ -85,20 +85,20 @@ export function TasksPage({ requestCreate, consumeCreate, openInboxSignal, tasks
   const updateTask = (next: Task) => { onUpdateTask(next); setSelected(next) }
   const toggleTask = (task: Task) => onCompleteTask(task.id, task.status !== 'done')
   const convertInbox = (item: InboxItem) => { setPrefill(item.title); setNewStatus('todo'); setNewOpen(true); setInbox(rows => rows.filter(row => row.id !== item.id)) }
-  const groups = tab === 'completed' ? [{ title: 'COMPLETED', status: 'done' as const }] : [{ title: 'IN PROGRESS', status: 'in-progress' as const }, { title: 'TODO', status: 'todo' as const }, { title: 'BACKLOG', status: 'backlog' as const }]
+  const groups = tab === 'completed' ? [{ title: "CONCLUÍDO", status: 'done' as const }] : [{ title: "EM ANDAMENTO", status: 'in-progress' as const }, { title: "A FAZER", status: 'todo' as const }, { title: "EM ESPERA", status: 'backlog' as const }]
   const handoffRecipient = people.find(person => person.id !== currentUser.id)
 
   return <main className="tasks-page">
-    <div className="tasks-header"><div><h1>Tasks</h1><p>Plan, assign and finish what matters.</p></div><button className="new-task-button" onClick={() => addFor('todo')}><Plus /> New task</button></div>
+    <div className="tasks-header"><div><h1>Tarefas</h1><p>Planeje, distribua e conclua o que importa.</p></div><button className="new-task-button" onClick={() => addFor('todo')}><Plus /> Nova tarefa</button></div>
     <div className="tasks-tabs" role="tablist">{tabs.map(item => <button role="tab" aria-selected={tab === item.id} key={item.id} className={tab === item.id ? 'active' : ''} onClick={() => setTab(item.id)}>{item.label}{item.id === 'inbox' && inbox.length > 0 && <span>{inbox.length}</span>}</button>)}</div>
     {tab === 'inbox' ? <InboxView items={inbox} onConvert={convertInbox} /> : <>
       <TaskToolbar query={query} setQuery={setQuery} project={project} setProject={setProject} sort={sort} setSort={setSort} projects={projects} people={people} filters={filters} setFilters={setFilters} />
-      <div className="task-columns"><span>Task</span><span>Project</span><span>Assignee</span><span>Priority</span><span>Due</span><span /></div>
-      <div className="task-groups">{groups.map(group => <TaskGroup key={group.status} title={group.title} status={group.status} tasks={visible.filter(task => task.status === group.status)} people={people} projects={projects} objectives={objectives} selectedId={selected?.id} onSelect={setSelected} onToggle={toggleTask} onAdd={() => addFor(group.status)} />)}{visible.length === 0 && <div className="empty-tasks"><CheckSquare /><strong>No tasks here</strong><span>Try another filter or create a task.</span></div>}</div>
+      <div className="task-columns"><span>Tarefa</span><span>Projeto</span><span>Responsável</span><span>Prioridade</span><span>Prazo</span><span /></div>
+      <div className="task-groups">{groups.map(group => <TaskGroup key={group.status} title={group.title} status={group.status} tasks={visible.filter(task => task.status === group.status)} people={people} projects={projects} objectives={objectives} selectedId={selected?.id} onSelect={setSelected} onToggle={toggleTask} onAdd={() => addFor(group.status)} />)}{visible.length === 0 && <div className="empty-tasks"><CheckSquare /><strong>Nenhuma tarefa aqui</strong><span>Experimente outro filtro ou crie uma tarefa.</span></div>}</div>
     </>}
     <NewTaskDialog open={newOpen} onClose={() => setNewOpen(false)} defaultStatus={newStatus} initialTitle={prefill} people={people} projects={projects} objectives={objectives} onCreateProject={onCreateProject} onCreateObjective={onCreateObjective} onCreate={onCreateTask} />
     <TaskDrawer task={selected} people={people} projects={projects} objectives={objectives} onClose={() => setSelected(null)} onUpdate={updateTask} onDelete={onDeleteTask} onHandoff={() => setHandoff(true)} onSuggest={() => setSuggest(true)} onFocus={() => onStartFocus(selected?.id)} />
-    <HandoffDialog open={handoff} currentUser={currentUser} recipient={handoffRecipient} onClose={() => setHandoff(false)} onConfirm={() => { if (selected && handoffRecipient) updateTask({ ...selected, assigneeId: handoffRecipient.id, activity: [{ id: `activity-${crypto.randomUUID()}`, body: `${currentUser.name} handed this task off to ${handoffRecipient.name}`, time: 'Just now' }, ...(selected.activity ?? [])] }); setHandoff(false) }} />
-    <SuggestTaskDialog open={suggest} onClose={() => setSuggest(false)} onConfirm={() => { if (selected) updateTask({ ...selected, activity: [{ id: `activity-${crypto.randomUUID()}`, body: 'A follow-up was suggested', time: 'Just now' }, ...(selected.activity ?? [])] }); setSuggest(false) }} />
+    <HandoffDialog open={handoff} currentUser={currentUser} recipient={handoffRecipient} onClose={() => setHandoff(false)} onConfirm={() => { if (selected && handoffRecipient) updateTask({ ...selected, assigneeId: handoffRecipient.id, activity: [{ id: `activity-${crypto.randomUUID()}`, body: `${currentUser.name} handed this task off to ${handoffRecipient.name}`, time: "Agora" }, ...(selected.activity ?? [])] }); setHandoff(false) }} />
+    <SuggestTaskDialog open={suggest} onClose={() => setSuggest(false)} onConfirm={() => { if (selected) updateTask({ ...selected, activity: [{ id: `activity-${crypto.randomUUID()}`, body: "Uma próxima tarefa foi sugerida", time: "Agora" }, ...(selected.activity ?? [])] }); setSuggest(false) }} />
   </main>
 }

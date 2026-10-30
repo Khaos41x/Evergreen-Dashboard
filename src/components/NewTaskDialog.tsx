@@ -1,3 +1,4 @@
+import {codeLabel} from '../i18n/pt-BR'
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { CalendarDays, Check, CheckSquare, ChevronDown, CircleDotDashed, Flag, FolderKanban, ListPlus, Orbit, Plus, Trash2, UserRound, X } from 'lucide-react'
 import type { ChecklistItem, Objective, Person, Priority, Project, Task, TaskStatus } from '../types'
@@ -28,12 +29,12 @@ function toIsoDate(date: Date) {
 }
 
 function dueLabel(value: string) {
-  if (!value) return 'Due date'
+  if (!value) return "Prazo"
   const today = toIsoDate(new Date())
   const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1)
-  if (value === today) return 'Today'
-  if (value === toIsoDate(tomorrow)) return 'Tomorrow'
-  return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' }).format(new Date(`${value}T12:00:00`))
+  if (value === today) return "Hoje"
+  if (value === toIsoDate(tomorrow)) return "Amanhã"
+  return new Intl.DateTimeFormat('pt-BR', { month: 'short', day: 'numeric' }).format(new Date(`${value}T12:00:00`))
 }
 
 export function NewTaskDialog({ open, onClose, onCreate, people, projects, objectives, onCreateProject, onCreateObjective, defaultStatus = 'todo', initialTitle = '' }: {
@@ -81,7 +82,7 @@ export function NewTaskDialog({ open, onClose, onCreate, people, projects, objec
   const selectedPerson = people.find(person => person.id === assigneeId)
   const selectedProject = projects.find(project => project.id === projectId)
   const selectedObjective = objectives.find(objective => objective.id === objectiveId)
-  const statusLabel = useMemo(() => ({ backlog: 'Backlog', todo: 'Todo', 'in-progress': 'In Progress', done: 'Done' })[status], [status])
+  const statusLabel = useMemo(() => ({ backlog: "Em espera", todo: "A fazer", 'in-progress': "Em andamento", done: "Concluído" })[status], [status])
 
   if (!open) return null
   const create = () => {
@@ -106,19 +107,19 @@ export function NewTaskDialog({ open, onClose, onCreate, people, projects, objec
 
   return <div className="overlay" onMouseDown={() => { if (!dirty) onClose() }}>
     <div className="new-task-dialog" onMouseDown={event => { event.stopPropagation(); if (!(event.target as HTMLElement).closest('.property-picker')) setMenu(null) }}>
-      <div className="dialog-top"><span className="dialog-context"><CheckSquare /> New task</span><button onClick={onClose} aria-label="Close new task"><X /></button></div>
-      <input ref={titleRef} className="new-title" placeholder="Task title" value={title} onChange={event => setTitle(event.target.value)} onKeyDown={event => { if (event.key === 'Enter' && !event.shiftKey) create() }} />
-      <textarea className="new-description" placeholder="Add a description…" value={description} onChange={event => setDescription(event.target.value)} onKeyDown={event => { if (event.key === 'Enter' && event.ctrlKey) create() }} />
+      <div className="dialog-top"><span className="dialog-context"><CheckSquare /> Nova tarefa</span><button onClick={onClose} aria-label="Fechar nova tarefa"><X /></button></div>
+      <input ref={titleRef} className="new-title" placeholder="Título da tarefa" value={title} onChange={event => setTitle(event.target.value)} onKeyDown={event => { if (event.key === 'Enter' && !event.shiftKey) create() }} />
+      <textarea className="new-description" placeholder="Adicione uma descrição…" value={description} onChange={event => setDescription(event.target.value)} onKeyDown={event => { if (event.key === 'Enter' && event.ctrlKey) create() }} />
       <div className="dialog-properties">
-        <div className="property-picker"><button onClick={() => setMenu(menu === 'status' ? null : 'status')} aria-expanded={menu === 'status'}><CircleDotDashed /><span>{statusLabel}</span><ChevronDown /></button>{menuFor('status', [{ id: 'backlog', label: 'Backlog' }, { id: 'todo', label: 'Todo' }, { id: 'in-progress', label: 'In Progress' }, { id: 'done', label: 'Done' }], id => setStatus(id as TaskStatus))}</div>
-        <div className="property-picker"><button onClick={() => setMenu(menu === 'assignee' ? null : 'assignee')} aria-expanded={menu === 'assignee'}><UserRound /><span>{selectedPerson?.name ?? 'Unassigned'}</span><ChevronDown /></button>{menuFor('assignee', [{ id: '', label: 'Unassigned' }, ...people.map(person => ({ id: person.id, label: person.name }))], setAssigneeId)}</div>
-        <div className="property-picker"><button onClick={() => setMenu(menu === 'project' ? null : 'project')} aria-expanded={menu === 'project'}><FolderKanban /><span>{selectedProject?.name ?? 'No project'}</span><ChevronDown /></button>{menuFor('project', [{ id: '', label: 'No project' }, ...projects.map(project => ({ id: project.id, label: project.name }))], setProjectId, <button onClick={() => { setMenu(null); onCreateProject() }}><Plus /> Create project</button>)}</div>
-        <div className="property-picker"><button onClick={() => setMenu(menu === 'priority' ? null : 'priority')} aria-expanded={menu === 'priority'}><Flag /><span>{priority[0].toUpperCase() + priority.slice(1)}</span><ChevronDown /></button>{menuFor('priority', ['low', 'normal', 'high', 'urgent'].map(id => ({ id, label: id[0].toUpperCase() + id.slice(1) })), id => setPriority(id as Priority))}</div>
-        <div className="property-picker"><button onClick={() => setMenu(menu === 'due' ? null : 'due')} aria-expanded={menu === 'due'}><CalendarDays /><span>{dueLabel(dueDate)}</span><ChevronDown /></button>{menuFor('due', [{ id: 'today', label: 'Today' }, { id: 'tomorrow', label: 'Tomorrow' }, { id: 'week', label: 'This week' }, { id: 'pick', label: 'Pick date' }], chooseDue)}{pickDate && <input className="dialog-date-input" type="date" autoFocus value={dueDate} onChange={event => { setDueDate(event.target.value); setPickDate(false) }} />}</div>
-        <div className="property-picker"><button onClick={() => setMenu(menu === 'objective' ? null : 'objective')} aria-expanded={menu === 'objective'}><Orbit /><span>{selectedObjective?.title ?? 'No objective'}</span><ChevronDown /></button>{menuFor('objective', [{ id: '', label: 'No objective' }, ...objectives.map(objective => ({ id: objective.id, label: objective.title }))], setObjectiveId, <button onClick={() => { setMenu(null); onCreateObjective() }}><Plus /> Create objective</button>)}</div>
+        <div className="property-picker"><button onClick={() => setMenu(menu === 'status' ? null : 'status')} aria-expanded={menu === 'status'}><CircleDotDashed /><span>{statusLabel}</span><ChevronDown /></button>{menuFor('status', [{ id: 'backlog', label: "Em espera" }, { id: 'todo', label: "A fazer" }, { id: 'in-progress', label: "Em andamento" }, { id: 'done', label: "Concluído" }], id => setStatus(id as TaskStatus))}</div>
+        <div className="property-picker"><button onClick={() => setMenu(menu === 'assignee' ? null : 'assignee')} aria-expanded={menu === 'assignee'}><UserRound /><span>{selectedPerson?.name ?? "Sem responsável"}</span><ChevronDown /></button>{menuFor('assignee', [{ id: '', label: "Sem responsável" }, ...people.map(person => ({ id: person.id, label: person.name }))], setAssigneeId)}</div>
+        <div className="property-picker"><button onClick={() => setMenu(menu === 'project' ? null : 'project')} aria-expanded={menu === 'project'}><FolderKanban /><span>{selectedProject?.name ?? "Sem projeto"}</span><ChevronDown /></button>{menuFor('project', [{ id: '', label: "Sem projeto" }, ...projects.map(project => ({ id: project.id, label: project.name }))], setProjectId, <button onClick={() => { setMenu(null); onCreateProject() }}><Plus /> Criar projeto</button>)}</div>
+        <div className="property-picker"><button onClick={() => setMenu(menu === 'priority' ? null : 'priority')} aria-expanded={menu === 'priority'}><Flag /><span>{codeLabel(priority)}</span><ChevronDown /></button>{menuFor('priority', ['low', 'normal', 'high', 'urgent'].map(id => ({ id, label: codeLabel(id) })), id => setPriority(id as Priority))}</div>
+        <div className="property-picker"><button onClick={() => setMenu(menu === 'due' ? null : 'due')} aria-expanded={menu === 'due'}><CalendarDays /><span>{dueLabel(dueDate)}</span><ChevronDown /></button>{menuFor('due', [{ id: 'today', label: "Hoje" }, { id: 'tomorrow', label: "Amanhã" }, { id: 'week', label: "Esta semana" }, { id: 'pick', label: "Escolher data" }], chooseDue)}{pickDate && <input className="dialog-date-input" type="date" autoFocus value={dueDate} onChange={event => { setDueDate(event.target.value); setPickDate(false) }} />}</div>
+        <div className="property-picker"><button onClick={() => setMenu(menu === 'objective' ? null : 'objective')} aria-expanded={menu === 'objective'}><Orbit /><span>{selectedObjective?.title ?? "Sem objetivo"}</span><ChevronDown /></button>{menuFor('objective', [{ id: '', label: "Sem objetivo" }, ...objectives.map(objective => ({ id: objective.id, label: objective.title }))], setObjectiveId, <button onClick={() => { setMenu(null); onCreateObjective() }}><Plus /> Criar objetivo</button>)}</div>
       </div>
-      {!checklistOpen ? <button className="add-checklist" onClick={() => setChecklistOpen(true)}><ListPlus /> Add checklist</button> : <section className="dialog-checklist"><h4>Checklist</h4>{checklist.map(item => <div className="dialog-check-row" key={item.id}><button aria-label={item.completed ? 'Mark incomplete' : 'Mark complete'} onClick={() => setChecklist(items => items.map(entry => entry.id === item.id ? { ...entry, completed: !entry.completed } : entry))}>{item.completed ? <Check /> : <span />}</button><input value={item.text} onChange={event => setChecklist(items => items.map(entry => entry.id === item.id ? { ...entry, text: event.target.value } : entry))} /><button aria-label="Remove checklist item" onClick={() => setChecklist(items => items.filter(entry => entry.id !== item.id))}><Trash2 /></button></div>)}<div className="dialog-check-row new-check-row"><span /><input placeholder="Add item…" value={newItem} onChange={event => setNewItem(event.target.value)} onKeyDown={event => { if (event.key === 'Enter') { event.preventDefault(); addChecklist() } }} /><button onClick={addChecklist} aria-label="Add checklist item"><Plus /></button></div></section>}
-      <div className="dialog-footer"><span><kbd>Enter</kbd> to create · <kbd>Ctrl + Enter</kbd> in description</span><button className="create-button" onClick={create} disabled={!title.trim()}>Create task</button></div>
+      {!checklistOpen ? <button className="add-checklist" onClick={() => setChecklistOpen(true)}><ListPlus /> Adicionar lista</button> : <section className="dialog-checklist"><h4>Lista de verificação</h4>{checklist.map(item => <div className="dialog-check-row" key={item.id}><button aria-label={item.completed ? "Reabrir tarefa" : "Marcar como concluída"} onClick={() => setChecklist(items => items.map(entry => entry.id === item.id ? { ...entry, completed: !entry.completed } : entry))}>{item.completed ? <Check /> : <span />}</button><input value={item.text} onChange={event => setChecklist(items => items.map(entry => entry.id === item.id ? { ...entry, text: event.target.value } : entry))} /><button aria-label="Remover item da lista" onClick={() => setChecklist(items => items.filter(entry => entry.id !== item.id))}><Trash2 /></button></div>)}<div className="dialog-check-row new-check-row"><span /><input placeholder="Adicionar item…" value={newItem} onChange={event => setNewItem(event.target.value)} onKeyDown={event => { if (event.key === 'Enter') { event.preventDefault(); addChecklist() } }} /><button onClick={addChecklist} aria-label="Adicionar item à lista"><Plus /></button></div></section>}
+      <div className="dialog-footer"><span><kbd>Enter</kbd> para criar · <kbd>Ctrl + Enter</kbd> na descrição</span><button className="create-button" onClick={create} disabled={!title.trim()}>Criar tarefa</button></div>
     </div>
   </div>
 }

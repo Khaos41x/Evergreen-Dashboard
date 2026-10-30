@@ -22,9 +22,10 @@ export function setCookie(res, config, name, value, maxAge = 600) {
   res.setHeader('Set-Cookie', [...(Array.isArray(previous) ? previous : [previous]), stringifySetCookie({ name, value, ...cookieOptions(config, maxAge) })])
 }
 export function safeNext(value) {
-  if (typeof value !== 'string' || !['/', '/vision', '/economy', '/founders', '/hub'].includes(value.split('?')[0]) || value.startsWith('//')) return '/'
+  if (typeof value !== 'string' || !['/', '/vision', '/economy', '/founders', '/hub', '/login'].includes(value.split('?')[0]) || value.startsWith('//')) return '/'
   const parsed = new URL(value, 'https://evergreen.invalid')
   const invite = parsed.searchParams.get('invite')
+  if(parsed.pathname==='/login')return parsed.searchParams.get('recovery')==='1'?'/login?recovery=1':'/login'
   return parsed.pathname + (invite && /^[0-9a-f-]{36}$/i.test(invite) ? '?invite=' + encodeURIComponent(invite) : '')
 }
 export function enforceOrigin(req, config) {
@@ -63,6 +64,7 @@ export function json(res, status, data) { res.statusCode = status; res.setHeader
 export function errorJSON(res, error, postgrest = false) {
   const status = Number.isInteger(error.status)&&error.status>=400&&error.status<=599 ? error.status : error.code === 'PGRST202'||error.code === '42883' ? 503 : error.code==='42501' ? 403 : /^(22|23|P0001)/.test(String(error.code||'')) ? 400 : 500
   if(status===429)res.setHeader('Retry-After','300')
-  const detail={code:error.code||'IDENTITY_REQUEST_FAILED',message:status>=500?'Serviço indisponível ou configuração pendente. Tente novamente mais tarde.':error.message||'Não foi possível concluir a solicitação.'}
+  const authMessages={invalid_credentials:'E-mail ou senha incorretos.',email_not_confirmed:'Confirme seu e-mail antes de entrar.',user_already_exists:'Não foi possível criar a conta. Tente entrar ou recuperar o acesso.',weak_password:'Escolha uma senha mais forte, com pelo menos 8 caracteres.',otp_expired:'Código ou link expirado. Solicite outro.',over_email_send_rate_limit:'Aguarde alguns minutos antes de solicitar outro e-mail.',email_provider_disabled:'O acesso por e-mail precisa ser configurado no Supabase.',signup_disabled:'O cadastro precisa ser habilitado no Supabase.',same_password:'Escolha uma senha diferente da atual.',reauthentication_needed:'Confirme sua identidade novamente antes de trocar a senha.'}
+  const detail={code:error.code||'IDENTITY_REQUEST_FAILED',message:status>=500?'Serviço indisponível ou configuração pendente. Tente novamente mais tarde.':authMessages[error.code]||error.message||'Não foi possível concluir a solicitação.'}
   json(res,status,postgrest?{...detail,details:null,hint:null}:{error:detail,requestId:randomUUID()})
 }

@@ -25,13 +25,17 @@ try{
  for(const width of[390,478,1440]){
  const context=await browser.newContext({viewport:{width,height:1000},hasTouch:width<700,reducedMotion:'reduce'})
  const page=await context.newPage(),errors=[],requests=[],actions=[];page.on('pageerror',e=>errors.push(e.message));page.on('request',r=>requests.push(r.url()))
- let signed=false,profile={display_name:'Ana QA',job_title:'Diretora'},keys=[],registered=false,credential=null
- const session=()=>({user:{id:'qa-user',email:'qa@example.invalid',user_metadata:profile},context:{active:true,recent_auth:true,session_id:'fixture-session',workspaces:[{id:'workspace-qa',name:'Holding QA',role:'owner'}],profile}})
+ let hasWorkspace=false,signed=false,profile={display_name:'Ana QA',job_title:'Diretora'},keys=[],registered=false,credential=null
+ const session=()=>({user:{id:'qa-user',email:'qa@example.invalid',user_metadata:profile},context:{active:true,recent_auth:true,session_id:'fixture-session',workspaces:hasWorkspace?[{id:'workspace-qa',name:'Holding QA',role:'owner'}]:[],profile}})
  await page.route('**/api/identity/**',async route=>{const action=new URL(route.request().url()).pathname.split('/api/identity/')[1],body=route.request().method()==='POST'?route.request().postDataJSON():{}
  const fulfill=(data,status=200)=>route.fulfill({status,contentType:'application/json',body:JSON.stringify(data)})
  if(action==='config')return fulfill({google:false,passkeys:true,email:true,cookieSessions:true})
  if(action==='session')return signed?fulfill({session:session()}):fulfill({error:{message:'Entre novamente',code:'SESSION_REQUIRED'}},401)
- if(action==='signup'){assert.equal(body.invite,'11111111-1111-4111-8111-111111111111');profile={display_name:body.name,job_title:body.job_title};return fulfill({pendingConfirmation:true})}
+ if(action==='signup'){assert.equal(body.invite,undefined);assert.equal(body.password,'Fixture-normal-123');profile={display_name:body.name,job_title:body.job_title};return fulfill({pendingConfirmation:true})}
+ if(action==='password'){signed=true;return fulfill({session:session()})}
+ if(action==='create-workspace'){assert.equal(body.name,'Equipe Ana QA');hasWorkspace=true;return fulfill({workspaceId:'workspace-qa',session:session()})}
+ if(action==='recover')return fulfill({pendingConfirmation:true})
+ if(action==='update-password'){assert.equal(body.password,'Fixture-updated-456');return fulfill({session:session()})}
  if(action==='email')return fulfill({pendingConfirmation:true})
  if(action==='verify-email'){if(body.code!=='123456')return fulfill({error:{message:'Código inválido',code:'otp_expired'}},400);signed=true;return fulfill({session:session()})}
  if(action==='sessions')return fulfill({sessions:[{id:'fixture',current:true,created_at:new Date().toISOString(),user_agent:'Navegador de teste'}]})
@@ -49,21 +53,35 @@ try{
  assert.equal(requests.some(x=>/WorldScene|@react-three|\/three\./.test(x)),false)
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false)
  await page.screenshot({path:'output/platform/auth-'+width+'.png',fullPage:true})
- await page.getByRole('button',{name:'Criar conta · tenho um convite',exact:true}).click()
- await page.getByLabel('E-mail da empresa',{exact:true}).fill('qa@example.invalid')
- await page.getByLabel('Seu nome',{exact:true}).fill('Ana QA')
- await page.getByLabel('Cargo',{exact:true}).fill('Diretora')
- await page.getByLabel('Código do convite',{exact:true}).fill('11111111-1111-4111-8111-111111111111')
- await page.getByRole('button',{name:'Criar conta e confirmar e-mail',exact:true}).click()
- await page.getByLabel('Código do e-mail',{exact:true}).fill('000000');await page.getByRole('button',{name:'Confirmar acesso',exact:true}).click();await page.getByText('Código inválido',{exact:false}).waitFor()
- await page.getByLabel('Código do e-mail',{exact:true}).fill('123456');await page.getByRole('button',{name:'Confirmar acesso',exact:true}).click()
- await page.getByRole('heading',{name:'Olá, Ana QA',exact:true}).waitFor();await page.getByText('Diretora',{exact:true}).waitFor()
+
+ await page.getByRole('button',{name:'Criar uma conta',exact:true}).click();
+ await page.getByLabel('E-mail',{exact:true}).fill('qa@example.invalid');
+ await page.getByLabel('Seu nome',{exact:true}).fill('Ana QA');await page.getByLabel('Cargo',{exact:false}).fill('Diretora');
+ await page.getByLabel('Senha',{exact:true}).fill('Fixture-normal-123');await page.getByLabel('Confirmar senha',{exact:true}).fill('Fixture-normal-123');
+ assert.equal(await page.getByLabel('Código do convite',{exact:true}).count(),0);
+ await page.screenshot({path:'output/platform/signup-'+width+'.png',fullPage:true});
+ await page.getByRole('button',{name:'Criar conta',exact:true}).click();await page.getByRole('heading',{name:'Confirme seu e-mail',exact:true}).waitFor();
+ await page.getByRole('button',{name:'Já confirmei · entrar',exact:true}).click();await page.getByLabel('Senha',{exact:true}).fill('Fixture-normal-123');await page.getByRole('button',{name:'Entrar',exact:true}).click();
+ await page.getByRole('heading',{name:'Vamos começar',exact:true}).waitFor();await page.screenshot({path:'output/platform/onboarding-'+width+'.png',fullPage:true});await page.getByLabel('Nome do espaço',{exact:true}).fill('Equipe Ana QA');await page.getByRole('button',{name:'Criar espaço de trabalho',exact:true}).click();
+ await page.getByRole('heading',{name:'Olá, Ana QA',exact:true}).waitFor();await page.getByText('Diretora',{exact:true}).waitFor();
+ await page.getByRole('button',{name:'Sair QA',exact:true}).click();await page.getByRole('button',{name:'Entrar com código de e-mail',exact:true}).click();await page.getByLabel('E-mail',{exact:true}).fill('qa@example.invalid');await page.getByRole('button',{name:'Receber código ou link',exact:true}).click();
+ await page.getByLabel('Código do e-mail',{exact:true}).fill('000000');await page.getByRole('button',{name:'Confirmar acesso',exact:true}).click();await page.getByText('Código inválido',{exact:false}).waitFor();
+ await page.getByLabel('Código do e-mail',{exact:true}).fill('123456');await page.getByRole('button',{name:'Confirmar acesso',exact:true}).click();await page.getByRole('heading',{name:'Olá, Ana QA',exact:true}).waitFor();
+ await page.goto(origin+'/output/platform/auth.html?recovery=1');await page.getByLabel('Nova senha',{exact:true}).fill('Fixture-updated-456');await page.getByLabel('Confirmar senha',{exact:true}).fill('Fixture-updated-456');await page.getByRole('button',{name:'Salvar nova senha',exact:true}).click();await page.getByRole('heading',{name:'Olá, Ana QA',exact:true}).waitFor();
  const cdp=await context.newCDPSession(page);await cdp.send('WebAuthn.enable');await cdp.send('WebAuthn.addVirtualAuthenticator',{options:{protocol:'ctap2',transport:'internal',hasResidentKey:true,hasUserVerification:true,isUserVerified:true,automaticPresenceSimulation:true}})
- await page.getByRole('button',{name:'Registrar passkey neste dispositivo',exact:true}).click();await page.getByText('Passkey registrada.',{exact:true}).waitFor();assert.ok(registered&&credential.response.attestationObject)
+ await page.getByRole('button',{name:"Registrar chave de acesso neste dispositivo",exact:true}).click();await page.getByText("Chave de acesso registrada.",{exact:true}).waitFor();assert.ok(registered&&credential.response.attestationObject)
+
+ await page.evaluate(()=>{window.__createCredential=navigator.credentials.create.bind(navigator.credentials);navigator.credentials.create=async()=>{throw new DOMException('The operation timed out or was not allowed.','NotAllowedError')}});
+ await page.getByRole('button',{name:"Registrar chave de acesso neste dispositivo",exact:true}).click();await page.getByText('A solicitação foi cancelada ou o tempo esgotou.',{exact:false}).waitFor();assert.equal((await page.getByRole('alert').innerText()).includes('The operation'),false);
+ await page.evaluate(()=>{navigator.credentials.create=window.__createCredential});
  await page.getByRole('button',{name:'Sair QA',exact:true}).click();await page.getByRole('heading',{name:'Entrar na Evergreen',exact:true}).waitFor()
- await page.getByRole('button',{name:'Entrar com passkey',exact:true}).click();await page.getByRole('heading',{name:'Olá, Ana QA',exact:true}).waitFor()
+ await page.evaluate(()=>{window.__getCredential=navigator.credentials.get.bind(navigator.credentials);navigator.credentials.get=async()=>{throw new DOMException('The operation timed out or was not allowed.','NotAllowedError')}});
+ await page.getByRole('button',{name:"Usar chave de acesso",exact:true}).click();await page.getByText('A solicitação foi cancelada ou o tempo esgotou.',{exact:false}).waitFor();assert.equal((await page.getByRole('alert').innerText()).includes('The operation'),false);
+ await page.evaluate(()=>{navigator.credentials.get=window.__getCredential});
+
+ await page.getByRole('button',{name:"Usar chave de acesso",exact:true}).click();await page.getByRole('heading',{name:'Olá, Ana QA',exact:true}).waitFor()
  assert.equal(await page.evaluate(()=>Object.keys(localStorage).some(k=>/^sb-.*auth-token/.test(k))),false)
- results.push({width,authInviteProfile:true,otpErrorRecovery:true,nativeWebAuthnVirtualCeremony:true,noLocalAuthTokens:true,no3DDuringAuth:true})
+ results.push({width,normalSignupWithoutInvite:true,firstWorkspaceOnboarding:true,passwordReset:true,profileNameJob:true,otpErrorRecovery:true,nativeWebAuthnVirtualCeremony:true,nativeWebAuthnErrorsPortuguese:true,noLocalAuthTokens:true,no3DDuringAuth:true})
  await page.route('**/api/backend?**',async route=>{const path=new URL(new URL(route.request().url()).searchParams.get('path'),'https://fixture.invalid').pathname;const body=route.request().method()==='POST'?route.request().postDataJSON():{};let data
  if(path.endsWith('/eg_members'))data=[{user_id:'qa-user',display_name:'Ana QA'}]
  else if(path.endsWith('/eg_economy_targets'))data=snapshot.accounts.map(a=>({...a,company_name:a.company_id==='ca'?'Operações QA':'Produtos QA',workspace_name:'Holding QA'}))
@@ -79,7 +97,7 @@ try{
  await page.goto(origin+'/output/platform/economy.html');await page.getByText('BRL 100,01',{exact:true}).waitFor()
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false)
  await page.screenshot({path:'output/platform/economy-'+width+'.png',fullPage:true})
- for(const tab of ['Empresas','Cofres','Movimentações','Relatórios','Planejamento']){await page.getByRole('navigation',{name:'Evergreen Economy'}).getByRole('button',{name:tab,exact:true}).click();assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false)}
+ for(const tab of ['Empresas','Cofres','Movimentações','Relatórios','Planejamento']){await page.getByRole('navigation',{name:"Evergreen Finanças"}).getByRole('button',{name:tab,exact:true}).click();assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false)}
  await page.getByRole('button',{name:'Empresas',exact:true}).click()
  const newAccount=page.getByRole('button',{name:'Nova conta',exact:true});await newAccount.click()
  await page.waitForFunction(()=>document.activeElement?.id==='economy-form-title')
@@ -94,11 +112,11 @@ try{
  await page.getByText('Registro salvo no livro interno da empresa.',{exact:true}).waitFor()
  assert.equal(actions.length,2);assert.equal(actions[0].p_data.request_id,actions[1].p_data.request_id)
  const transfer=actions.find(a=>a.p_action==='transfer');assert.equal(transfer.p_data.cents,'2501');assert.match(transfer.p_data.request_id,/^[a-f0-9-]{36}$/)
- await page.getByRole('button',{name:'Voltar ao Vision',exact:true}).click();assert.equal(new URL(page.url()).pathname,'/vision')
+ await page.getByRole('button',{name:'Voltar à Visão',exact:true}).click();assert.equal(new URL(page.url()).pathname,'/vision')
  results.push({width,economySixTabs:true,financialStepUpRetrySameId:true,noOverflow:true,exactTransferInput:true,returnVision:true})
  await page.goto(origin+'/output/platform/founders.html');await page.getByText('O grupo, em perspectiva.',{exact:true}).waitFor();await page.getByRole('heading',{name:'Prioridades para sua atenção',exact:true}).waitFor()
  await page.screenshot({path:'output/platform/founders-'+width+'.png',fullPage:true})
- for(const tab of Object.values({companies:'Empresas',finance:'Economy',people:'Pessoas',projects:'Projetos',intelligence:'Inteligência',decisions:'Decisões',communication:'Comunicação',governance:'Governança'})){await page.getByRole('navigation',{name:'Evergreen Founders'}).getByRole('button',{name:tab,exact:true}).click();assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false)}
+ for(const tab of Object.values({companies:'Empresas',finance:"Finanças",people:'Pessoas',projects:'Projetos',intelligence:'Inteligência',decisions:'Decisões',communication:'Comunicação',governance:'Governança'})){await page.getByRole('navigation',{name:"Evergreen Fundadores"}).getByRole('button',{name:tab,exact:true}).click();assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false)}
  await page.getByRole('button',{name:'Decisões',exact:true}).click();await page.getByText('Documento de outra empresa QA',{exact:true}).waitFor()
  await page.getByLabel('Filtrar empresa',{exact:true}).selectOption('workspace-qa')
  assert.equal(await page.getByText('Documento de outra empresa QA',{exact:true}).count(),0);assert.equal(await page.getByText('Documento do grupo QA',{exact:true}).count(),0);assert.equal(await page.getByText('Documento da empresa QA',{exact:true}).count(),1)
@@ -121,12 +139,12 @@ try{
  assert.ok(await label.isVisible());if(width<700)assert.ok((await page.getByLabel('Qualidade gráfica',{exact:true}).boundingBox()).height>=44)
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false)
  await page.screenshot({path:'output/platform/vision-'+width+'.png',fullPage:true})
+ await page.evaluate(()=>{window.__vaultTiming={};new MutationObserver(()=>{const t=window.__vaultTiming;if(document.querySelector('[data-testid=world-renderer]')?.dataset.vaultState==='opening'&&!t.opening)t.opening=performance.now();if(document.querySelector('h1')?.textContent==='Economy QA'&&!t.entered)t.entered=performance.now()}).observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['data-vault-state']})});
  const started=Date.now();if(width<700)await page.touchscreen.tap(box.x+pick.x,box.y+pick.y);else await page.mouse.click(box.x+pick.x,box.y+pick.y)
- await page.waitForFunction(()=>document.querySelector('[data-testid=world-renderer]')?.dataset.vaultState==='opening')
- await page.waitForTimeout(200);assert.equal(await page.getByRole('heading',{name:'Economy QA',exact:true}).count(),0)
- await page.getByRole('heading',{name:'Economy QA',exact:true}).waitFor();assert.ok(Date.now()-started>=600);assert.equal(new URL(page.url()).pathname,'/economy')
+ await page.waitForFunction(()=>!!window.__vaultTiming.opening)
+ await page.getByRole('heading',{name:'Economy QA',exact:true}).waitFor();assert.ok(Date.now()-started>=600);const timing=await page.evaluate(()=>window.__vaultTiming);assert.ok(timing.entered-timing.opening>=600,JSON.stringify(timing));assert.equal(new URL(page.url()).pathname,'/economy')
  await page.getByText('workspace-qa / qa-user',{exact:true}).waitFor()
- await page.getByRole('button',{name:'Voltar ao Vision QA'}).click();await page.getByRole('heading',{name:'Evergreen Vision',exact:true}).waitFor()
+ await page.getByRole('button',{name:'Voltar ao Vision QA'}).click();await page.getByRole('heading',{name:"Evergreen Visão",exact:true}).waitFor()
  await page.goBack();await page.getByRole('heading',{name:'Economy QA',exact:true}).waitFor()
  assert.equal(requested.some(r=>r.includes('/api/backend')),false);assert.deepEqual(errors,[])
  results.push({width,vaultRaycast:true,touch:width<700,hoverLabel:true,openingDelay:true,contextPreserved:true,historyNavigation:true,noFinancialQueriesInScene:true})
@@ -134,12 +152,12 @@ try{
  }
  const fallback=await browser.newContext({viewport:{width:390,height:1000},reducedMotion:'reduce'})
  await fallback.addInitScript(()=>{const old=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(type,...args){return type.startsWith('webgl')?null:old.call(this,type,...args)}})
- const page=await fallback.newPage();await page.goto(origin+'/output/platform/vault.html');await page.getByRole('button',{name:'Abrir cofre Evergreen Economy',exact:true}).focus();await page.keyboard.press('Enter');await page.getByRole('heading',{name:'Economy QA',exact:true}).waitFor();assert.equal(await page.locator('canvas').count(),0);results.push({noWebGLKeyboardAlternative:true});await fallback.close()
+ const page=await fallback.newPage();await page.goto(origin+'/output/platform/vault.html');await page.getByRole('button',{name:"Abrir cofre Evergreen Finanças",exact:true}).focus();await page.keyboard.press('Enter');await page.getByRole('heading',{name:'Economy QA',exact:true}).waitFor();assert.equal(await page.locator('canvas').count(),0);results.push({noWebGLKeyboardAlternative:true});await fallback.close()
  const personal=await browser.newPage({viewport:{width:478,height:1000}})
  await personal.goto(origin+'/output/platform/personal.html')
  await personal.getByRole('button',{name:'Meu perfil · Você',exact:true}).click()
  await personal.getByLabel('Nome',{exact:true}).fill('Marina Silva');await personal.getByLabel('Cargo',{exact:true}).fill('Diretora de operações');await personal.getByRole('button',{name:'Salvar perfil',exact:true}).click()
- await personal.getByRole('heading',{name:/Marina\./}).waitFor();await personal.getByText('Diretora de operações · Available',{exact:true}).waitFor()
+ await personal.getByRole('heading',{name:/Marina\./}).waitFor();await personal.getByText("Diretora de operações · Disponível",{exact:true}).waitFor()
  await personal.reload();await personal.getByRole('heading',{name:/Marina\./}).waitFor();assert.equal(await personal.evaluate(()=>JSON.parse(localStorage.getItem('evergreen.personal-profile.v1')).name),'Marina Silva')
  assert.equal(await personal.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);results.push({personalProfileNameJobPersisted:true,noFakeJoao:true});await personal.close()
  writeFileSync('output/platform/browser-results.json',JSON.stringify({environment:'Local API fixtures + virtual authenticator; not Supabase/provider E2E; mobile emulation, not physical devices',results},null,2));console.log(JSON.stringify(results,null,2))

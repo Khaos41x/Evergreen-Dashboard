@@ -1,3 +1,4 @@
+import {codeLabel} from '../i18n/pt-BR'
 import { Circle, CircleDashed, CircleDotDashed, CheckCircle2, Signal, Target } from 'lucide-react'
 import type { Person, Priority, TaskStatus } from '../types'
 
@@ -22,17 +23,17 @@ export function StatusIcon({ status, className = '' }: { status: TaskStatus; cla
 export function PriorityIndicator({ priority, showLabel = true }: { priority: Priority; showLabel?: boolean }) {
   const styles: Record<Priority, string> = { low: 'priority-low', normal: 'priority-normal', high: 'priority-high', urgent: 'priority-urgent' }
   return (
-    <span className={`priority ${styles[priority]}`} title={priority}>
+    <span className={`priority ${styles[priority]}`} title={codeLabel(priority)}>
       <Signal className="h-3.5 w-3.5" strokeWidth={1.8} />
-      {showLabel && <span>{priority[0].toUpperCase() + priority.slice(1)}</span>}
+      {showLabel && <span>{codeLabel(priority)}</span>}
     </span>
   )
 }
 
 export function ProjectIndicator({ project }: { project: string }) {
-  return <span className="project-indicator"><span className="project-dot" />{project || 'No project'}</span>
+  return <span className="project-indicator"><span className="project-dot" />{project || "Sem projeto"}</span>
 }
 
-export function ObjectiveIndicator({ label = 'Linked objective' }: { label?: string }) {
+export function ObjectiveIndicator({ label = "Objetivo vinculado" }: { label?: string }) {
   return <span className="objective-indicator" title={label}><Target className="h-3.5 w-3.5" strokeWidth={1.7} /></span>
 }

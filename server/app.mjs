@@ -19,7 +19,7 @@ export function createHandler(env = process.env, options = {}) {
         const view = url.searchParams.get('view'), identity = await validatedSession(context)
         if (!['vision', 'economy', 'founders', 'hub'].includes(view)) throw new HttpError(404, 'PAGE_NOT_FOUND', 'Página indisponível.')
         if (view === 'founders' && !checked(await context.client.rpc('eg_founders_access'))) throw new HttpError(403, 'FOUNDERS_DENIED', 'Você não possui acesso ao Founders.')
-        if (!identity.status.workspaces?.length) throw new HttpError(403, 'WORKSPACE_REQUIRED', 'Aceite o convite de um workspace autorizado.')
+        if (!identity.status.workspaces?.length) {context.commit();res.statusCode=303;res.setHeader('Location','/login');res.end();return}
         const html = options.indexHTML ? await options.indexHTML() : await readFile(new URL('../dist/index.html', import.meta.url), 'utf8'); context.commit(); res.setHeader('Content-Type', 'text/html; charset=utf-8'); res.end(html); return
       }
       throw new HttpError(404, 'NOT_FOUND', 'Recurso indisponível.')

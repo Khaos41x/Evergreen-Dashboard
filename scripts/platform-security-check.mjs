@@ -27,11 +27,13 @@ const inv=await val("insert into eg_invites(workspace_id,email)values($1,$2)retu
 await as(b);await pg.query('insert into eg_profiles(id,display_name)values($1,$2)',[b,'Bob']);await pg.query('select eg_accept_invite($1)',[inv])
 await as(c);const other=await val("select eg_create_workspace('Other Company') value")
 await pg.exec('reset role')
-for(const m of migrations.filter(x=>x>='20261027160000')){await pg.exec(readFileSync('supabase/migrations/'+m,'utf8'));checks.push('replay '+m)}
+for(const m of migrations.filter(x=>x>='20261027160000')){await pg.exec(readFileSync('supabase/migrations/'+m,'utf8')).catch(e=>{throw new Error(m+': '+e.message)});checks.push('replay '+m)}
 await as(a);let ctx=await val('select eg_identity_context() value');assert.equal(ctx.active,true);assert.equal(ctx.workspaces.length,1)
 await pg.query("update eg_profiles set job_title='Fundador',display_name='Alice Cooper' where id=$1",[a])
 await as(b);const profiles=await pg.query('select * from eg_public_profiles($1)',[w]);assert.equal(profiles.rows.find(x=>x.id===a).job_title,'Fundador')
-await denied("select eg_create_workspace('Member escalation')")
+const ownWorkspace=await val("select eg_create_workspace('Independent member space') value");
+assert.equal(await val("select count(*)::int value from eg_members where workspace_id=$1 and user_id=$2 and role='owner'",[w,b]),0);
+assert.equal(await val("select count(*)::int value from eg_members where workspace_id=$1 and user_id=$2 and role='owner'",[ownWorkspace,b]),1);
 checks.push('profile name/job shared within company; job never grants role')
 async function act(action,data,workspace=w){return val('select eg_economy_action($1,$2,$3::jsonb) value',[workspace,action,JSON.stringify(data)])}
 await denied("select eg_economy_snapshot($1)",[other]);await denied("select eg_economy_action($1,'company','{\"name\":\"Attack\",\"currency\":\"BRL\"}')",[w])
@@ -144,6 +146,34 @@ const invitedCtx=await val('select eg_identity_context() value')
 assert.equal(invitedCtx.profile.display_name,'Invited Person');assert.equal(invitedCtx.profile.job_title,'Diretor');assert.equal(invitedCtx.workspaces[0].role,'member')
 assert.equal(await val('select eg_founders_access() value'),false)
 checks.push('OAuth-style invited account bootstrap persists name/job; forged role metadata grants no privileges')
+// Self-registration and a first workspace never disclose an existing company.
+const fresh='00000000-0000-4000-8000-000000000099',freshSession='10000000-0000-4000-8000-000000000099';
+await pg.exec('reset role');await pg.query("insert into auth.users(id,email,email_confirmed_at,raw_user_meta_data)values($1,'normal@test.invalid',now(),$2::jsonb)",[fresh,JSON.stringify({display_name:'Pessoa nova',role:'owner',job_title:'Fundador'})]);
+await pg.query('insert into auth.sessions(id,user_id)values($1,$2)',[freshSession,fresh]);sessions.set(fresh,freshSession);
+await as(fresh);await pg.query('select eg_identity_bootstrap()');assert.equal((await val('select eg_identity_context() value')).workspaces.length,0);
+assert.equal(await val('select count(*)::int value from eg_records'),0);await denied('select eg_economy_snapshot($1)',[w]);assert.equal(await val('select eg_founders_access() value'),false);
+const freshWorkspace=await val("select eg_create_workspace('Minha equipe') value");
+assert.equal((await val('select eg_identity_context() value')).workspaces.length,1);assert.notEqual(freshWorkspace,w);
+await denied("select eg_create_workspace('x')");
+await pg.exec('reset role');await pg.query('update auth.users set email_confirmed_at=null where id=$1',[fresh]);await as(fresh);await denied("select eg_create_workspace('Unconfirmed email')");
+await pg.exec('reset role');await pg.query('update auth.users set email_confirmed_at=now() where id=$1',[fresh]);await as(fresh);
+await pg.query("select set_config('request.jwt.claims',$1,false)",[JSON.stringify({sub:fresh,session_id:freshSession,amr:[{method:'recovery',timestamp:Math.floor(Date.now()/1000)}]})]);
+const recoveryContext=await val('select eg_identity_context() value');assert.equal(recoveryContext.password_recovery,true);assert.equal(recoveryContext.recent_auth,false);await as(fresh);
+checks.push('normal registration without invitation, confirmed-email first workspace, no automatic holding membership or metadata escalation');
+await as(a);
+const due=await val("insert into eg_records(workspace_id,kind,title,assignee_id,due_date)values($1,'task','Prazo real',$2,current_date+1)returning id value",[w,b]);
+await as(b);await pg.query('select eg_refresh_due_notifications($1)',[w]);await pg.query('select eg_refresh_due_notifications($1)',[w]);
+assert.equal(await val("select count(*)::int value from eg_notifications where type='deadline' and resource_id=$1",[due]),1);
+await as(fresh);await denied('select eg_refresh_due_notifications($1)',[w]);
+await as(a);await pg.query("insert into eg_comments(record_id,body)values($1,'Comentário relevante')",[due]);
+await as(b);assert.equal(await val("select count(*)::int value from eg_notifications where type='comment' and resource_id=$1",[due]),1);
+await as(a);const optionalJob='00000000-0000-4000-8000-000000000097',optionalSession='10000000-0000-4000-8000-000000000097';
+const optionalInvite=await val("insert into eg_invites(workspace_id,email)values($1,'optional-job@test.invalid')returning token value",[w]);
+await pg.exec('reset role');await pg.query("insert into auth.users(id,email,email_confirmed_at,raw_user_meta_data)values($1,'optional-job@test.invalid',now(),$2::jsonb)",[optionalJob,JSON.stringify({display_name:'Sem cargo'})]);await pg.query('insert into auth.sessions(id,user_id)values($1,$2)',[optionalSession,optionalJob]);sessions.set(optionalJob,optionalSession);
+await as(optionalJob);await pg.query('select eg_identity_bootstrap($1)',[optionalInvite]);const optionalContext=await val('select eg_identity_context() value');assert.equal(optionalContext.profile.job_title,'');assert.equal(optionalContext.workspaces[0].role,'member');
+checks.push('optional job title does not block explicit team access; confirmed email and invitation still bind membership');
+checks.push('persistent due-date reminders deduplicate, relevant comments notify assignee, foreign workspaces denied');
+
 await pg.exec('reset role');await pg.query('delete from auth.sessions where id=$1',[sessions.get(b)])
 await as(b);assert.equal((await val('select eg_identity_context() value')).active,false)
 assert.equal(await val('select count(*)::int value from eg_records'),0)
