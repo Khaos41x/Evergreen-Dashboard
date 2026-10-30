@@ -10,3 +10,9 @@ supabase
 .impeccable
 *.tsbuildinfo
 *.log
+
+dist
+README.md
+PRODUCT.md
+DESIGN.md
+.env.example

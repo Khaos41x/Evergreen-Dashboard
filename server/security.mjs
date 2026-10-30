@@ -51,6 +51,12 @@ export async function throttle(req, config, action, account = '', limits = {ip:2
       const response = await fetch(config.env.REDIS_REST_URL, { method: 'POST', headers: { Authorization: 'Bearer ' + config.env.REDIS_REST_TOKEN, 'Content-Type': 'application/json' }, body: JSON.stringify(['EVAL', "local n=redis.call('INCR',KEYS[1]);if n==1 then redis.call('EXPIRE',KEYS[1],ARGV[1]) end;return n", '1', key, String(window)]), signal: AbortSignal.timeout(5000) })
       const result = await response.json(); count = Number(result.result)
       if (!response.ok || !Number.isFinite(count) || result.error) throw new HttpError(503, 'RATE_LIMIT_UNAVAILABLE', 'Proteção de acesso temporariamente indisponível.')
+    } else if (config.env.RATE_LIMIT_PROOF) {
+      if(!/^[A-Za-z0-9_-]{43}$/.test(config.env.RATE_LIMIT_PROOF))throw new HttpError(503,'RATE_LIMIT_CONFIGURATION','Proteção de acesso indisponível.')
+      let response,result
+      try{response=await fetch(config.url+'/rest/v1/rpc/eg_server_rate_limit',{method:'POST',headers:{apikey:config.key,'Content-Type':'application/json'},body:JSON.stringify({p_key:key,p_limit:bucket.limit,p_window:window,p_proof:config.env.RATE_LIMIT_PROOF}),signal:AbortSignal.timeout(5000)});result=await response.json()}catch{throw new HttpError(503,'RATE_LIMIT_UNAVAILABLE','Proteção de acesso temporariamente indisponível.')}
+      count=Number(result)
+      if(!response.ok||!Number.isSafeInteger(count)||count<1)throw new HttpError(503,'RATE_LIMIT_UNAVAILABLE','Proteção de acesso temporariamente indisponível.')
     } else if (!config.production) {
       const now = Date.now(), current = localBuckets.get(key)
       const next = current && current.until > now ? { ...current, count: current.count + 1 } : { count: 1, until: now + window * 1000 }

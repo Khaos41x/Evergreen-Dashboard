@@ -1,3 +1,4 @@
+import {ownerAndRateChecks} from './owner-rate-check.mjs'
 process.on('uncaughtException',e=>{console.error(e.message,e.query||'',e.where||'');process.exit(1)})
 import {holdingChecks} from './holding-sql-check.mjs'
 import {PGlite} from '@electric-sql/pglite'
@@ -176,6 +177,7 @@ await as(optionalJob);await pg.query('select eg_identity_bootstrap($1)',[optiona
 checks.push('optional job title does not block explicit team access; confirmed email and invitation still bind membership');
 checks.push('persistent due-date reminders deduplicate, relevant comments notify assignee, foreign workspaces denied');
 
+if(!process.argv.includes('--release'))await ownerAndRateChecks({pg,as,val,denied,sessions,checks});
 if(!process.argv.includes('--release'))await holdingChecks({pg,as,val,denied,a,b,c,w,other,group,ca,cb,ac,bc,checks});
 await pg.exec('reset role');await pg.query('delete from auth.sessions where id=$1',[sessions.get(b)])
 await as(b);assert.equal((await val('select eg_identity_context() value')).active,false)
