@@ -21,6 +21,7 @@ begin
  insert into public.eg_group_members values(v_group,person,'group_owner',caps)on conflict(group_id,user_id)do update set role='group_owner',capabilities=excluded.capabilities;
  for company in select w.id from public.eg_workspaces w join public.eg_members m on m.workspace_id=w.id and m.user_id=person and m.role='owner'
   where w.owner_id=person and not exists(select 1 from public.eg_groups g where g.communication_workspace=w.id)
+  and not exists(select 1 from public.eg_group_spaces gs where gs.workspace_id=w.id)
   and not exists(select 1 from public.eg_group_companies c where c.workspace_id=w.id and c.group_id<>v_group)
  loop
   insert into public.eg_group_companies values(v_group,company.id)on conflict do nothing;

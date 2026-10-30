@@ -24,7 +24,8 @@
     "test:holding:model": "node --experimental-strip-types scripts/holding-model-check.mjs",
     "test:holding:ui": "node scripts/holding-browser-check.mjs",
     "test:holding:receipts": "node scripts/receipt-browser-check.mjs",
-    "test:organization:ui": "node scripts/organization-browser-check.mjs"
+    "test:organization:ui": "node scripts/organization-browser-check.mjs",
+    "test:os:ui": "node scripts/os-browser-check.mjs"
   },
   "dependencies": {
     "@react-three/fiber": "9.8.2",

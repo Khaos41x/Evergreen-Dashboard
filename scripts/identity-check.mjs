@@ -60,6 +60,7 @@ try{
  r=await call('/api/backend?target='+encodeURIComponent('/rest/v1/eg_records?select=id')+'&path=backend');assert.equal(r.response.status,200);assert.equal(requests.at(-1).path,'/rest/v1/eg_records');
  r=await call('/api/backend?path='+encodeURIComponent('https://evil.invalid/rest/v1/eg_records'));assert.equal(r.response.status,403)
  recent=false;r=await call('/api/backend?path='+encodeURIComponent('/rest/v1/rpc/eg_economy_action'),{p_action:'expense'});assert.equal(r.response.status,428);recent=true
+ for(const method of ['eg_os_seat','eg_os_vote','eg_os_execute','eg_os_group_level','eg_os_shared_channel','eg_os_commitment','eg_os_finance_policy']){recent=false;r=await call('/api/backend?target='+encodeURIComponent('/rest/v1/rpc/'+method),{});assert.equal(r.response.status,428,method+' requires server reauthentication')}recent=true
  checks.push('fixed upstream BFF proxy adds user JWT server-side; external targets and stale financial actions denied')
  r=await call('/api/page?view=founders');assert.equal(r.response.status,403);founder=true;r=await call('/api/page?view=founders');assert.equal(r.response.status,200);assert.ok(r.text.includes('PRIVATE_FIXTURE'))
 

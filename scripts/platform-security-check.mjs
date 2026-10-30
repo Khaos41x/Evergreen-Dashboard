@@ -1,6 +1,7 @@
+import {osChecks} from './os-sql-check.mjs'
 import {profileChecks} from './profile-sql-check.mjs'
 import {ownerAndRateChecks} from './owner-rate-check.mjs'
-process.on('uncaughtException',e=>{console.error(e.message,e.query||'',e.where||'');process.exit(1)})
+process.on('uncaughtException',e=>{console.error(e.message,e.query||'',e.where||'',e.stack||'');process.exit(1)})
 import {holdingChecks} from './holding-sql-check.mjs'
 import {PGlite} from '@electric-sql/pglite'
 import {readFileSync,readdirSync,mkdirSync,writeFileSync} from 'node:fs'
@@ -124,20 +125,20 @@ const foreignAccount=await act('account',{company_id:foreignCompany,name:'Other 
 const beforeAcross=await val('select eg_economy_snapshot($1) value',[w])
 const usdCompany=await act('company',{name:'USD books',currency:'USD'}),usdAccount=await act('account',{company_id:usdCompany,name:'Dollar account'})
 await assert.rejects(()=>act('transfer',{account_id:ac,to_account_id:usdAccount,cents:'10',description:'Invalid FX',request_id:crypto.randomUUID()}))
-await act('transfer',{account_id:ac,to_account_id:foreignAccount,cents:'50',description:'Linked-company transfer',request_id:crypto.randomUUID()})
+await assert.rejects(()=>act('transfer',{account_id:ac,to_account_id:foreignAccount,cents:'50',description:'Linked-company transfer',request_id:crypto.randomUUID()}))
 const afterAcross=await val('select eg_economy_snapshot($1) value',[w]),otherAcross=await val('select eg_economy_snapshot($1) value',[other])
 assert.equal(afterAcross.accounts.filter(x=>x.currency==='BRL').reduce((n,x)=>n+BigInt(x.balance),0n)+otherAcross.accounts.reduce((n,x)=>n+BigInt(x.balance),0n),10001n)
 await founder('self_scope',{workspace_id:other,capabilities:['overview','companies','finance']},group)
 const consolidated=await val('select eg_founders_snapshot($1) value',[group])
 assert.equal(consolidated.finance.flatMap(x=>x.data.accounts).filter(x=>x.currency==='BRL').reduce((n,x)=>n+BigInt(x.balance),0n),10001n)
 const targets=await val('select eg_economy_targets($1) value',[w]);assert.ok(targets.some(x=>x.id===foreignAccount))
-checks.push('formal linked-company cross-workspace transfer cancels in group balance; currencies never mixed')
+checks.push('legacy unilateral cross-workspace transfer denied; currencies remain separate; bilateral ledger tested in OS checks')
 for(let i=0;i<55;i++)await act('income',{account_id:ac,cents:'1',description:'Page fixture '+i,request_id:crypto.randomUUID()})
 const page1=await val('select eg_economy_history($1) value',[w]);assert.equal(page1.length,50)
 const last=page1.at(-1),page2=await val('select eg_economy_history($1,$2,$3) value',[w,last.created_at,last.id])
 assert.ok(page2.length>0);assert.ok(page2.every(x=>!page1.some(y=>x.id===y.id)))
 const allBalance=(await val('select eg_economy_snapshot($1) value',[w])).accounts.filter(x=>x.currency==='BRL').reduce((n,x)=>n+BigInt(x.balance),0n)
-assert.equal(allBalance,10006n)
+assert.equal(allBalance,beforeAcross.accounts.filter(x=>x.currency==='BRL').reduce((n,x)=>n+BigInt(x.balance),0n)+55n)
 checks.push('history cursor pages without duplicates; snapshot balance covers all ledger rows beyond a history page')
 const invited='00000000-0000-4000-8000-000000000088'
 const newInvite=await val("insert into eg_invites(workspace_id,email)values($1,'invitee@test.invalid')returning token value",[w])
@@ -181,6 +182,7 @@ checks.push('persistent due-date reminders deduplicate, relevant comments notify
 if(!process.argv.includes('--release'))await ownerAndRateChecks({pg,as,val,denied,sessions,checks});
 if(!process.argv.includes('--release'))await profileChecks({pg,as,val,denied,a,b,c,w,other,group,checks});
 if(!process.argv.includes('--release'))await holdingChecks({pg,as,val,denied,a,b,c,w,other,group,ca,cb,ac,bc,checks});
+if(!process.argv.includes('--release'))await osChecks({pg,as,val,denied,sessions,checks});
 await pg.exec('reset role');await pg.query('delete from auth.sessions where id=$1',[sessions.get(b)])
 await as(b);assert.equal((await val('select eg_identity_context() value')).active,false)
 assert.equal(await val('select count(*)::int value from eg_records'),0)
