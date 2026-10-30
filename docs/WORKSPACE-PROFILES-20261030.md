@@ -1,6 +1,6 @@
 # Navegação, perfis e níveis — 30/10/2026
 
-Estado: implementação validada localmente, migração e preparação empresarial aplicadas no Supabase Evergreen após autorização explícita em 30/10/2026. Publicação em andamento; verificação autenticada de produção ainda não executada.
+Estado: implementação validada localmente, migração e preparação empresarial aplicadas no Supabase Evergreen e versão publicada na Vercel após autorização explícita em 30/10/2026. Verificações públicas reais concluídas; verificação autenticada de produção ainda não executada. Veja `ACTIVATION-WORKSPACE-PROFILES-20261030.md`.
 
 ## Experiência
 
