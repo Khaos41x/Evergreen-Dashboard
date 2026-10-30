@@ -21,22 +21,24 @@ await new Promise((resolve,reject)=>{const timeout=setTimeout(()=>reject(new Err
 const browser=await chromium.launch({executablePath:process.env.BROWSER_PATH ?? 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',headless:true})
 const results=[]
 try {
- for(const width of [320,375,390,430,768,1440]) {
+ for(const width of (process.env.COLLAB_WIDTHS?process.env.COLLAB_WIDTHS.split(',').map(Number):[320,375,390,430,768,790,1440])) {
   fixture.messages=[];fixture.records=[]
   const context=await browser.newContext({viewport:{width,height:900},hasTouch:width<=768})
   await context.route('**/api/backend?**',async route=>{
-   const req=route.request(),url=new URL(new URL(req.url()).searchParams.get('path'),'https://fixture.supabase.invalid'),table=url.pathname.split('/').at(-1).replace('eg_',''),method=req.method()
+   const req=route.request(),url=new URL(new URL(req.url()).searchParams.get('target')??new URL(route.request().url()).searchParams.get('path'),'https://fixture.supabase.invalid'),table=url.pathname.split('/').at(-1).replace('eg_',''),method=req.method()
    const headers={'content-type':'application/json','access-control-allow-origin':'*','access-control-allow-headers':'*','access-control-allow-methods':'*'}
    if(method==='OPTIONS') return route.fulfill({status:200,headers,body:''})
-   let rows=fixture[table]??[],payload=req.postDataJSON()
+   let rows=fixture[table]??[],payload=req.headers()['content-type']?.includes('json')?req.postDataJSON():null
    if(url.pathname.includes('/rpc/')) {
-    if(table==='holding_context'&&[390,1440].includes(width))return route.fulfill({status:200,headers,body:JSON.stringify({groups:[{id:'organization-fixture',name:'Holding fixture',owner:true}],companies:[{id:w,name:'UI fixture workspace',group_id:'organization-fixture',description:'Fixture explícita da empresa',admin:true,operational:true,information:true}]})})
+    if(table==='holding_context')return route.fulfill({status:200,headers,body:JSON.stringify({groups:[{id:'organization-fixture',name:'Holding fixture',owner:true}],companies:[{id:w,name:'UI fixture workspace',group_id:'organization-fixture',description:'Fixture explícita da empresa',admin:true,operational:true,information:true}]})})
+    if(table==='public_profiles')return route.fulfill({status:200,headers,body:JSON.stringify(fixture.profiles.map(p=>({id:p.id,display_name:p.display_name,job_title:p.job_title||'',avatar_path:p.avatar_path})))})
+    if(table==='professional_profile')return route.fulfill({status:200,headers,body:JSON.stringify({id:a,display_name:'Fixture Alice',job_title:'Fundadora',bio:'Perfil QA',username:'alice',custom_status:'',companies:[{id:w,name:'UI fixture workspace',relationship:'founder'}],original_founders:[{name:'Holding fixture'}]})})
     if(table==='information_snapshot')return route.fulfill({status:200,headers,body:JSON.stringify({applications:[],integrations:[],metrics:[],objectives:[]})})
 
     if(table==='save_checklist'){fixture.checklist=payload.p_items.map((i,index)=>({...i,id:crypto.randomUUID(),record_id:payload.p_record,position:index}));return route.fulfill({status:200,headers,body:'null'})}
     return route.fulfill({status:200,headers,body:table==='read_channel'?'null':'[]'})
    }
-   if(url.pathname.includes('/storage/'))return route.fulfill({status:200,headers,body:'[]'})
+   if(url.pathname.includes('/storage/'))return route.fulfill({status:200,headers,body:JSON.stringify(url.pathname.includes('/object/sign/')?{signedURL:'/object/sign/eg-avatars/photo-fixture?token=synthetic'}:{Key:'eg-avatars/photo-fixture'})})
    if(method==='POST'&&table==='messages') {const row={...payload,author_id:a,author_name:'Fixture Alice',created_at:new Date().toISOString(),edited_at:null,deleted:false};rows.push(row);return route.fulfill({status:201,headers,body:JSON.stringify(row)})}
    if(method==='POST'&&table==='records') {const row={...payload,id:crypto.randomUUID(),version:1,priority:payload.priority??'normal',created_at:new Date().toISOString(),updated_at:new Date().toISOString(),archived_at:null,completed_at:null,progress:0};rows.push(row);return route.fulfill({status:201,headers,body:JSON.stringify(row)})}
    if(method==='PATCH') {const row=rows.find(r=>r.id===url.searchParams.get('id')?.slice(3));if(row){Object.assign(row,payload);if(table==='messages')row.edited_at=new Date().toISOString();return route.fulfill({status:200,headers,body:JSON.stringify(row)})}}
@@ -55,11 +57,13 @@ try {
   await context.route('**/api/realtime?**',route=>route.fulfill({status:200,contentType:'text/event-stream',body:'data: {"type":"status","status":"CHANNEL_ERROR"}\n\n'}))
   await context.route('**/api/identity/config',route=>route.fulfill({contentType:'application/json',body:'{"google":false,"passkeys":false}'}))
   await context.route('**/api/identity/sessions',route=>route.fulfill({contentType:'application/json',body:'{"sessions":[]}'}))
+  await context.route('https://fixture.supabase.invalid/storage/**',r=>r.fulfill({contentType:'image/png',body:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jGZkAAAAASUVORK5CYII=','base64')}))
   const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error'&&!m.text().includes('WebSocket'))console.log(m.text())})
   await page.goto(`${origin}/output/playwright/fixture.html`,{waitUntil:'networkidle'})
-  await page.locator('.collab-top nav').waitFor({state:'attached'}).catch(async e=>{console.log(JSON.stringify({errors,body:await page.locator('body').innerText()}));await page.screenshot({path:'output/playwright/productivity-initial-failure.png'});throw e});await page.getByRole('navigation',{name:width<=768?'Navegação mobile':'Navegação desktop'}).getByRole('button',{name:'Conversas',exact:true}).click()
+  async function go(label){if(label==='Configurações'){await page.getByRole('button',{name:'Configurações',exact:true}).click();return}if(width<=600){await page.getByRole('navigation',{name:'Navegação mobile'}).getByRole('button',{name:label==='Mensagens'?'Conversas':label,exact:true}).click();return}if(width<=1000)await page.getByRole('button',{name:'Abrir menu',exact:true}).click();await page.getByRole('navigation',{name:'Navegação principal'}).getByRole('button',{name:label,exact:true}).click()}
+  await page.locator('.collab-top').waitFor();await go('Mensagens')
   await page.getByRole('heading',{name:'# geral',exact:true}).waitFor().catch(async e=>{console.log(JSON.stringify({errors,body:await page.locator('body').innerText()}));await page.screenshot({path:'output/playwright/fixture-failure.png'});throw e})
-  if(width<=768) {
+  if(width<=1000) {
    const opener=page.getByRole('button',{name:'Abrir menu',exact:true});await opener.click()
    assert.ok(await page.getByRole('dialog',{name:'Espaços de trabalho e canais'}).isVisible())
    assert.equal(await page.locator('.collab-main').getAttribute('inert'),'')
@@ -71,6 +75,7 @@ try {
   await page.getByRole('button',{name:'Editar',exact:true}).click();await page.getByLabel('Mensagem',{exact:true}).fill(`UI fixture edited ${width}`);await page.getByRole('button',{name:'Salvar edição'}).click();await page.getByText(`UI fixture edited ${width}`,{exact:true}).waitFor()
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,`Chat overflow ${width}`)
   await page.screenshot({path:`output/playwright/fixture-chat-${width}.png`,fullPage:true})
+  if([390,790,1440].includes(width)){await page.getByRole('button',{name:'Fixture Alice',exact:true}).click();await page.getByRole('heading',{name:'Meu perfil',exact:true}).waitFor();await page.getByText('Chairman · Fundador da Evergreen',{exact:true}).waitFor();assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);await page.screenshot({path:'output/playwright/profile-'+width+'.png',fullPage:true});await page.getByRole('button',{name:'Editar perfil e foto',exact:true}).click();await page.getByRole('heading',{name:'Configurações',exact:true}).waitFor();await go('Mensagens')}
   await page.getByRole('button',{name:'Excluir',exact:true}).click();await page.getByRole('button',{name:'Confirmar exclusão',exact:true}).click();await page.getByText('Mensagem excluída',{exact:true}).waitFor()
   if(width===390){
    const staleResponse=page.waitForResponse(r=>r.url().includes('stale-search'))
@@ -80,8 +85,7 @@ try {
    assert.equal(await page.getByText('Stale search result',{exact:true}).count(),0)
    await page.getByRole('button',{name:"Limpar",exact:true}).click()
   }
-  const nav=page.getByRole('navigation',{name:width<=768?'Navegação mobile':'Navegação desktop'})
-  await nav.getByRole('button',{name:width<=768?'Tarefas':'Projetos e tarefas',exact:true}).click();const openEditor=page.getByRole('button',{name:"Nova tarefa",exact:true});await openEditor.click();await page.keyboard.press('Escape');assert.ok(await openEditor.evaluate(el=>document.activeElement===el));await openEditor.click();const dialog=page.getByRole('dialog');await dialog.getByLabel("Título",{exact:true}).fill(`UI fixture task ${width}`);await dialog.getByLabel("Novo item da lista").fill('Verify persistence');await dialog.getByRole('button',{name:"Adicionar item",exact:true}).click()
+  await go('Tarefas');const openEditor=page.getByRole('button',{name:"Nova tarefa",exact:true});await openEditor.click();await page.keyboard.press('Escape');assert.ok(await openEditor.evaluate(el=>document.activeElement===el));await openEditor.click();const dialog=page.getByRole('dialog');await dialog.getByLabel("Título",{exact:true}).fill(`UI fixture task ${width}`);await dialog.getByLabel("Novo item da lista").fill('Verify persistence');await dialog.getByRole('button',{name:"Adicionar item",exact:true}).click()
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,`Modal overflow ${width}`)
   await page.screenshot({path:`output/playwright/fixture-editor-${width}.png`,fullPage:true})
   await dialog.getByRole('button',{name:"Salvar tarefa"}).click();await page.getByText(`UI fixture task ${width}`,{exact:true}).waitFor();assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false)
@@ -99,29 +103,30 @@ try {
    await page.getByRole('progressbar',{name:'Progresso das tarefas selecionadas'}).waitFor()
    await page.waitForFunction(()=>document.querySelector('.world-progress progress')?.value===100)
    await page.getByRole('group',{name:'Modo do Evergreen'}).getByRole('button',{name:"Trabalho",exact:true}).click()
-   await nav.getByRole('button',{name:'Tarefas',exact:true}).click();await page.getByRole('tab',{name:"Concluídas",exact:true}).click()
+   await go('Tarefas');await page.getByRole('tab',{name:"Concluídas",exact:true}).click()
    await page.getByText(`UI fixture task ${width}`,{exact:true}).waitFor()
   }
-  await nav.getByRole('button',{name:width<=768?'Ajustes':'Configurações',exact:true}).click();await page.getByRole('heading',{name:'Configurações',exact:true}).waitFor();assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false)
+  await go('Configurações');await page.getByRole('heading',{name:'Configurações',exact:true}).waitFor();assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false)
   await page.screenshot({path:`output/playwright/fixture-settings-${width}.png`,fullPage:true})
 
   if([390,1440].includes(width)){
-   if(width<=768)await page.getByRole('button',{name:'Abrir menu',exact:true}).click();await page.getByRole('button',{name:'Empresas e equipe',exact:true}).click();await page.getByRole('heading',{name:'Equipe e trabalho por empresa',exact:true}).waitFor();const orgNav=page.getByRole('navigation',{name:'Organizar UI fixture workspace'});await orgNav.getByRole('button',{name:'Projetos',exact:true}).click();await page.getByRole('heading',{name:'Projetos da empresa',exact:true}).waitFor();await page.getByRole('button',{name:'Novo projeto',exact:true}).click();await page.getByRole('dialog').getByLabel('Título',{exact:true}).fill('Projeto integrado QA');assert.equal(await page.getByRole('dialog').getByLabel('Tipo',{exact:true}).inputValue(),'project');await page.getByRole('dialog').getByRole('button',{name:'Salvar item',exact:true}).click();await page.getByRole('heading',{name:'Projeto integrado QA',exact:true}).waitFor();assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);await page.screenshot({path:'output/playwright/organization-shell-projects-'+width+'.png',fullPage:true});if(width<=768)await page.getByRole('button',{name:'Abrir menu',exact:true}).click();await page.getByRole('button',{name:'Empresas e equipe',exact:true}).click();await page.getByRole('navigation',{name:'Organizar UI fixture workspace'}).getByRole('button',{name:'Equipe e convites',exact:true}).click();await page.getByRole('heading',{name:'Membros e acesso',exact:true}).waitFor();assert.equal(await page.getByRole('heading',{name:'Equipe e trabalho por empresa',exact:true}).count(),0);await page.screenshot({path:'output/playwright/organization-shell-team-'+width+'.png',fullPage:true});
+   if(width<=1000)await page.getByRole('button',{name:'Abrir menu',exact:true}).click();await page.getByRole('button',{name:'Empresas e equipe',exact:true}).click();await page.getByRole('heading',{name:'Equipe e trabalho por empresa',exact:true}).waitFor();const orgNav=page.getByRole('navigation',{name:'Organizar UI fixture workspace'});await orgNav.getByRole('button',{name:'Projetos',exact:true}).click();await page.getByRole('heading',{name:'Projetos da empresa',exact:true}).waitFor();await page.getByRole('button',{name:'Novo projeto',exact:true}).click();await page.getByRole('dialog').getByLabel('Título',{exact:true}).fill('Projeto integrado QA');assert.equal(await page.getByRole('dialog').getByLabel('Tipo',{exact:true}).inputValue(),'project');await page.getByRole('dialog').getByRole('button',{name:'Salvar item',exact:true}).click();await page.getByRole('heading',{name:'Projeto integrado QA',exact:true}).waitFor();assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);await page.screenshot({path:'output/playwright/organization-shell-projects-'+width+'.png',fullPage:true});if(width<=1000)await page.getByRole('button',{name:'Abrir menu',exact:true}).click();await page.getByRole('button',{name:'Empresas e equipe',exact:true}).click();await page.getByRole('navigation',{name:'Organizar UI fixture workspace'}).getByRole('button',{name:'Equipe e convites',exact:true}).click();await page.getByRole('heading',{name:'Membros e acesso',exact:true}).waitFor();assert.equal(await page.getByRole('heading',{name:'Equipe e trabalho por empresa',exact:true}).count(),0);await page.screenshot({path:'output/playwright/organization-shell-team-'+width+'.png',fullPage:true});
   }
-  if(width<=768)await page.getByRole('button',{name:'Abrir menu',exact:true}).click();
-  await page.getByRole('navigation',{name:'Navegação principal',exact:true}).getByRole('button',{name:'Sala de foco',exact:true}).click();
+  if(width<=1000)await page.getByRole('button',{name:'Abrir menu',exact:true}).click();
+  if(!await page.locator('.workspace-more').evaluate(el=>el.open))await page.locator('.workspace-more summary').click();await page.getByRole('navigation',{name:'Navegação principal',exact:true}).getByRole('button',{name:'Sala de foco',exact:true}).click();
   await page.getByRole('heading',{name:'Sala de foco',exact:true}).waitFor();await page.getByText('Sem sessão ativa',{exact:true}).waitFor();
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
   if([390,1440].includes(width))await page.screenshot({path:'output/playwright/focus-room-'+width+'.png',fullPage:true});
   await page.getByRole('button',{name:'Iniciar minha sessão',exact:true}).click();await page.getByRole('dialog',{name:'Iniciar foco',exact:true}).waitFor();await page.keyboard.press('Escape');
-  if(width<=768)await page.getByRole('button',{name:'Abrir menu',exact:true}).click();
-  await page.getByRole('navigation',{name:'Navegação principal',exact:true}).getByRole('button',{name:'Como usar',exact:true}).click();
+  if(width<=1000)await page.getByRole('button',{name:'Abrir menu',exact:true}).click();
+  if(!await page.locator('.workspace-more').evaluate(el=>el.open))await page.locator('.workspace-more summary').click();await page.getByRole('navigation',{name:'Navegação principal',exact:true}).getByRole('button',{name:'Como usar',exact:true}).click();
   await page.getByRole('heading',{name:'Comece pelo que importa.',exact:true}).waitFor();
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
   if([390,1440].includes(width))await page.screenshot({path:'output/playwright/getting-started-'+width+'.png',fullPage:true});
   await page.getByRole('button',{name:'Criar minha primeira tarefa',exact:false}).click();
   await page.getByRole('dialog',{name:'Nova tarefa',exact:true}).waitFor();await page.keyboard.press('Escape');
-  assert.deepEqual(errors,[]);results.push({width,organizationShellNavigation:[390,1440].includes(width)?true:'covered at 390/1440',focusRoomAndHelp:true,chatSendEditDelete:true,recordCreate:true,chatEditorSettingsNoOverflow:true,editorFocusReturn:true,mobileDrawerKeyboard:width<=768,worldMutationSharedWithWork:width===390?'PASS (REST fixture)':'covered at 390',searchRaceAndTaskFocus:width===390?'PASS':'covered at 390',pageErrors:errors});await context.close()
+  if(width===1440){assert.equal(await page.locator('.workspace-self>.domain-member-avatar').evaluate(el=>el.getBoundingClientRect().width===el.getBoundingClientRect().height),true);await go('Configurações');const photo=page.getByLabel('Foto de perfil (PNG/JPEG/WebP, até 2MiB)',{exact:true});await photo.setInputFiles({name:'avatar-fixture.png',mimeType:'image/png',buffer:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jGZkAAAAASUVORK5CYII=','base64')});await page.getByText('Foto de perfil salva.',{exact:true}).waitFor();await page.locator('.workspace-self>img').waitFor();assert.equal(await page.locator('.workspace-self>img').evaluate(el=>el.getBoundingClientRect().width===el.getBoundingClientRect().height),true);assert.equal(await page.locator('.workspace-rail>button>img').evaluate(el=>{const b=el.getBoundingClientRect();return b.width===28&&b.height===28}),true);await page.screenshot({path:'output/playwright/photo-desktop.png',fullPage:true});fixture.members[0].role='member';await page.goto(origin+'/output/playwright/fixture.html',{waitUntil:'networkidle'});await page.getByLabel('Empresas',{exact:true}).waitFor();assert.equal(await page.getByRole('button',{name:'Adicionar canal',exact:true}).count(),0);await page.screenshot({path:'output/playwright/ordinary-member-desktop.png',fullPage:true});fixture.members[0].role='owner'}
+  assert.deepEqual(errors,[]);results.push({width,organizationShellNavigation:[390,1440].includes(width)?true:'covered at 390/1440',focusRoomAndHelp:true,chatSendEditDelete:true,recordCreate:true,chatEditorSettingsNoOverflow:true,editorFocusReturn:true,mobileDrawerKeyboard:width<=1000,worldMutationSharedWithWork:width===390?'PASS (REST fixture)':'covered at 390',searchRaceAndTaskFocus:width===390?'PASS':'covered at 390',pageErrors:errors});await context.close()
  }
- writeFileSync('output/collaboration-ui-results.json',JSON.stringify({environment:'Playwright REST response fixtures ONLY; does not prove auth, persistence or Realtime',results},null,2));console.log(JSON.stringify(results,null,2))
+ writeFileSync(process.env.COLLAB_WIDTHS?'output/collaboration-ui-focused-results.json':'output/collaboration-ui-results.json',JSON.stringify({environment:'Playwright REST response fixtures ONLY; does not prove auth, persistence or Realtime',results},null,2));console.log(JSON.stringify(results,null,2))
 } finally {await browser.close();server.kill()}

@@ -1,0 +1,77 @@
+/* Evergreen's working shell: company rail, one context, focused conversation. */
+:root{--heading-font:'Libre Caslon Display',Georgia,'Times New Roman',serif;--workspace-active:#153e30;--workspace-muted:#afc1b7}
+.collab-app h1,.collab-app h2,.collab-app h3,.collab-app h4,.world-page h1,.world-page h2,.economy-page h1,.economy-page h2,.founders-page h1,.founders-page h2,.collab-auth h2{font-family:var(--heading-font);font-weight:400;letter-spacing:-.018em;text-wrap:balance}
+.collab-app button{transition:background-color .15s,border-color .15s,color .15s;cursor:pointer;font-family:inherit;font-weight:500;line-height:1.35}
+.collab-app button svg{flex-shrink:0;stroke-width:1.7}
+.collab-app button:focus-visible,.collab-app select:focus-visible,.collab-app input:focus-visible,.collab-app textarea:focus-visible{outline:2px solid var(--emerald);outline-offset:3px}
+.collab-app input,.collab-app textarea{caret-color:var(--emerald)}
+.collab-app:has(>.workspace-rail){grid-template-columns:64px 240px minmax(0,1fr)}
+.workspace-rail{background:#0b211a;display:flex;flex-direction:column;align-items:center;gap:14px;padding:20px 8px 12px;border-right:1px solid #244435;overflow-y:auto;min-height:0}
+.workspace-rail .evergreen-brand.evergreen-symbol{width:40px;height:48px;margin-bottom:8px}
+.workspace-rail>button{width:44px;min-height:44px;padding:0;background:#19372b;border-color:transparent;border-radius:12px;color:#d9e9df;font-weight:650;font-size:13px;flex-shrink:0}
+.workspace-rail>button[aria-current=page]{color:#061a11;background:var(--emerald);border-radius:12px}
+.workspace-rail>button:hover{background:#2a503e}.workspace-rail-spacer{flex:1;min-height:24px}
+.collab-app>.collab-sidebar{padding:0;gap:0;overflow:hidden;background:#0b1410;min-height:0}
+.collab-sidebar>header{padding:18px 18px 12px;gap:10px;justify-content:flex-start;min-height:62px!important;flex-shrink:0}
+.collab-sidebar>header>.evergreen-brand.evergreen-symbol{width:25px;height:32px}
+.collab-sidebar>header>span{font-family:var(--heading-font);font-size:28px;color:#f2f6f1}
+.collab-sidebar>header>.collab-mobile-only{margin-left:auto}
+.collab-sidebar .workspace-company-label{position:relative;margin:0 16px 12px;gap:5px;font-size:11px;font-weight:600;color:var(--workspace-muted)}
+.workspace-company-label select{background:#12241b;appearance:none;border-color:#294437;font-size:15px;font-weight:600;padding:10px 34px 10px 12px;min-height:44px}
+.workspace-company-label>svg{position:absolute;right:12px;bottom:14px;pointer-events:none}
+.collab-sidebar .workspace-search{margin:0 16px 14px;min-height:38px;padding:8px;justify-content:flex-start;font-size:12px;background:transparent;border-color:#294437}
+.workspace-search kbd{margin-left:auto;font:10px inherit;color:#b3c5ba;white-space:nowrap}.workspace-search span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.workspace-sidebar-scroll{min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:0 10px 16px;scrollbar-width:thin;flex:1}
+.collab-sidebar .domain-nav{display:grid;gap:2px;margin:0;padding-bottom:14px;border-bottom:1px solid #26382e}
+.collab-sidebar .domain-nav>button,.collab-sidebar .workspace-sidebar-link{display:flex;justify-content:flex-start;text-align:left;gap:10px;width:100%;border:0;background:transparent;min-height:38px;padding:8px 10px;border-radius:6px;font-size:13px;color:#d0dfd5}
+.collab-sidebar .domain-nav>button svg,.workspace-sidebar-link>svg{color:#a4beaf}
+.collab-sidebar .domain-nav>button[aria-current=page],.collab-sidebar .workspace-sidebar-link[aria-current=page]{color:#d4ffea;background:var(--workspace-active)}
+.collab-sidebar .domain-nav>button small{margin-left:auto;background:#28634a;color:#edfff5;padding:0 6px;border-radius:4px}
+.collab-sidebar .domain-nav>button:hover,.collab-sidebar .workspace-sidebar-link:hover{background:#183224}
+.workspace-section-heading{display:flex;align-items:center;justify-content:space-between;margin:18px 6px 5px;min-height:30px}
+.collab-app .workspace-section-heading h2{display:flex;align-items:center;gap:8px;font-family:inherit;font-size:12px;letter-spacing:0;font-weight:600;color:#b7ccbe;margin:0}
+.workspace-section-heading>button{min-height:30px;width:30px;padding:4px;background:transparent;border:0}
+.collab-app .workspace-hint{font-size:12px;margin:4px 10px 10px;color:var(--workspace-muted);line-height:1.6}
+.workspace-channel-row{display:flex;align-items:center;gap:0;min-height:38px;border-radius:6px}
+.workspace-channel-row>button:first-child{flex:1;justify-content:flex-start;gap:10px;min-height:38px;padding:8px 10px;background:transparent;border:0;font-size:13px;text-align:left;border-radius:6px}
+.workspace-channel-row>button:first-child>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.workspace-channel-row:has([aria-current=page]){background:var(--workspace-active)}
+.workspace-channel-row .channel-favorite{min-height:34px;min-width:30px;padding:4px;background:transparent;border:0;color:#93af9d}
+.channel-favorite[aria-pressed=true]{color:#e8d49c}.channel-favorite[aria-pressed=true] svg{fill:currentColor}
+.collab-sidebar .workspace-channel-filter{margin:4px 7px 7px}.workspace-channel-filter input{min-height:36px;padding:6px 8px;font-size:12px;background:#0c1912;border-color:#294437}
+.collab-sidebar-bottom{margin:0;padding:10px;border-top:1px solid #26382e;gap:3px;background:#0b1e15;flex:none}
+.collab-sidebar .workspace-self{justify-content:flex-start;gap:10px;padding:8px;border:0;background:transparent;width:100%;text-align:left}
+.workspace-self>.workspace-self-copy{display:grid;gap:2px;flex:1}.workspace-self strong{font-size:13px;font-weight:600;overflow-wrap:anywhere}.workspace-self small{font-size:11px;color:#b7ccbe}
+.collab-sidebar .workspace-logout{justify-content:flex-start;min-height:32px;padding:6px 9px;font-size:12px;border:0;background:transparent;color:#bed1c4}
+.collab-app .collab-top{padding:8px 20px;gap:8px;min-height:66px;flex-wrap:nowrap;background:#0b110e}
+.collab-top>strong{font-family:var(--heading-font);font-size:24px;font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:60px}
+.collab-top>button{min-height:38px;padding:8px;color:#c8d8ce}.collab-top .world-mode-switch{margin:0;flex-shrink:0}
+.workspace-wide-label{font-size:12px}.collab-top>.workspace-top-search{gap:6px;font-size:12px}
+.workspace-member-name{background:transparent!important;border:0!important;font-weight:650!important;padding:4px!important;text-align:left}
+.professional-profile{padding:30px clamp(16px,5vw,70px)}
+.professional-profile>*{max-width:860px}.professional-page-heading{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}.professional-page-heading h1{margin:0;font-size:32px}
+.professional-cover{height:156px;background:#123626;display:flex;justify-content:space-between;align-items:center;padding:24px 36px;color:#8cba9c;overflow:hidden;border-radius:12px 12px 0 0}
+.professional-cover>span{font:32px var(--heading-font);color:#cce0d1}.professional-cover svg{opacity:.7}
+.professional-identity{position:relative;padding:0 28px 26px;border-bottom:1px solid var(--line)}
+.professional-identity>.domain-member-avatar,.professional-identity>img{position:relative;margin-top:-44px;border:5px solid var(--bg);box-sizing:content-box;font-size:28px;background:#27543d}
+.professional-identity h2{font-size:36px;margin:18px 0 6px}.professional-headline{font-size:17px;margin:5px 0 12px}.professional-username{font-size:13px;color:#abc2b3}.professional-profile-actions{float:right;margin-top:16px}
+.professional-founder-badge{display:inline-flex;align-items:center;gap:7px;padding:6px 10px;color:#cbf4da;background:#153a29;border:1px solid #396049;border-radius:6px;font-size:12px}
+.professional-about,.professional-experience,.professional-manage{padding:24px 28px;border-bottom:1px solid var(--line)}
+.professional-profile h3{font-size:25px;margin:0 0 14px}.professional-about p{white-space:pre-wrap;line-height:1.7;max-width:68ch}
+.professional-experience article{display:flex;align-items:center;gap:16px;padding:16px 0}.professional-company-icon{width:48px;height:48px;display:grid;place-items:center;background:#12251b;border-radius:8px;color:#b9d4c3}.professional-experience article>div:nth-child(2){flex:1}.professional-experience h4{font-size:23px;margin:0 0 3px}.professional-experience p{margin:0}.professional-experience article>svg{color:#92b29e}
+.professional-manage label{max-width:300px}.professional-status{margin:12px 0 0;color:#c7dace}
+.evergreen-brand.evergreen-symbol{width:48px;height:48px;object-fit:contain;filter:brightness(0) invert(1);background:transparent}
+.world-heading .evergreen-brand.evergreen-symbol{width:42px;height:52px}
+@media(min-width:1001px){.collab-app .collab-mobile-only{display:none!important}}
+@media(max-width:1200px){.collab-app:has(>.workspace-rail){grid-template-columns:56px 218px minmax(0,1fr)}.workspace-wide-label,.workspace-top-search span{display:none}.workspace-rail{padding-inline:6px}.collab-app .collab-top{padding-inline:12px}.collab-top>strong{font-size:22px}}
+@media(max-width:1000px){.collab-app:has(>.workspace-rail){display:grid;grid-template-columns:56px minmax(0,1fr);padding-bottom:0}.collab-app>.collab-main{height:100%;min-width:0}.collab-app .collab-mobile-only{display:inline-flex!important}.collab-app>.collab-sidebar{display:none;position:fixed;left:56px;top:0;bottom:0;width:min(calc(100vw - 72px),300px);z-index:80}.collab-app>.collab-sidebar.is-open{display:flex}.collab-menu-scrim{display:block!important;position:fixed;inset:0;z-index:70;background:#0009;border:0}.collab-app>.collab-bottom{display:none!important}.collab-app .collab-top{padding:8px;gap:3px}.collab-top>strong{font-size:22px}.collab-top .workspace-top-search{display:none}.workspace-rail{position:relative;z-index:65}.collab-sidebar>header .evergreen-symbol{display:block}}
+@media(max-width:600px){.collab-app:has(>.workspace-rail){display:block;padding-bottom:calc(66px + env(safe-area-inset-bottom))}.workspace-rail{display:none}.collab-app>.collab-sidebar{left:0;width:min(88vw,320px)}.collab-app>.collab-bottom{display:flex!important}.collab-app .collab-top{min-height:58px}.collab-top>strong{font-size:20px}.collab-top .workspace-founders-link{display:none}.collab-top>.world-mode-switch button{padding:7px;min-height:36px;font-size:11px}.collab-top>.world-mode-switch svg{width:14px}.collab-top>.world-mode-switch{gap:0}.professional-profile{padding:20px 14px}.professional-cover{height:122px;padding:20px}.professional-cover>span{font-size:25px}.professional-identity{padding:0 12px 22px}.professional-identity h2{font-size:30px}.professional-profile-actions{float:none;margin-top:16px}.professional-identity>.domain-member-avatar,.professional-identity>img{margin-bottom:0}.professional-about,.professional-experience,.professional-manage{padding:22px 12px}.collab-app .workspace-channel-row button,.collab-app .workspace-sidebar-link,.collab-sidebar .domain-nav>button{min-height:44px}.workspace-channel-row .channel-favorite,.workspace-section-heading>button{min-height:40px;min-width:40px}}
+@media(prefers-reduced-motion:reduce){.collab-app button{transition:none}}
+
+.collab-app{font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}.collab-app .domain-member-avatar{display:inline-grid;place-items:center;background:#214a34;color:#e1f5e7;border-radius:50%;font-size:11px;font-weight:650;flex-shrink:0}.collab-app .professional-identity>.domain-member-avatar{font-size:30px}.collab-app .professional-identity>h2{font-size:36px;margin:18px 0 6px}.collab-app .professional-identity>.domain-member-avatar{margin-top:-44px;border:5px solid var(--bg);box-sizing:content-box}.collab-app .professional-identity>img{box-sizing:content-box}.collab-app .workspace-sidebar-scroll::-webkit-scrollbar{width:5px}.collab-app .workspace-sidebar-scroll::-webkit-scrollbar-thumb{background:#31573e;border-radius:4px}
+@media(min-width:1001px){.collab-app>.collab-sidebar>header{display:none}.collab-app .workspace-company-label{margin-top:20px}}
+
+.collab-app .workspace-more{margin-top:5px}.workspace-more summary{display:flex;align-items:center;gap:10px;cursor:pointer;min-height:38px;padding:8px 10px;color:#c4d8cb;font-size:12px;list-style:none}.workspace-more summary:focus-visible{outline:2px solid var(--emerald);outline-offset:2px}.workspace-more[open] summary>svg{transform:rotate(180deg)}.collab-sidebar .workspace-more button{width:100%;justify-content:flex-start;gap:10px;min-height:38px;padding:8px 10px;background:transparent;border:0;font-size:13px;color:#d0dfd5}.collab-sidebar .workspace-more button[aria-current=page]{background:var(--workspace-active);color:#d4ffea}.workspace-self>.domain-member-avatar{flex:0 0 34px;aspect-ratio:1}.workspace-sidebar-scroll>.domain-nav{margin-top:20px;padding-top:14px;border-top:1px solid #26382e}
+@media(max-width:600px){.workspace-more summary,.collab-sidebar .workspace-more button{min-height:44px}}
+
+.collab-app .workspace-rail>button{display:flex;align-items:center;justify-content:center;padding:0}.collab-app .workspace-rail>button>img{width:28px;min-width:28px;max-width:28px;height:28px;min-height:28px;max-height:28px;flex:0 0 28px;object-fit:cover;aspect-ratio:1}

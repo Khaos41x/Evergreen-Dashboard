@@ -15,5 +15,14 @@ export async function ownerAndRateChecks({pg,as,val,denied,sessions,checks}){
  await pg.exec(readFileSync('supabase/bootstrap-holding-owner.sql','utf8'));await pg.exec(readFileSync('supabase/bootstrap-holding-owner.sql','utf8'));await as(person)
  const context=await val('select eg_holding_context()value'),group=context.groups.find(g=>g.name==='Evergreen Holdings');assert.equal(group.owner,true);assert.equal(group.role,'group_owner');assert.ok(group.capabilities.includes('governance'));assert.ok(group.capabilities.includes('finance'));assert.equal(context.companies.filter(c=>c.group_id===group.id).length,1)
  assert.equal(await val('select count(*)::int value from eg_group_scopes where group_id=$1 and user_id=$2 and $3=any(capabilities)',[group.id,person,'finance']),1)
+ await pg.exec('reset role');await pg.query("update eg_workspaces set name='Orkto' where id=$1",[workspace]);
+ const beforeUsers=await val('select count(*)::int value from auth.users');
+ await pg.exec(readFileSync('supabase/bootstrap-company-identities.sql','utf8'));await pg.exec(readFileSync('supabase/bootstrap-company-identities.sql','utf8'));await as(person);
+ const identities=await val('select eg_holding_context()value');assert.equal(identities.companies.filter(c=>c.group_id===group.id).length,2);
+ const thinker=identities.companies.find(c=>c.name==='ThinkerChess');assert.ok(thinker);
+ assert.equal((await val('select eg_professional_profile($1,$2)value',[thinker.id,person])).companies.find(c=>c.id===thinker.id).relationship,'partner');
+ const roster=await val('select eg_professional_levels($1)value',[group.id]);assert.deepEqual(roster.pending.map(p=>p.name).sort(),['Gabriel','Miguel Mármore']);assert.equal(roster.members.filter(m=>m.original).length,1);
+ await pg.exec('reset role');assert.equal(await val('select count(*)::int value from auth.users'),beforeUsers);
+ checks.push('company identity setup replayed twice: real Orkto plus ThinkerChess, Davy founder/partner and Chairman, Miguel/Gabriel pending; zero new Auth users');
  checks.push('explicit confirmed account owner bootstrap is idempotent, grants all holding capabilities, links only own companies and enables founder governance')
 }

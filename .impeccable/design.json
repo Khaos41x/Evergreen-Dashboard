@@ -1,68 +1,429 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-26T17:35:11.6510509Z",
+  "generatedAt": "2026-10-30T20:38:52.220905Z",
   "title": "Design System: Evergreen",
   "extensions": {
-    "typographyMeta": {
-      "body": {
-        "purpose": "Collaboration copy and controls; inputs use 16px.",
-        "displayName": "Interface"
+    "colorMeta": {
+      "background": {
+        "role": "neutral",
+        "displayName": "Fundo",
+        "canonical": "#070a09",
+        "tonalRamp": [
+          "oklch(15.00% 0.0060 174.67)",
+          "oklch(26.43% 0.0060 174.67)",
+          "oklch(37.86% 0.0060 174.67)",
+          "oklch(49.29% 0.0060 174.67)",
+          "oklch(60.71% 0.0060 174.67)",
+          "oklch(72.14% 0.0060 174.67)",
+          "oklch(83.57% 0.0060 174.67)",
+          "oklch(95.00% 0.0060 174.67)"
+        ]
       },
-      "brand": {
-        "purpose": "Existing collaboration sidebar wordmark; authentication uses 48px Georgia.",
-        "displayName": "Evergreen"
+      "sidebar": {
+        "role": "neutral",
+        "displayName": "Sidebar incumbente",
+        "canonical": "#090e0d",
+        "tonalRamp": [
+          "oklch(15.00% 0.0083 181.75)",
+          "oklch(26.43% 0.0083 181.75)",
+          "oklch(37.86% 0.0083 181.75)",
+          "oklch(49.29% 0.0083 181.75)",
+          "oklch(60.71% 0.0083 181.75)",
+          "oklch(72.14% 0.0083 181.75)",
+          "oklch(83.57% 0.0083 181.75)",
+          "oklch(95.00% 0.0083 181.75)"
+        ]
+      },
+      "panel": {
+        "role": "neutral",
+        "displayName": "Painel",
+        "canonical": "#0a0f0e",
+        "tonalRamp": [
+          "oklch(15.00% 0.0082 181.73)",
+          "oklch(26.43% 0.0082 181.73)",
+          "oklch(37.86% 0.0082 181.73)",
+          "oklch(49.29% 0.0082 181.73)",
+          "oklch(60.71% 0.0082 181.73)",
+          "oklch(72.14% 0.0082 181.73)",
+          "oklch(83.57% 0.0082 181.73)",
+          "oklch(95.00% 0.0082 181.73)"
+        ]
+      },
+      "raised": {
+        "role": "neutral",
+        "displayName": "Superfície elevada",
+        "canonical": "#0d1312",
+        "tonalRamp": [
+          "oklch(15.00% 0.0095 184.01)",
+          "oklch(26.43% 0.0095 184.01)",
+          "oklch(37.86% 0.0095 184.01)",
+          "oklch(49.29% 0.0095 184.01)",
+          "oklch(60.71% 0.0095 184.01)",
+          "oklch(72.14% 0.0095 184.01)",
+          "oklch(83.57% 0.0095 184.01)",
+          "oklch(95.00% 0.0095 184.01)"
+        ]
+      },
+      "text": {
+        "role": "neutral",
+        "displayName": "Texto",
+        "canonical": "#f3f4f2",
+        "tonalRamp": [
+          "oklch(15.00% 0.0028 128.49)",
+          "oklch(26.43% 0.0028 128.49)",
+          "oklch(37.86% 0.0028 128.49)",
+          "oklch(49.29% 0.0028 128.49)",
+          "oklch(60.71% 0.0028 128.49)",
+          "oklch(72.14% 0.0028 128.49)",
+          "oklch(83.57% 0.0028 128.49)",
+          "oklch(95.00% 0.0028 128.49)"
+        ]
+      },
+      "soft": {
+        "role": "neutral",
+        "displayName": "Texto suave",
+        "canonical": "#bdc7c3",
+        "tonalRamp": [
+          "oklch(15.00% 0.0123 170.19)",
+          "oklch(26.43% 0.0123 170.19)",
+          "oklch(37.86% 0.0123 170.19)",
+          "oklch(49.29% 0.0123 170.19)",
+          "oklch(60.71% 0.0123 170.19)",
+          "oklch(72.14% 0.0123 170.19)",
+          "oklch(83.57% 0.0123 170.19)",
+          "oklch(95.00% 0.0123 170.19)"
+        ]
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "Divisória",
+        "canonical": "#1b2320",
+        "tonalRamp": [
+          "oklch(15.00% 0.0128 170.49)",
+          "oklch(26.43% 0.0128 170.49)",
+          "oklch(37.86% 0.0128 170.49)",
+          "oklch(49.29% 0.0128 170.49)",
+          "oklch(60.71% 0.0128 170.49)",
+          "oklch(72.14% 0.0128 170.49)",
+          "oklch(83.57% 0.0128 170.49)",
+          "oklch(95.00% 0.0128 170.49)"
+        ]
+      },
+      "primary": {
+        "role": "primary",
+        "displayName": "Esmeralda Evergreen",
+        "canonical": "#10d994",
+        "tonalRamp": [
+          "oklch(15.00% 0.1718 161.21)",
+          "oklch(26.43% 0.1718 161.21)",
+          "oklch(37.86% 0.1718 161.21)",
+          "oklch(49.29% 0.1718 161.21)",
+          "oklch(60.71% 0.1718 161.21)",
+          "oklch(72.14% 0.1718 161.21)",
+          "oklch(83.57% 0.1718 161.21)",
+          "oklch(95.00% 0.1718 161.21)"
+        ]
+      },
+      "primary-ink": {
+        "role": "neutral",
+        "displayName": "Texto da ação principal",
+        "canonical": "#04150f",
+        "tonalRamp": [
+          "oklch(15.00% 0.0276 169.05)",
+          "oklch(26.43% 0.0276 169.05)",
+          "oklch(37.86% 0.0276 169.05)",
+          "oklch(49.29% 0.0276 169.05)",
+          "oklch(60.71% 0.0276 169.05)",
+          "oklch(72.14% 0.0276 169.05)",
+          "oklch(83.57% 0.0276 169.05)",
+          "oklch(95.00% 0.0276 169.05)"
+        ]
+      },
+      "primary-hover": {
+        "role": "primary",
+        "displayName": "Esmeralda em hover",
+        "canonical": "#36e7ac",
+        "tonalRamp": [
+          "oklch(15.00% 0.1622 164.97)",
+          "oklch(26.43% 0.1622 164.97)",
+          "oklch(37.86% 0.1622 164.97)",
+          "oklch(49.29% 0.1622 164.97)",
+          "oklch(60.71% 0.1622 164.97)",
+          "oklch(72.14% 0.1622 164.97)",
+          "oklch(83.57% 0.1622 164.97)",
+          "oklch(95.00% 0.1622 164.97)"
+        ]
+      },
+      "workspace-rail": {
+        "role": "neutral",
+        "displayName": "Barra de empresas",
+        "canonical": "#0b211a",
+        "tonalRamp": [
+          "oklch(15.00% 0.0315 170.27)",
+          "oklch(26.43% 0.0315 170.27)",
+          "oklch(37.86% 0.0315 170.27)",
+          "oklch(49.29% 0.0315 170.27)",
+          "oklch(60.71% 0.0315 170.27)",
+          "oklch(72.14% 0.0315 170.27)",
+          "oklch(83.57% 0.0315 170.27)",
+          "oklch(95.00% 0.0315 170.27)"
+        ]
+      },
+      "workspace-sidebar": {
+        "role": "neutral",
+        "displayName": "Sidebar contextual",
+        "canonical": "#0b1410",
+        "tonalRamp": [
+          "oklch(15.00% 0.0158 165.39)",
+          "oklch(26.43% 0.0158 165.39)",
+          "oklch(37.86% 0.0158 165.39)",
+          "oklch(49.29% 0.0158 165.39)",
+          "oklch(60.71% 0.0158 165.39)",
+          "oklch(72.14% 0.0158 165.39)",
+          "oklch(83.57% 0.0158 165.39)",
+          "oklch(95.00% 0.0158 165.39)"
+        ]
+      },
+      "workspace-active": {
+        "role": "primary",
+        "displayName": "Verde de seleção",
+        "canonical": "#153e30",
+        "tonalRamp": [
+          "oklch(15.00% 0.0525 167.66)",
+          "oklch(26.43% 0.0525 167.66)",
+          "oklch(37.86% 0.0525 167.66)",
+          "oklch(49.29% 0.0525 167.66)",
+          "oklch(60.71% 0.0525 167.66)",
+          "oklch(72.14% 0.0525 167.66)",
+          "oklch(83.57% 0.0525 167.66)",
+          "oklch(95.00% 0.0525 167.66)"
+        ]
+      },
+      "workspace-muted": {
+        "role": "neutral",
+        "displayName": "Texto secundário do workspace",
+        "canonical": "#afc1b7",
+        "tonalRamp": [
+          "oklch(15.00% 0.0242 161.58)",
+          "oklch(26.43% 0.0242 161.58)",
+          "oklch(37.86% 0.0242 161.58)",
+          "oklch(49.29% 0.0242 161.58)",
+          "oklch(60.71% 0.0242 161.58)",
+          "oklch(72.14% 0.0242 161.58)",
+          "oklch(83.57% 0.0242 161.58)",
+          "oklch(95.00% 0.0242 161.58)"
+        ]
+      },
+      "conversation": {
+        "role": "neutral",
+        "displayName": "Conversa",
+        "canonical": "#0c110f",
+        "tonalRamp": [
+          "oklch(15.00% 0.0089 169.05)",
+          "oklch(26.43% 0.0089 169.05)",
+          "oklch(37.86% 0.0089 169.05)",
+          "oklch(49.29% 0.0089 169.05)",
+          "oklch(60.71% 0.0089 169.05)",
+          "oklch(72.14% 0.0089 169.05)",
+          "oklch(83.57% 0.0089 169.05)",
+          "oklch(95.00% 0.0089 169.05)"
+        ]
+      },
+      "composer": {
+        "role": "neutral",
+        "displayName": "Composer",
+        "canonical": "#121e17",
+        "tonalRamp": [
+          "oklch(15.00% 0.0219 158.41)",
+          "oklch(26.43% 0.0219 158.41)",
+          "oklch(37.86% 0.0219 158.41)",
+          "oklch(49.29% 0.0219 158.41)",
+          "oklch(60.71% 0.0219 158.41)",
+          "oklch(72.14% 0.0219 158.41)",
+          "oklch(83.57% 0.0219 158.41)",
+          "oklch(95.00% 0.0219 158.41)"
+        ]
+      },
+      "profile-cover": {
+        "role": "neutral",
+        "displayName": "Capa profissional",
+        "canonical": "#123626",
+        "tonalRamp": [
+          "oklch(15.00% 0.0510 161.73)",
+          "oklch(26.43% 0.0510 161.73)",
+          "oklch(37.86% 0.0510 161.73)",
+          "oklch(49.29% 0.0510 161.73)",
+          "oklch(60.71% 0.0510 161.73)",
+          "oklch(72.14% 0.0510 161.73)",
+          "oklch(83.57% 0.0510 161.73)",
+          "oklch(95.00% 0.0510 161.73)"
+        ]
+      },
+      "profile-badge": {
+        "role": "neutral",
+        "displayName": "Selo profissional",
+        "canonical": "#153a29",
+        "tonalRamp": [
+          "oklch(15.00% 0.0527 161.18)",
+          "oklch(26.43% 0.0527 161.18)",
+          "oklch(37.86% 0.0527 161.18)",
+          "oklch(49.29% 0.0527 161.18)",
+          "oklch(60.71% 0.0527 161.18)",
+          "oklch(72.14% 0.0527 161.18)",
+          "oklch(83.57% 0.0527 161.18)",
+          "oklch(95.00% 0.0527 161.18)"
+        ]
+      },
+      "profile-badge-text": {
+        "role": "neutral",
+        "displayName": "Texto do selo",
+        "canonical": "#cbf4da",
+        "tonalRamp": [
+          "oklch(15.00% 0.0550 157.34)",
+          "oklch(26.43% 0.0550 157.34)",
+          "oklch(37.86% 0.0550 157.34)",
+          "oklch(49.29% 0.0550 157.34)",
+          "oklch(60.71% 0.0550 157.34)",
+          "oklch(72.14% 0.0550 157.34)",
+          "oklch(83.57% 0.0550 157.34)",
+          "oklch(95.00% 0.0550 157.34)"
+        ]
       }
     },
-    "breakpoints": [
-      {
-        "name": "collaboration-top-wrap",
-        "value": "1100px"
+    "typographyMeta": {
+      "headline": {
+        "displayName": "Título serifado",
+        "purpose": "Libre Caslon Display local em títulos da interface; conversa reduz para 25px até 600px."
       },
-      {
-        "name": "collaboration-mobile",
-        "value": "768px"
+      "profile-name": {
+        "displayName": "Nome profissional",
+        "purpose": "Nome em destaque no perfil; fonte regular, sem simular o wordmark."
+      },
+      "body": {
+        "displayName": "Interface",
+        "purpose": "Texto geral e controles sans; campos gerais usam 16px."
+      },
+      "message": {
+        "displayName": "Mensagem",
+        "purpose": "Histórico de conversa com entrelinha 1.65."
+      },
+      "navigation": {
+        "displayName": "Navegação",
+        "purpose": "Labels e botões da sidebar; mantém sans-serif."
       }
-    ],
+    },
+    "shadows": [],
     "motion": [
+      {
+        "name": "workspace-button-transition",
+        "value": "background-color .15s,border-color .15s,color .15s",
+        "purpose": "Transições dos botões de colaboração; removidas sob prefers-reduced-motion: reduce."
+      },
       {
         "name": "reduced-motion-scroll",
         "value": "auto",
-        "purpose": "Collaboration descendants disable smooth scrolling under prefers-reduced-motion: reduce."
+        "purpose": "Descendentes da colaboração removem smooth scroll sob prefers-reduced-motion: reduce."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "workspace-compact",
+        "value": "1200px"
+      },
+      {
+        "name": "workspace-drawer",
+        "value": "1000px"
+      },
+      {
+        "name": "workspace-phone",
+        "value": "600px"
       }
     ]
   },
   "components": [
     {
-      "description": "Primary form action with explicit disabled state.",
-      "name": "Collaboration primary button",
-      "css": ".evergreen-primary { display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:44px; padding:9px 14px; border:1px solid var(--emerald); border-radius:8px; background:var(--emerald); color:#04150f; font:650 14px/1.5 Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif; cursor:pointer; } .evergreen-primary:hover:not(:disabled) { background:#36e7ac; color:#04150f; } .evergreen-primary:focus-visible { outline:1px solid rgba(8,229,154,.75); outline-offset:1px; } .evergreen-primary:disabled { background:#1b3026; border-color:#354d40; color:#b4c4bb; cursor:not-allowed; }",
-      "refersTo": "primary-button",
+      "name": "Ação principal",
       "kind": "button",
-      "html": "<button class=\"evergreen-primary\">Save changes</button>"
+      "refersTo": "primary-button",
+      "description": "Ação geral de formulário; o composer possui variante compacta.",
+      "html": "<button class=\"ds-primary\">Salvar alterações</button>",
+      "css": ".ds-primary{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:9px 14px;border:1px solid var(--emerald,#10d994);border-radius:8px;background:var(--emerald,#10d994);color:#04150f;font:650 14px/1.35 Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif;cursor:pointer;transition:background-color .15s,border-color .15s,color .15s}.ds-primary:hover:not(:disabled){background:#36e7ac}.ds-primary:focus-visible{outline:2px solid var(--emerald,#10d994);outline-offset:3px}.ds-primary:disabled{background:#1b3026;border-color:#354d40;color:#b4c4bb;cursor:not-allowed}@media(prefers-reduced-motion:reduce){.ds-primary{transition:none}}"
     },
     {
-      "name": "Collaboration field",
-      "html": "<label class=\"evergreen-label\">Channel name<input class=\"evergreen-field\" placeholder=\"Channel name\"></label>",
+      "name": "Ação secundária",
+      "kind": "button",
+      "refersTo": "secondary-button",
+      "description": "Botão de superfície elevada com ícone inline.",
+      "html": "<button class=\"ds-secondary\"><svg aria-hidden=\"true\" width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L9 17l-4 1 1-4Z\"/></svg>Editar perfil e foto</button>",
+      "css": ".ds-secondary{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:9px 14px;border:1px solid var(--line,#1b2320);border-radius:8px;background:var(--raised,#0d1312);color:var(--text,#f3f4f2);font:500 14px/1.35 Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif;cursor:pointer;transition:background-color .15s,border-color .15s,color .15s}.ds-secondary:hover{background:var(--hover,#111917)}.ds-secondary:focus-visible{outline:2px solid var(--emerald,#10d994);outline-offset:3px}.ds-secondary:disabled{opacity:.5;cursor:not-allowed}@media(prefers-reduced-motion:reduce){.ds-secondary{transition:none}}"
+    },
+    {
+      "name": "Campo de formulário",
       "kind": "input",
-      "description": "Visible field label, dark background and inherited global keyboard focus.",
-      "css": ".evergreen-label { display:grid; gap:7px; margin:12px 0; color:var(--soft); font:14px/1.5 Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif; } .evergreen-field { width:100%; min-height:44px; padding:10px 12px; border:1px solid #35423d; border-radius:8px; background:var(--bg); color:var(--text); font:16px Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif; } .evergreen-field::placeholder { color:#9ba9a2; } .evergreen-field:focus-visible { outline:1px solid rgba(8,229,154,.75); outline-offset:1px; }"
+      "refersTo": "field",
+      "description": "Label visível, campo de 16px e foco esmeralda.",
+      "html": "<label class=\"ds-label\">Apresentação<input class=\"ds-field\" placeholder=\"Conte sobre sua atuação\"></label>",
+      "css": ".ds-label{display:grid;gap:7px;margin:12px 0;color:var(--soft,#bdc7c3);font:14px/1.5 Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif}.ds-field{width:100%;min-height:44px;padding:10px 12px;border:1px solid #35423d;border-radius:8px;background:var(--bg,#070a09);color:var(--text,#f3f4f2);font:16px Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif;caret-color:var(--emerald,#10d994)}.ds-field::placeholder{color:#9ba9a2}.ds-field:focus-visible{outline:2px solid var(--emerald,#10d994);outline-offset:3px}"
+    },
+    {
+      "name": "Canal selecionado",
+      "kind": "nav",
+      "refersTo": "workspace-navigation-active",
+      "description": "Linha contextual com seleção real e label sans.",
+      "html": "<nav class=\"ds-nav\" aria-label=\"Canais\"><button class=\"ds-channel\" aria-current=\"page\"><svg aria-hidden=\"true\" width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\"><path d=\"M4 9h16M3 15h16M10 3 8 21M16 3l-2 18\"/></svg>geral</button></nav>",
+      "css": ".ds-nav{padding:10px;background:#0b1410}.ds-channel{display:flex;align-items:center;gap:10px;min-height:38px;width:100%;padding:8px 10px;border:0;border-radius:6px;background:var(--workspace-active,#153e30);color:#d4ffea;text-align:left;font:500 13px/1.35 Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif;cursor:pointer}.ds-channel:hover{background:#183224}.ds-channel:focus-visible{outline:2px solid var(--emerald,#10d994);outline-offset:3px}@media(max-width:600px){.ds-channel{min-height:44px}}"
+    },
+    {
+      "name": "Selo de fundador original",
+      "kind": "chip",
+      "refersTo": "profile-badge",
+      "description": "Comunica o vínculo confirmado; o selo não concede acesso.",
+      "html": "<span class=\"ds-badge\">Chairman · Fundador da Evergreen</span>",
+      "css": ".ds-badge{display:inline-flex;align-items:center;gap:7px;padding:6px 10px;color:#cbf4da;background:#153a29;border:1px solid #396049;border-radius:6px;font:12px/1.5 Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif}"
+    },
+    {
+      "name": "Capa de perfil",
+      "kind": "card",
+      "description": "Superfície de identidade profissional; headings usam a fonte local.",
+      "html": "<section class=\"ds-profile-cover\"><span>Evergreen Holdings</span></section>",
+      "css": ".ds-profile-cover{height:156px;display:flex;align-items:center;justify-content:space-between;padding:24px 36px;background:#123626;border-radius:12px 12px 0 0;overflow:hidden}.ds-profile-cover>span{font:32px var(--heading-font,\"Libre Caslon Display\",Georgia,serif);color:#cce0d1}@media(max-width:600px){.ds-profile-cover{height:122px;padding:20px}.ds-profile-cover>span{font-size:25px}}"
+    },
+    {
+      "name": "Atalho da barra de empresas",
+      "kind": "button",
+      "description": "Botão de 44px; criação de empresa com ícone, sem dados fictícios.",
+      "html": "<div class=\"ds-rail\"><button class=\"ds-rail-button\" aria-label=\"Criar empresa\"><svg aria-hidden=\"true\" width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\"><path d=\"M12 5v14M5 12h14\"/></svg></button></div>",
+      "css": ".ds-rail{display:flex;justify-content:center;padding:20px 8px;background:#0b211a}.ds-rail-button{display:flex;align-items:center;justify-content:center;width:44px;min-height:44px;padding:0;border:1px solid transparent;border-radius:12px;background:#19372b;color:#d9e9df;font:650 13px/1.35 Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif;cursor:pointer}.ds-rail-button:hover{background:#2a503e}.ds-rail-button[aria-current=page]{background:var(--emerald,#10d994);color:#061a11}.ds-rail-button:focus-visible{outline:2px solid var(--emerald,#10d994);outline-offset:3px}"
+    },
+    {
+      "name": "Ações adicionais da mensagem",
+      "kind": "custom",
+      "description": "Disclosure disponível sem hover; ações permanecem contextuais.",
+      "html": "<details class=\"ds-tools\"><summary>Mais ações</summary><button class=\"ds-message-action\">Responder</button></details>",
+      "css": ".ds-tools{display:inline-block;font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif}.ds-tools>summary{display:flex;align-items:center;gap:6px;min-height:32px;color:#aec4b5;font-size:11px;list-style:none;cursor:pointer}.ds-tools>summary:before{content:\"+\";font-size:17px}.ds-tools[open]>summary:before{content:\"−\"}.ds-tools>summary:focus-visible{outline:2px solid var(--emerald,#10d994);outline-offset:2px}.ds-message-action{min-height:30px;padding:4px 7px;border:0;border-radius:8px;background:transparent;color:#bdd3c4;font:500 11px/1.35 Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif;cursor:pointer}.ds-message-action:hover{background:#1b3828;color:#d5ffe5}.ds-message-action:focus-visible{outline:2px solid var(--emerald,#10d994);outline-offset:3px}@media(max-width:600px){.ds-tools>summary,.ds-message-action{min-height:40px}}"
     }
   ],
   "narrative": {
-    "dos": [
-      "Preservar dados e contexto.",
-      "Sinalizar recurso não configurado ou indisponível."
-    ],
-    "overview": "Extensão da interface Evergreen existente: superfícies escuras, divisórias discretas, esmeralda nas ações e marca serifada. Colaboração usa listas planas, histórico e composer, com menu lateral e navegação inferior em telas pequenas.",
+    "overview": "O Evergreen existente é a referência: superfícies escuras, esmeralda nas ações e identidade serifada. A direção aprovada aproxima a navegação de empresas e mensagens dos padrões de Slack/Discord, preservando as cores e os dados reais do produto.",
     "keyCharacteristics": [
-      "Superfícies tonais escuras",
-      "Ações esmeralda",
-      "Marca serifada e interface sans",
-      "Estados explícitos de formulário"
+      "Superfícies tonais escuras e divisórias discretas.",
+      "Barra de empresas, navegação contextual e conversa central.",
+      "Títulos serifados, corpo e controles sans-serif.",
+      "Perfis profissionais com vínculos explícitos e estados verificáveis."
+    ],
+    "rules": [],
+    "dos": [
+      "Do preservar dados e contexto e mostrar estados indisponíveis ou não configurados.",
+      "Do usar a árvore branca fornecida internamente e a marca completa na autenticação.",
+      "Do manter títulos serifados e corpo/controles sans-serif.",
+      "Do priorizar canais e mensagens diretas antes dos módulos na sidebar contextual.",
+      "Do comunicar vínculos profissionais e atribuições pendentes com texto explícito."
     ],
     "donts": [
-      "Não usar toast fictício, presença inventada ou contador de notificações fictício.",
-      "Não usar identidade local para autorização remota."
+      "Don't usar toast fictício, presença inventada ou contador de notificações fictício.",
+      "Don't usar identidade local, cargo, nome ou selo profissional para autorização remota.",
+      "Don't atribuir acesso financeiro ou governança automaticamente a Chairman, APEX ou NÍVELO.",
+      "Don't distorcer, redesenhar ou editar os bytes dos ativos da marca fornecidos."
     ]
   }
 }

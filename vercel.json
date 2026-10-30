@@ -10,8 +10,8 @@
   },
   "rewrites": [
     {
-      "source": "/api/:path*",
-      "destination": "/api/handler?__eg_route=:path*"
+      "source": "/api/:apiRoute*",
+      "destination": "/api/handler?__eg_route=:apiRoute*"
     },
     {
       "source": "/:view(vision|economy|founders|hub)",

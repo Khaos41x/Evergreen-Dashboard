@@ -1,12 +1,12 @@
 import { HttpError } from './security.mjs'
 import { requireRecent, validatedSession } from './identity.mjs'
 export async function backendProxy(req, res, config, context, query) {
-  const identity = await validatedSession(context), path = query.get('path') || ''
+  const identity = await validatedSession(context), path = query.get('target') || query.get('path') || ''
   const upstream = new URL(path, config.url)
   if (!path.startsWith('/') || path.includes('\\') || upstream.origin !== new URL(config.url).origin || !(/^\/rest\/v1\/(?:eg_[a-z_]+|rpc\/eg_[a-z_]+)$/.test(upstream.pathname) || /^\/storage\/v1\/(?:object|render)\//.test(upstream.pathname))) throw new HttpError(403, 'PROXY_TARGET_DENIED', 'Recurso não autorizado.')
   if (!['GET', 'HEAD', 'POST', 'PATCH', 'PUT', 'DELETE'].includes(req.method)) throw new HttpError(405, 'METHOD_NOT_ALLOWED', 'Método não permitido.')
   if (!['GET', 'HEAD'].includes(req.method) && req.headers.origin !== config.origin) throw new HttpError(403, 'ORIGIN_DENIED', 'Origem não autorizada.')
-  if (/\/rpc\/eg_(?:economy_action|founders_action|financial_action|holding_action|integration_manage)$/.test(upstream.pathname)) requireRecent(identity)
+  if (/\/rpc\/eg_(?:economy_action|founders_action|financial_action|holding_action|integration_manage|profile_original_founder|founder_nominee)$/.test(upstream.pathname)) requireRecent(identity)
   const headers = new Headers({ apikey: config.key, Authorization: 'Bearer ' + identity.session.access_token })
   for (const name of ['accept', 'content-type', 'prefer', 'range', 'range-unit', 'if-match', 'if-none-match', 'x-upsert']) if (req.headers[name]) headers.set(name, req.headers[name])
   let body

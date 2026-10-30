@@ -27,7 +27,7 @@ function Sidebar({ page, setPage, mobileOpen, close, projects, currentUser, onNe
   }
   return (
     <aside className={`sidebar ${mobileOpen ? 'sidebar-open' : ''}`}>
-      <div className="brand"><EvergreenBrand/><button className="mobile-close" onClick={close}><X /></button></div>
+      <div className="brand"><EvergreenBrand symbol/><button className="mobile-close" onClick={close}><X /></button></div>
       <nav className="main-nav" aria-label="Navegação principal">
         {nav.map(({ id, label, icon: Icon }) => (
           <button key={id} className={`nav-item ${page === id ? 'active' : ''}`} onClick={() => navigate(id)}>

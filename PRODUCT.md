@@ -30,3 +30,9 @@ Usar a nova imagem fornecida Logotipo Evergreen Holdings.png, preservada em publ
 DESIGN.md e .impeccable/design.json permanecem como sistema incumbente. As extensões são documentadas separadamente. Dados de teste ficam apenas nos scripts de validação.
 
 A ativação do banco foi autorizada e concluída no projeto dedicado: produtividade e pacote de identidade/Finanças/Fundadores/cadastro comum,38tabelas comRLS. A restrição de convite obrigatório foi retirada da sequência ativa. Não houve novo deploy nem E2E com provedores ou dispositivos reais; veja docs/ACTIVATION-20261030.md.
+
+## Diretrizes aprovadas para navegação e perfis — 30/10/2026
+
+O usuário pediu explicitamente a árvore isolada fornecida em public/evergreen-symbol.png, branca por CSS, nas superfícies internas. Autenticação preserva a marca completa. Navegação de empresas e mensagens segue padrões de Slack/Discord nas cores Evergreen; canais e mensagens diretas têm prioridade. Títulos usam Libre Caslon Display servida localmente, próxima à marca serifada; corpo e controles permanecem sans-serif. Esta mudança autoriza atualizar os tokens e a documentação visual nesses pontos, preservando as demais funções.
+
+Perfis têm foto, apresentação, cargo e vínculos por empresa. Davy Peixoto fundou a Orkto e é sócio da ThinkerChess; Miguel Mármore é seu fundador. Fundadores originais da Evergreen: Davy, Miguel Mármore, Gabriel e pessoas confirmadas pelo responsável. Chairman identifica fundadores originais; APEX, fundadores de empresas; NÍVELO, CEOs. Atribuições são verificadas no servidor, sem inferir acesso financeiro ou capacidades de títulos/metadados. Miguel e Gabriel aguardam convite/aceite e confirmação de suas contas; nomes não criam identidades. Migração, preparação empresarial e publicação desta etapa foram aprovadas explicitamente pelo usuário em 30/10/2026; migração e preparação já aplicadas no projeto dedicado.

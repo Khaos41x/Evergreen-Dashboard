@@ -82,13 +82,15 @@ try{
  await page.getByRole('button',{name:"Usar chave de acesso",exact:true}).click();await page.getByRole('heading',{name:'Olá, Ana QA',exact:true}).waitFor()
  assert.equal(await page.evaluate(()=>Object.keys(localStorage).some(k=>/^sb-.*auth-token/.test(k))),false)
  results.push({width,normalSignupWithoutInvite:true,firstWorkspaceOnboarding:true,passwordReset:true,profileNameJob:true,otpErrorRecovery:true,nativeWebAuthnVirtualCeremony:true,nativeWebAuthnErrorsPortuguese:true,noLocalAuthTokens:true,no3DDuringAuth:true})
- await page.route('**/api/backend?**',async route=>{const path=new URL(new URL(route.request().url()).searchParams.get('path'),'https://fixture.invalid').pathname;const body=route.request().method()==='POST'?route.request().postDataJSON():{};let data
+ await page.route('**/api/backend?**',async route=>{const path=new URL(new URL(route.request().url()).searchParams.get('target')??new URL(route.request().url()).searchParams.get('path'),'https://fixture.invalid').pathname;const body=route.request().method()==='POST'?route.request().postDataJSON():{};let data
  if(path.endsWith('/eg_members'))data=[{user_id:'qa-user',display_name:'Ana QA'}]
  else if(path.endsWith('/eg_economy_targets'))data=snapshot.accounts.map(a=>({...a,company_name:a.company_id==='ca'?'Operações QA':'Produtos QA',workspace_name:'Holding QA'}))
  else if(path.endsWith('/eg_economy_snapshot'))data=snapshot
  else if(path.endsWith('/eg_economy_history'))data=[{id:'entry-qa',event_id:'event-qa',account_id:'ac',cents:'10001',kind:'income',description:'Receita QA · fixture',created_at:new Date().toISOString(),happened_on:'2026-10-29',reversed:false,can_reverse:true}]
  else if(path.endsWith('/eg_economy_action')){actions.push(body);if(actions.length===1)return route.fulfill({status:428,contentType:'application/json',body:JSON.stringify({code:'REAUTH_REQUIRED',message:'Confirme sua identidade novamente.'})});data='new-qa'}
  else if(path.endsWith('/eg_founders_groups'))data=[{id:'group-qa',name:'Grupo QA',role:'group_owner',owner:true,capabilities:caps}]
+ else if(path.endsWith('/eg_professional_levels'))data={members:[{id:'qa-user',name:'Ana QA',role:'group_owner',original:true}],pending:[{id:'miguel-fixture',name:'Miguel QA'}]}
+ else if(path.endsWith('/eg_founder_nominee'))data=null
  else if(path.endsWith('/eg_founders_snapshot'))data=founders
  else if(path.endsWith('/eg_founders_action')){actions.push(body);data='action-qa'}
  else return route.fulfill({status:500,contentType:'application/json',body:JSON.stringify({message:'Unexpected fixture endpoint '+path})})
@@ -121,6 +123,7 @@ try{
  await page.getByLabel('Filtrar empresa',{exact:true}).selectOption('workspace-qa')
  assert.equal(await page.getByText('Documento de outra empresa QA',{exact:true}).count(),0);assert.equal(await page.getByText('Documento do grupo QA',{exact:true}).count(),0);assert.equal(await page.getByText('Documento da empresa QA',{exact:true}).count(),1)
  await page.getByLabel('Filtrar empresa',{exact:true}).selectOption('all');await page.getByRole('button',{name:'Governança',exact:true}).click()
+ await page.getByRole('heading',{name:'Níveis da Evergreen',exact:true}).waitFor();await page.getByText('Chairman',{exact:true}).first().waitFor();await page.getByLabel('Indicar outro fundador original',{exact:true}).fill('Novo fundador QA');await page.getByRole('button',{name:'Adicionar indicação',exact:true}).click();await page.getByLabel('Indicar outro fundador original',{exact:true}).waitFor();assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);await page.locator('.professional-levels').screenshot({path:'output/platform/levels-'+width+'.png'});
  const scopeTrigger=page.getByRole('button',{name:'Meu escopo de empresas',exact:true});await scopeTrigger.click()
  await page.waitForFunction(()=>document.activeElement?.id==='founders-form-title')
  assert.ok(await page.locator('#founders-form-title').evaluate(el=>{const r=el.getBoundingClientRect();return r.top>=0&&r.bottom<=innerHeight}))

@@ -7,7 +7,7 @@ const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined
 // Data SDK only. User credentials/tokens stay in HttpOnly server cookies.
 const dataClient=url&&key?createClient(url,key,{
  auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false},
- global:{fetch:async(input,init)=>{const upstream=new URL(typeof input==='string'?input:input instanceof URL?input.href:input.url);if(upstream.origin!==new URL(url).origin)throw new Error('Destino de dados não autorizado.');const headers=new Headers(init?.headers);headers.delete('authorization');headers.delete('apikey');const response=await fetch('/api/backend?path='+encodeURIComponent(upstream.pathname+upstream.search),{...init,headers,credentials:'same-origin',cache:'no-store'});if(response.status===401)window.dispatchEvent(new Event('evergreen:session-expired'));return response}},
+ global:{fetch:async(input,init)=>{const upstream=new URL(typeof input==='string'?input:input instanceof URL?input.href:input.url);if(upstream.origin!==new URL(url).origin)throw new Error('Destino de dados não autorizado.');const headers=new Headers(init?.headers);headers.delete('authorization');headers.delete('apikey');const response=await fetch('/api/backend?target='+encodeURIComponent(upstream.pathname+upstream.search),{...init,headers,credentials:'same-origin',cache:'no-store'});if(response.status===401)window.dispatchEvent(new Event('evergreen:session-expired'));return response}},
 }):null
 export const supabase=dataClient?{
  from:dataClient.from.bind(dataClient),rpc:dataClient.rpc.bind(dataClient),storage:dataClient.storage,
