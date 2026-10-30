@@ -3,3 +3,5 @@
 @media(prefers-reduced-motion:no-preference){.financial-chart path{transition:d .22s ease-out}.holding-center button,.financial-analysis button{transition:background .15s ease-out,border-color .15s ease-out}}
 
 .holding-filters input[type=checkbox]{width:18px;min-width:18px;max-width:18px;flex:none}.financial-analysis input[type=range]{width:100%;max-width:100%}
+
+.company-operations-row{padding:24px 0;border-bottom:1px solid #263b33}.company-operations-row h3{font-size:20px}.company-operations-row dl{display:flex;gap:24px 40px;flex-wrap:wrap;margin:20px 0}.company-operations-row dt{font-size:13px;color:#b7cbbf}.company-operations-row dd{font-size:26px;margin:6px 0 0;font-variant-numeric:tabular-nums}.company-operations-row nav{display:flex;flex-wrap:wrap;gap:8px}.company-operations-row nav button{min-height:44px}.company-operations-row p{margin:10px 0}.company-operations-row+section{margin-top:16px}

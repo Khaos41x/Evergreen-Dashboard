@@ -1,7 +1,7 @@
 import {useEffect,useState} from 'react'
 import {checked,db,failure} from '../../collaboration/client'
 export type HoldingCompany={id:string;name:string;group_id:string|null;description:string;logo_url:string|null;responsible_id:string|null;admin:boolean;operational:boolean;information:boolean}
-export type HoldingGroup={id:string;name:string}
+export type HoldingGroup={id:string;name:string;owner?:boolean}
 export type HoldingScope={group:string|null;workspace:string|null}
 export function useHolding(userId:string){
  const [companies,setCompanies]=useState<HoldingCompany[]>([]),[groups,setGroups]=useState<HoldingGroup[]>([]),[error,setError]=useState(''),[ready,setReady]=useState(false)

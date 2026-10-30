@@ -1,3 +1,4 @@
+import {integrationReadiness,requireIntegrationReadiness} from '../server/integration-status.mjs'
 import assert from 'node:assert/strict'
 import {randomBytes} from 'node:crypto'
 import {mkdirSync,writeFileSync} from 'node:fs'
@@ -5,7 +6,7 @@ import {providerJSON,dateRange,discoverResources,syncProvider} from '../server/i
 import {encryptCredential,decryptCredential} from '../server/credentials.mjs'
 import {asaasJSON,decimalCents,normalizePayment,validWebhookToken,reconcileAsaas} from '../server/asaas.mjs'
 const checks=[],env={INTEGRATIONS_ENCRYPTION_KEY:randomBytes(32).toString('base64')},aad='integration:workspace:provider',credential='fixture-secret-never-persisted',encrypted=encryptCredential(credential,aad,env)
-assert.equal(decryptCredential(encrypted,aad,env),credential);assert.throws(()=>decryptCredential(encrypted,'other-workspace',env));const bytes=Buffer.from(encrypted,'base64');bytes[13]^=1;assert.throws(()=>decryptCredential(bytes.toString('base64'),aad,env));assert.throws(()=>encryptCredential(credential,aad,{}));assert.ok(!encrypted.includes(credential));checks.push('AES-GCM authenticated encryption, wrong scope/key/tampering denied')
+assert.equal(decryptCredential(encrypted,aad,env),credential);assert.throws(()=>decryptCredential(encrypted,'other-workspace',env));const bytes=Buffer.from(encrypted,'base64');bytes[13]^=1;assert.throws(()=>decryptCredential(bytes.toString('base64'),aad,env));assert.throws(()=>encryptCredential(credential,aad,{}));assert.ok(!encrypted.includes(credential));assert.equal(integrationReadiness({env:{}}).ready,false);assert.equal(integrationReadiness({env:{...env,INTEGRATIONS_STORAGE_SERVICE_KEY:'fixture-server-key'}}).ready,true);assert.throws(()=>requireIntegrationReadiness({env}));assert.ok(!JSON.stringify(integrationReadiness({env})).includes(env.INTEGRATIONS_ENCRYPTION_KEY));checks.push('AES-GCM authenticated encryption, wrong scope/key/tampering denied')
 for(const pair of[['','2026-10-01'],['2026-02-30','2026-03-01'],['2026-10-02','2026-10-01'],['2025-01-01','2026-10-30'],['2026-99-99','2026-10-30']])assert.throws(()=>dateRange(...pair));assert.equal(dateRange('2026-10-01','2026-10-30').end,'2026-10-31T00:00:00.000Z')
 let called=false;await assert.rejects(()=>providerJSON('https://attacker.invalid/key',credential,{},async()=>{called=true}));assert.equal(called,false);await assert.rejects(()=>providerJSON('https://api.vercel.com/test',credential,{},async()=>new Response('{}',{status:429})));checks.push('period boundaries, no arbitrary URLs, provider limits fail explicitly')
 const fixture=(value)=>async()=>new Response(JSON.stringify(value),{headers:{'Content-Type':'application/json'}})

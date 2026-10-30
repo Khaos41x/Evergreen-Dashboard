@@ -6,7 +6,7 @@ import {mkdirSync,writeFileSync} from 'node:fs'
 import {createHandler} from '../server/app.mjs'
 import {cookieOptions,settings,safeNext} from '../server/security.mjs'
 const checks=[],user={id:'00000000-0000-4000-8000-000000000001',email:'identity@test.invalid',user_metadata:{display_name:'Alice',job_title:'Diretora'},aud:'authenticated',role:'authenticated',created_at:new Date().toISOString()}
-let active=true,recent=true,recoveryProof=false,founder=false,requests=[],pkceChallenge='',lastVerifier=''
+let active=true,recent=true,recoveryProof=false,founder=false,companyAdmin=true,requests=[],pkceChallenge='',lastVerifier=''
 const jwt=()=>Buffer.from(JSON.stringify({alg:'HS256',typ:'JWT'})).toString('base64url')+'.'+Buffer.from(JSON.stringify({sub:user.id,exp:Math.floor(Date.now()/1000)+3600,session_id:randomUUID(),amr:[{method:'otp',timestamp:Math.floor(Date.now()/1000)}]})).toString('base64url')+'.fixture-signature'
 const token=()=>({access_token:jwt(),refresh_token:'fixture-refresh-'+randomUUID(),expires_in:3600,expires_at:Math.floor(Date.now()/1000)+3600,token_type:'bearer',user})
 const provider=createServer(async(req,res)=>{let raw='';for await(const c of req)raw+=c;let body={};try{body=JSON.parse(raw||'{}')}catch{}const url=new URL(req.url,'http://fixture');requests.push({path:url.pathname,query:url.search,body,headers:req.headers});res.setHeader('content-type','application/json')
@@ -28,6 +28,7 @@ if(url.pathname.endsWith('/eg_create_workspace'))return res.end(JSON.stringify('
 if(url.pathname.endsWith('/eg_identity_bootstrap'))return res.end('null')
 if(url.pathname.endsWith('/eg_identity_check_invite'))return res.end(JSON.stringify(body.p_invite==='11111111-1111-4111-8111-111111111111'))
 if(url.pathname.endsWith('/eg_identity_sessions'))return res.end('[]')
+if(url.pathname.endsWith('/eg_holding_context'))return res.end(JSON.stringify({companies:[{id:'w-fixture',admin:companyAdmin}]}))
 if(url.pathname.endsWith('/eg_founders_access'))return res.end(JSON.stringify(founder))
 if(url.pathname.startsWith('/rest/v1/eg_'))return res.end('[{"id":"scoped-fixture"}]')
 res.statusCode=404;res.end('{"message":"Fixture unsupported endpoint"}')})
@@ -42,6 +43,7 @@ try{
  r=await call('/api/page?view=economy');assert.equal(r.response.status,303);assert.equal(r.response.headers.get('location'),'/login?next=%2Feconomy')
  const count=requests.length;r=await call('/api/identity/password',{email:user.email,password:'fixture-only'},{headers:{origin:'https://evil.invalid'}});assert.equal(r.response.status,403);assert.equal(requests.length,count)
  checks.push('server private-page redirect and Origin/JSON CSRF rejection before provider call')
+ r=await call('/api/integrations/status?workspace_id=w-fixture');assert.equal(r.response.status,401)
  r=await call('/api/identity/google',{next:'https://evil.invalid',invite:'11111111-1111-4111-8111-111111111111'})
  assert.equal(r.response.status,200);const oauth=new URL(r.data.url);pkceChallenge=oauth.searchParams.get('code_challenge');assert.ok(pkceChallenge);assert.equal(oauth.searchParams.get('code_challenge_method'),'s256')
  assert.ok(r.response.headers.getSetCookie().every(x=>/HttpOnly/i.test(x)&&/SameSite=Lax/i.test(x)));assert.ok([...jar.keys()].some(x=>x.includes('code-verifier')))
@@ -52,6 +54,7 @@ try{
  assert.deepEqual(cookieOptions(settings({...env,NODE_ENV:'production',APP_ORIGIN:'https://evergreen.example',SUPABASE_URL:'https://project.supabase.co'})).secure,true)
  assert.equal(safeNext('//evil.invalid'),'/');assert.equal(safeNext('/economy'),'/economy')
  checks.push('browser receives public identity only; production Secure, HttpOnly, Lax cookies and redirect allowlist')
+ r=await call('/api/integrations/status?workspace_id=w-fixture');assert.equal(r.response.status,200);assert.equal(r.data.ready,false);assert.equal(r.data.storage,false);assert.ok(!/fixture-public-key|access_token|refresh_token/.test(r.text));companyAdmin=false;r=await call('/api/integrations/status?workspace_id=w-fixture');assert.equal(r.response.status,403);companyAdmin=true;recent=false;r=await call('/api/integrations/status?workspace_id=w-fixture');assert.equal(r.response.status,200);recent=true;const beforeDiscovery=requests.length;r=await call('/api/integrations/discover',{workspace_id:'w-fixture',provider:'vercel',token:'fixture-read-token'});assert.equal(r.response.status,503);assert.equal(requests.length-beforeDiscovery,3);checks.push('integration preparation is authenticated/admin-scoped, reveals no secrets, and rejects token submission before server configuration')
  r=await call('/api/backend?path='+encodeURIComponent('/rest/v1/eg_records?select=id'))
  assert.equal(r.response.status,200);const backend=requests.at(-1);assert.ok(backend.headers.authorization.startsWith('Bearer '));assert.equal(backend.headers.apikey,'fixture-public-key')
  r=await call('/api/backend?path='+encodeURIComponent('https://evil.invalid/rest/v1/eg_records'));assert.equal(r.response.status,403)

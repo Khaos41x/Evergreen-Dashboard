@@ -6,13 +6,22 @@ import {createClient} from '@supabase/supabase-js'
 import {HttpError,bodyJSON,enforceOrigin,json,throttle} from './security.mjs'
 import {checked,validatedSession,requireRecent} from './identity.mjs'
 import {discoverResources,providerConfig,syncProvider,dateRange} from './integration-providers.mjs'
+import {integrationReadiness,requireIntegrationReadiness} from './integration-status.mjs'
 export async function integrationActions(req,res,config,context,action){
  const user=await validatedSession(context)
+ if(action==='status'){
+  if(req.method!=='GET')throw new HttpError(405,'METHOD_NOT_ALLOWED','Método não permitido.')
+  const workspace=new URL(req.url,config.origin).searchParams.get('workspace_id')||''
+  const scope=checked(await context.client.rpc('eg_holding_context'))
+  if(!scope.companies?.some(c=>c.id===workspace&&c.admin))throw new HttpError(403,'INTEGRATION_DENIED','Administrador da empresa necessário.')
+  context.commit();return json(res,200,integrationReadiness(config))
+ }
  if(req.method!=='POST')throw new HttpError(405,'METHOD_NOT_ALLOWED','Método não permitido.')
  enforceOrigin(req,config);requireRecent(user);const body=await bodyJSON(req,40000);await throttle(req,config,'integration-'+action,user.user.id,{ip:40,account:12})
  const workspace=String(body.workspace_id||'')
  const scope=checked(await context.client.rpc('eg_holding_context'))
  if(!scope.companies?.some(c=>c.id===workspace&&c.admin))throw new HttpError(403,'INTEGRATION_DENIED','Administrador da empresa necessário.')
+ if(['discover','connect','sync'].includes(action))requireIntegrationReadiness(config)
  if(action==='discover'){
  const provider=body.provider,cfg=providerConfig(provider,body.config);if(typeof body.token!=='string'||body.token.length<12||body.token.length>16000)throw new HttpError(400,'CREDENTIAL_REQUIRED','Informe uma credencial de leitura válida.')
  const data=await discoverResources(provider,body.token,cfg);context.commit();return json(res,200,data)

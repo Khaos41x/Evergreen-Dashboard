@@ -30,6 +30,9 @@ try {
    if(method==='OPTIONS') return route.fulfill({status:200,headers,body:''})
    let rows=fixture[table]??[],payload=req.postDataJSON()
    if(url.pathname.includes('/rpc/')) {
+    if(table==='holding_context'&&[390,1440].includes(width))return route.fulfill({status:200,headers,body:JSON.stringify({groups:[{id:'organization-fixture',name:'Holding fixture',owner:true}],companies:[{id:w,name:'UI fixture workspace',group_id:'organization-fixture',description:'Fixture explícita da empresa',admin:true,operational:true,information:true}]})})
+    if(table==='information_snapshot')return route.fulfill({status:200,headers,body:JSON.stringify({applications:[],integrations:[],metrics:[],objectives:[]})})
+
     if(table==='save_checklist'){fixture.checklist=payload.p_items.map((i,index)=>({...i,id:crypto.randomUUID(),record_id:payload.p_record,position:index}));return route.fulfill({status:200,headers,body:'null'})}
     return route.fulfill({status:200,headers,body:table==='read_channel'?'null':'[]'})
    }
@@ -102,6 +105,9 @@ try {
   await nav.getByRole('button',{name:width<=768?'Ajustes':'Configurações',exact:true}).click();await page.getByRole('heading',{name:'Configurações',exact:true}).waitFor();assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false)
   await page.screenshot({path:`output/playwright/fixture-settings-${width}.png`,fullPage:true})
 
+  if([390,1440].includes(width)){
+   if(width<=768)await page.getByRole('button',{name:'Abrir menu',exact:true}).click();await page.getByRole('button',{name:'Empresas e equipe',exact:true}).click();await page.getByRole('heading',{name:'Equipe e trabalho por empresa',exact:true}).waitFor();const orgNav=page.getByRole('navigation',{name:'Organizar UI fixture workspace'});await orgNav.getByRole('button',{name:'Projetos',exact:true}).click();await page.getByRole('heading',{name:'Projetos da empresa',exact:true}).waitFor();await page.getByRole('button',{name:'Novo projeto',exact:true}).click();await page.getByRole('dialog').getByLabel('Título',{exact:true}).fill('Projeto integrado QA');assert.equal(await page.getByRole('dialog').getByLabel('Tipo',{exact:true}).inputValue(),'project');await page.getByRole('dialog').getByRole('button',{name:'Salvar item',exact:true}).click();await page.getByRole('heading',{name:'Projeto integrado QA',exact:true}).waitFor();assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);await page.screenshot({path:'output/playwright/organization-shell-projects-'+width+'.png',fullPage:true});if(width<=768)await page.getByRole('button',{name:'Abrir menu',exact:true}).click();await page.getByRole('button',{name:'Empresas e equipe',exact:true}).click();await page.getByRole('navigation',{name:'Organizar UI fixture workspace'}).getByRole('button',{name:'Equipe e convites',exact:true}).click();await page.getByRole('heading',{name:'Membros e acesso',exact:true}).waitFor();assert.equal(await page.getByRole('heading',{name:'Equipe e trabalho por empresa',exact:true}).count(),0);await page.screenshot({path:'output/playwright/organization-shell-team-'+width+'.png',fullPage:true});
+  }
   if(width<=768)await page.getByRole('button',{name:'Abrir menu',exact:true}).click();
   await page.getByRole('navigation',{name:'Navegação principal',exact:true}).getByRole('button',{name:'Sala de foco',exact:true}).click();
   await page.getByRole('heading',{name:'Sala de foco',exact:true}).waitFor();await page.getByText('Sem sessão ativa',{exact:true}).waitFor();
@@ -115,7 +121,7 @@ try {
   if([390,1440].includes(width))await page.screenshot({path:'output/playwright/getting-started-'+width+'.png',fullPage:true});
   await page.getByRole('button',{name:'Criar minha primeira tarefa',exact:false}).click();
   await page.getByRole('dialog',{name:'Nova tarefa',exact:true}).waitFor();await page.keyboard.press('Escape');
-  assert.deepEqual(errors,[]);results.push({width,focusRoomAndHelp:true,chatSendEditDelete:true,recordCreate:true,chatEditorSettingsNoOverflow:true,editorFocusReturn:true,mobileDrawerKeyboard:width<=768,worldMutationSharedWithWork:width===390?'PASS (REST fixture)':'covered at 390',searchRaceAndTaskFocus:width===390?'PASS':'covered at 390',pageErrors:errors});await context.close()
+  assert.deepEqual(errors,[]);results.push({width,organizationShellNavigation:[390,1440].includes(width)?true:'covered at 390/1440',focusRoomAndHelp:true,chatSendEditDelete:true,recordCreate:true,chatEditorSettingsNoOverflow:true,editorFocusReturn:true,mobileDrawerKeyboard:width<=768,worldMutationSharedWithWork:width===390?'PASS (REST fixture)':'covered at 390',searchRaceAndTaskFocus:width===390?'PASS':'covered at 390',pageErrors:errors});await context.close()
  }
  writeFileSync('output/collaboration-ui-results.json',JSON.stringify({environment:'Playwright REST response fixtures ONLY; does not prove auth, persistence or Realtime',results},null,2));console.log(JSON.stringify(results,null,2))
 } finally {await browser.close();server.kill()}
