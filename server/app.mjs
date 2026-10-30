@@ -1,3 +1,5 @@
+import {asaasWebhook,scheduledReconciliation} from './asaas.mjs'
+import {integrationActions} from './integrations.mjs'
 import { readFile } from 'node:fs/promises'
 import { settings, errorJSON, HttpError } from './security.mjs'
 import { serverSession, validatedSession, checked } from './identity.mjs'
@@ -11,7 +13,10 @@ export function createHandler(env = process.env, options = {}) {
     let context
     try {
       const config = settings(env), url = new URL(req.url, config.origin)
+      if(url.pathname==='/api/integrations/reconcile')return await scheduledReconciliation(req,res,config)
+      if(url.pathname.startsWith('/api/webhooks/asaas/'))return await asaasWebhook(req,res,config,url.pathname.slice('/api/webhooks/asaas/'.length))
       context = serverSession(req, res, config)
+      if(url.pathname.startsWith('/api/integrations/'))return await integrationActions(req,res,config,context,url.pathname.slice('/api/integrations/'.length))
       if (url.pathname.startsWith('/api/identity/')) return await authActions(req, res, config, context, url.pathname.slice('/api/identity/'.length), url.searchParams)
       if (url.pathname === '/api/backend') return await backendProxy(req, res, config, context, url.searchParams)
       if (url.pathname === '/api/realtime') return await realtimeStream(req, res, config, context, url.searchParams)

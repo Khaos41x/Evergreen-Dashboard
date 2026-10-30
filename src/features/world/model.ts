@@ -1,5 +1,5 @@
 export type WorldPresence = 'online' | 'away' | 'focusing' | 'unknown' | 'local'
-export interface WorldMember { id: string; name: string; presence: WorldPresence }
+export interface WorldMember { id: string; name: string; presence: WorldPresence; seat?:number; jobTitle?:string; company?:string; focus?:string; avatarUrl?:string }
 export interface WorldTask { id: string; title: string; status: string; projectId: string | null; assigneeId: string | null; progress: number; canComplete: boolean }
 export interface WorldProject { id: string; name: string; description: string }
 export interface WorldActivity { id: string; title: string; actorId: string | null; resourceId: string | null; at: string }
@@ -24,11 +24,9 @@ export function tasksFor(data: WorldData, selection: WorldSelection) {
 export function completion(tasks: WorldTask[]) {
   return tasks.length ? Math.round(100 * tasks.filter(t => t.status === 'done').length / tasks.length) : null
 }
-export function layoutWorld(memberCount: number, projectCount: number) {
-  const columns = Math.min(4, Math.max(2, Math.ceil(Math.sqrt(memberCount))))
-  const rows = Math.ceil(memberCount / columns)
-  const width = columns * 3.1 + (projectCount ? 8 : 5), depth = Math.max(10, rows * 3.3 + 4)
-  const stations = Array.from({ length: memberCount }, (_, i) => [((i % columns) - (columns - 1) / 2) * 3.1, 0, (Math.floor(i / columns) - (rows - 1) / 2) * 3.3] as [number, number, number])
-  const rooms = Array.from({ length: projectCount }, (_, i) => [(i < 3 ? -1 : 1) * (columns * 3.1 / 2 + 2), 0, ((i % 3) - 1) * 3.2] as [number, number, number])
-  return { width, depth, stations, rooms }
+export function layoutWorld(memberCount: number, projectCount: number, slots?:number[]) {
+  const width=22,depth=20
+  const stations=Array.from({length:Math.min(memberCount,12)},(_,i)=>{const slot=(slots?.[i]??i)%12;return [([-5.25,-2.05,2.05,5.25][slot%4]),0,-5+Math.floor(slot/4)*4] as [number,number,number]})
+  const rooms=Array.from({length:Math.min(projectCount,6)},(_,i)=>[(i<3?-1:1)*8.8,0,-5+(i%3)*4] as [number,number,number])
+  return {width,depth,stations,rooms}
 }

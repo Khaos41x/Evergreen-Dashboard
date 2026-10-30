@@ -1,8 +1,10 @@
+process.on('uncaughtException',e=>{console.error(e.message,e.query||'',e.where||'');process.exit(1)})
+import {holdingChecks} from './holding-sql-check.mjs'
 import {PGlite} from '@electric-sql/pglite'
 import {readFileSync,readdirSync,mkdirSync,writeFileSync} from 'node:fs'
 import assert from 'node:assert/strict'
 const pg=new PGlite(),checks=[]
-await pg.exec(`create role anon;create role authenticated;create schema auth;
+await pg.exec(`create role anon;create role authenticated;create role service_role;create schema auth;
 create table auth.users(id uuid primary key,email text,email_confirmed_at timestamptz,raw_user_meta_data jsonb default '{}'::jsonb);
 create table auth.sessions(id uuid primary key,user_id uuid references auth.users,created_at timestamptz default now(),not_after timestamptz,user_agent text);
 create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
@@ -27,7 +29,7 @@ const inv=await val("insert into eg_invites(workspace_id,email)values($1,$2)retu
 await as(b);await pg.query('insert into eg_profiles(id,display_name)values($1,$2)',[b,'Bob']);await pg.query('select eg_accept_invite($1)',[inv])
 await as(c);const other=await val("select eg_create_workspace('Other Company') value")
 await pg.exec('reset role')
-if(process.argv.includes('--release')){await pg.exec(readFileSync('supabase/releases/20261030_open_registration_release.sql','utf8')).catch(e=>{throw new Error(e.message)});checks.push('atomic open-registration release replay')}else for(const m of migrations.filter(x=>x>='20261027160000')){await pg.exec(readFileSync('supabase/migrations/'+m,'utf8')).catch(e=>{throw new Error(m+': '+e.message)});checks.push('replay '+m)}
+if(process.argv.includes('--release')){await pg.exec(readFileSync('supabase/releases/20261030_open_registration_release.sql','utf8')).catch(e=>{throw new Error(e.message)});checks.push('atomic open-registration release replay')}else for(const m of migrations.filter(x=>x>='20261027160000')){await pg.exec(readFileSync('supabase/migrations/'+m,'utf8')).catch(e=>{throw new Error(m+': '+e.message+' position '+e.position+' '+readFileSync('supabase/migrations/'+m,'utf8').slice(Math.max(0,Number(e.position)-140),Number(e.position)+140))});checks.push('replay '+m)}
 await as(a);let ctx=await val('select eg_identity_context() value');assert.equal(ctx.active,true);assert.equal(ctx.workspaces.length,1)
 await pg.query("update eg_profiles set job_title='Fundador',display_name='Alice Cooper' where id=$1",[a])
 await as(b);const profiles=await pg.query('select * from eg_public_profiles($1)',[w]);assert.equal(profiles.rows.find(x=>x.id===a).job_title,'Fundador')
@@ -174,6 +176,7 @@ await as(optionalJob);await pg.query('select eg_identity_bootstrap($1)',[optiona
 checks.push('optional job title does not block explicit team access; confirmed email and invitation still bind membership');
 checks.push('persistent due-date reminders deduplicate, relevant comments notify assignee, foreign workspaces denied');
 
+if(!process.argv.includes('--release'))await holdingChecks({pg,as,val,denied,a,b,c,w,other,group,ca,cb,ac,bc,checks});
 await pg.exec('reset role');await pg.query('delete from auth.sessions where id=$1',[sessions.get(b)])
 await as(b);assert.equal((await val('select eg_identity_context() value')).active,false)
 assert.equal(await val('select count(*)::int value from eg_records'),0)

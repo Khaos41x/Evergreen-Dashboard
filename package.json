@@ -19,7 +19,11 @@
     "test:identity": "node scripts/identity-check.mjs",
     "test:platform:ui": "node scripts/platform-browser-check.mjs",
     "test:local:regression": "node scripts/local-regression-check.mjs",
-    "test:platform:release": "node scripts/platform-security-check.mjs --release"
+    "test:platform:release": "node scripts/platform-security-check.mjs --release",
+    "test:holding:providers": "node scripts/integration-check.mjs",
+    "test:holding:model": "node --experimental-strip-types scripts/holding-model-check.mjs",
+    "test:holding:ui": "node scripts/holding-browser-check.mjs",
+    "test:holding:receipts": "node scripts/receipt-browser-check.mjs"
   },
   "dependencies": {
     "@react-three/fiber": "9.8.2",

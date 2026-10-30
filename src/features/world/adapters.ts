@@ -19,7 +19,7 @@ export function cloudWorldData(input: { workspaceId: string; name: string; userI
     scope: input.workspaceId, name: input.name, source: 'workspace', userId: input.userId,
     members: input.members.filter(m => m.workspace_id === input.workspaceId).map(m => {
       const state = input.online[m.user_id]
-      return { id: m.user_id, name: m.display_name, presence: state === 'online' && input.focus.some(f => f.workspace_id === input.workspaceId && f.user_id === m.user_id && f.status === 'running') ? 'focusing' : state ?? 'unknown' }
+      return { id: m.user_id, name: m.display_name,company:input.name,focus:input.focus.find(f=>f.workspace_id===input.workspaceId&&f.user_id===m.user_id&&f.status==='running')?.title, presence: state === 'online' && input.focus.some(f => f.workspace_id === input.workspaceId && f.user_id === m.user_id && f.status === 'running') ? 'focusing' : state ?? 'unknown' }
     }),
     tasks: records.filter(r => r.kind === 'task').map(r => ({ id: r.id, title: r.title, status: r.status, projectId: r.project_id, assigneeId: r.assignee_id, progress: r.progress, canComplete: input.canMutate && r.status !== 'done' })),
     projects: records.filter(r => r.kind === 'project').map(r => ({ id: r.id, name: r.title, description: r.description })),
