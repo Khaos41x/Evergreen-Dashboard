@@ -1,3 +1,5 @@
+> Atualização de publicação: código048f4a8 em produção, deploymentREADY. [Ativação e limites verificados](ACTIVATION-ORGANIZATION-20261030.md). O registro abaixo descreve os testes e a passagem de implementação/documentação.
+
 # Evergreen — extensão de organização
 
 Inspeção de 30/10/2026. Escopo: organizar empresas, equipe e projetos por extensão do sistema preto/esmeralda existente. Este documento é a única escrita da passagem documentadora. `DESIGN.md`, `.impeccable/design.json`, branding, UI e políticas de acesso foram preservados; não há redesenho ou nova identidade.

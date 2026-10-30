@@ -1,3 +1,5 @@
+> Atualização de publicação: código048f4a8 em produção, deploymentREADY. [Ativação e limites verificados](ACTIVATION-ORGANIZATION-20261030.md). O registro abaixo descreve os testes e a passagem de implementação/documentação.
+
 # Empresas, equipe e projetos — 30/10/2026
 
 Esta etapa responde à prioridade escolhida pelo usuário: organizar empresas, equipe e projetos. Amplia os módulos existentes, sem migração de banco ou concessão automática de acesso. A ativação anterior do responsável e os controles do Supabase permanecem preservados.
