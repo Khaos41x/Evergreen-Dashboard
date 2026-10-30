@@ -164,6 +164,9 @@ begin
  update public.eg_founder_seats set user_id=u,accepted_at=now(),assigned_by=auth.uid() where id=seat.id;
  insert into public.eg_original_founders values(p.group_id,u,auth.uid(),now());
  update public.eg_group_members set capabilities=array['overview','companies','finance','people','projects','intelligence','decisions','communication','governance','documents'] where group_id=p.group_id and user_id=u;
+ perform evergreen_private.sync_founder_chat(p.group_id,u);
+ insert into public.eg_organization_assignments(workspace_id,user_id,level_code,assigned_by) select gs.workspace_id,person,case when person=u then 'A0' else 'A5' end,auth.uid() from public.eg_group_spaces gs cross join unnest(array[u,seat.user_id])person where gs.group_id=p.group_id on conflict(workspace_id,user_id) do update set level_code=excluded.level_code,assigned_by=auth.uid(),updated_at=now();
+ update public.eg_members m set role=case when m.user_id=u then 'admin' else 'member' end from public.eg_group_spaces gs where gs.group_id=p.group_id and m.workspace_id=gs.workspace_id and m.user_id in(u,seat.user_id);
  elsif p.kind='equity' then
  select * into e from public.eg_equity_records where id=(p.payload->>'equity_id')::uuid and workspace_id=p.workspace_id for update;
  if e.id is null then raise exception 'Participação não pertence a esta empresa.';end if;
@@ -259,7 +262,7 @@ begin
 exception when invalid_text_representation then return false;end $$;
 create function evergreen_private.os_protect_seat_membership() returns trigger language plpgsql security definer set search_path='' as $$
 begin
- if (TG_OP='DELETE' or new.role<>old.role) and exists(select 1 from public.eg_councils c join public.eg_founder_seats s on s.council_id=c.id join public.eg_groups g on g.id=c.group_id left join public.eg_group_spaces gs on gs.group_id=g.id where c.activated_at is not null and s.user_id=old.user_id and old.workspace_id in (g.communication_workspace,gs.workspace_id)) then raise exception 'Um Chairman ativo não pode ser removido unilateralmente.' using errcode='42501';end if;
+ if (TG_OP='DELETE' or (new.role='member' and old.role in ('owner','admin'))) and exists(select 1 from public.eg_councils c join public.eg_founder_seats s on s.council_id=c.id join public.eg_groups g on g.id=c.group_id left join public.eg_group_spaces gs on gs.group_id=g.id where c.activated_at is not null and s.user_id=old.user_id and old.workspace_id in (g.communication_workspace,gs.workspace_id)) then raise exception 'Um Chairman ativo não pode ser removido unilateralmente.' using errcode='42501';end if;
  if TG_OP='DELETE' then return old;end if;return new;
 end $$;
 create trigger eg_os_protect_chairman before update or delete on public.eg_members for each row execute function evergreen_private.os_protect_seat_membership();
