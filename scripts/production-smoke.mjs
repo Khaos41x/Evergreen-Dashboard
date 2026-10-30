@@ -1,0 +1,14 @@
+// Explicitly approved deployment smoke: no real login, account creation, email or financial operation.
+import assert from 'node:assert/strict'
+import {mkdirSync,writeFileSync} from 'node:fs'
+import {randomUUID} from 'node:crypto'
+const base='https://evergreen-holding.vercel.app',checks=[]
+const home=await fetch(base);assert.equal(home.status,200);assert.ok((await home.text()).includes('id="root"'));checks.push('production HTML served')
+const config=await fetch(base+'/api/identity/config');const features=await config.json();assert.equal(config.status,200,JSON.stringify(features));assert.equal(features.cookieSessions,true);checks.push('production BFF config and HttpOnly session architecture enabled')
+const session=await fetch(base+'/api/identity/session');assert.equal(session.status,401);const sessionText=await session.text();assert.ok(!/access_token|refresh_token/.test(sessionText));checks.push('unauthenticated session denied without tokens')
+for(const route of['hub','founders','economy','vision']){const response=await fetch(base+'/'+route,{redirect:'manual'});assert.equal(response.status,303,route);assert.ok(response.headers.get('location')?.startsWith('/login?next='))}checks.push('all four private surfaces guarded on the server')
+const denied=await fetch(base+'/api/identity/password',{method:'POST',headers:{'Content-Type':'application/json',Origin:'https://invalid.example'},body:JSON.stringify({email:'unreal@example.invalid',password:'Fixture-not-a-real-password'})});assert.equal(denied.status,403);checks.push('foreign-origin authentication request denied')
+const email='deployment-probe-'+randomUUID()+'@example.invalid',attempts=[]
+for(let i=0;i<9;i++){const response=await fetch(base+'/api/identity/password',{method:'POST',headers:{'Content-Type':'application/json',Origin:base},body:JSON.stringify({email,password:'Fixture-not-a-real-password'})});const data=await response.json();attempts.push({status:response.status,code:data.error?.code});if(response.status===429)break;if(![400,401].includes(response.status))throw Error(JSON.stringify({step:'login rejection',status:response.status,data}))}
+assert.ok(attempts.some(a=>a.status===429),JSON.stringify(attempts));assert.ok(attempts.slice(0,-1).every(a=>a.code==='invalid_credentials'));checks.push('real Supabase rejects nonexistent account; distributed production limiter returns 429 on repeated attempts')
+const evidence={environment:'REAL HTTPS Vercel BFF + hosted Supabase, no authenticated user session',url:base,features,checks,attempts,notVerified:['Owner interactive login with their password','Real email delivery','Google/passkeys','Product integrations and financial transactions']};mkdirSync('output/activation',{recursive:true});writeFileSync('output/activation/production-smoke.json',JSON.stringify(evidence,null,2));console.log(JSON.stringify(evidence,null,2))

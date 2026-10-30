@@ -3,15 +3,19 @@
   "outputDirectory": "dist",
   "framework": "vite",
   "functions": {
-    "api/[...route].ts": {
+    "api/handler.ts": {
       "includeFiles": "dist/index.html",
       "maxDuration": 60
     }
   },
   "rewrites": [
     {
-      "source": "/(vision|economy|founders|hub)",
-      "destination": "/api/page?view=$1"
+      "source": "/api/:path*",
+      "destination": "/api/handler?__eg_route=:path*"
+    },
+    {
+      "source": "/:view(vision|economy|founders|hub)",
+      "destination": "/api/handler?__eg_page=:view"
     },
     {
       "source": "/((?!assets/|api/).*)",
