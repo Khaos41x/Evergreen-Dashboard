@@ -184,7 +184,7 @@ checks.push('Storage resource scope and owner path; avatar isolation; profile un
 await pg.exec('reset role')
 const outsider='00000000-0000-4000-8000-000000000094'
 await pg.query('insert into auth.users(id,email,email_confirmed_at) values($1,$2,now())',[outsider,'outside@test.invalid'])
-await pg.exec(readFileSync(`supabase/migrations/${internalMigration}`,'utf8'))
+await pg.exec(readFileSync(`supabase/legacy/${internalMigration}`,'utf8'))
 await as(outsider);await denied("select eg_create_workspace('Outsider personal workspace')")
 await as(b);await denied("select eg_create_workspace('Member self-promotion')")
 await as(a);assert.ok(await scalar("select eg_create_workspace('Holding internal team') as value"))

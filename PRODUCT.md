@@ -25,8 +25,8 @@ Os nomes visíveis podem ser portugueses; rotas, IDs, estados de banco e dados d
 
 ## Identidade visual e entrega
 
-Usar a nova imagem fornecida Logotipo Evergreen Holdings.png, preservada em public/evergreen-holdings-logo.png. A transparência é apresentada sobre superfície clara para manter legibilidade. Nenhuma recoloração ou edição dos bytes.
+Usar a nova imagem fornecida Logotipo Evergreen Holdings.png, preservada em public/evergreen-holdings-logo.png. A marca tem fundo transparente; filtro CSS claro permite leitura sobre a superfície escura. Na autenticação, a logo maior fica centralizada acima do formulário, sem título promocional. Nenhuma recoloração ou edição dos bytes.
 
 DESIGN.md e .impeccable/design.json permanecem como sistema incumbente. As extensões são documentadas separadamente. Dados de teste ficam apenas nos scripts de validação.
 
-Implementação e testes desta versão são locais. Uma consulta somente de leitura confirmou que o Supabase dedicado ainda tem apenas as oito tabelas do núcleo; as novas migrações não foram aplicadas. Configurações reais de Auth, SMTP, Redis, Storage/Realtime e publicação exigem validação hospedada e aprovação antes de alterações em produção.
+A ativação do banco foi autorizada e concluída no projeto dedicado: produtividade e pacote de identidade/Finanças/Fundadores/cadastro comum,38tabelas comRLS. A restrição de convite obrigatório foi retirada da sequência ativa. Não houve novo deploy nem E2E com provedores ou dispositivos reais; veja docs/ACTIVATION-20261030.md.

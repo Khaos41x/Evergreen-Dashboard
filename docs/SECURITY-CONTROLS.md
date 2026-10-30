@@ -1,3 +1,5 @@
+> **Estado atual30/10 após autorização:** banco atualizado no Supabase dedicado: produtividade e pacote atômico Identity/Finanças/Fundadores/cadastro comum aplicados. Restrição histórica de convites não aplicada e retirada das migrações ativas. Registros preservados,38tabelas comRLS. Logo transparente maior centralizada e sem título promocional na autenticação. Detalhes e limites em [ACTIVATION-20261030](ACTIVATION-20261030.md). Os estados pendentes descritos abaixo pertencem às etapas anteriores; publicação e E2E de provedores continuam pendentes.
+
 # Evergreen Identity, Economy e Founders — controles e operação
 Data: 2026-10-30. Implementação local, sem aplicação no banco hospedado e sem novo deploy.
 

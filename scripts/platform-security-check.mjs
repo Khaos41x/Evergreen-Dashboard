@@ -27,7 +27,7 @@ const inv=await val("insert into eg_invites(workspace_id,email)values($1,$2)retu
 await as(b);await pg.query('insert into eg_profiles(id,display_name)values($1,$2)',[b,'Bob']);await pg.query('select eg_accept_invite($1)',[inv])
 await as(c);const other=await val("select eg_create_workspace('Other Company') value")
 await pg.exec('reset role')
-for(const m of migrations.filter(x=>x>='20261027160000')){await pg.exec(readFileSync('supabase/migrations/'+m,'utf8')).catch(e=>{throw new Error(m+': '+e.message)});checks.push('replay '+m)}
+if(process.argv.includes('--release')){await pg.exec(readFileSync('supabase/releases/20261030_open_registration_release.sql','utf8')).catch(e=>{throw new Error(e.message)});checks.push('atomic open-registration release replay')}else for(const m of migrations.filter(x=>x>='20261027160000')){await pg.exec(readFileSync('supabase/migrations/'+m,'utf8')).catch(e=>{throw new Error(m+': '+e.message)});checks.push('replay '+m)}
 await as(a);let ctx=await val('select eg_identity_context() value');assert.equal(ctx.active,true);assert.equal(ctx.workspaces.length,1)
 await pg.query("update eg_profiles set job_title='Fundador',display_name='Alice Cooper' where id=$1",[a])
 await as(b);const profiles=await pg.query('select * from eg_public_profiles($1)',[w]);assert.equal(profiles.rows.find(x=>x.id===a).job_title,'Fundador')
@@ -179,4 +179,4 @@ await as(b);assert.equal((await val('select eg_identity_context() value')).activ
 assert.equal(await val('select count(*)::int value from eg_records'),0)
 assert.equal(await val("with x as(update eg_profiles set job_title='attack' where id=$1 returning id) select count(*)::int value from x",[b]),0);await denied('select eg_economy_snapshot($1)',[w])
 checks.push('revoked provider session denied by RLS, writes, and financial RPC')
-mkdirSync('output/platform',{recursive:true});writeFileSync('output/platform/sql-results.json',JSON.stringify({environment:'PGlite Auth/session fixtures; NOT hosted Supabase',checks},null,2));console.log(JSON.stringify({passed:checks.length,checks},null,2));await pg.close()
+mkdirSync('output/platform',{recursive:true});writeFileSync(process.argv.includes('--release')?'output/platform/sql-open-registration-release.json':'output/platform/sql-results.json',JSON.stringify({environment:'PGlite Auth/session fixtures; NOT hosted Supabase',checks},null,2));console.log(JSON.stringify({passed:checks.length,checks},null,2));await pg.close()

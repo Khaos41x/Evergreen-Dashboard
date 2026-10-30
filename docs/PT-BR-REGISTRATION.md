@@ -1,3 +1,5 @@
+> **Estado atual30/10 após autorização:** banco atualizado no Supabase dedicado: produtividade e pacote atômico Identity/Finanças/Fundadores/cadastro comum aplicados. Restrição histórica de convites não aplicada e retirada das migrações ativas. Registros preservados,38tabelas comRLS. Logo transparente maior centralizada e sem título promocional na autenticação. Detalhes e limites em [ACTIVATION-20261030](ACTIVATION-20261030.md). Os estados pendentes descritos abaixo pertencem às etapas anteriores; publicação e E2E de provedores continuam pendentes.
+
 # Evergreen — português, marca e cadastro comum
 
 30/10/2026. Extensão do produto existente; não houve recriação do aplicativo.

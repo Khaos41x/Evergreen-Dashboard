@@ -28,7 +28,7 @@ export function Auth({children,onLocal}:{children:(session:IdentitySession)=>Rea
  if(session?.context?.workspaces?.length&&!['reset','code'].includes(mode))return <>{children(session)}</>
  const onboarding=!!session&&!['reset','code'].includes(mode)
  const resetProof=!!session&&(session.context?.recent_auth||session.context?.password_recovery)
- return <main className="collab-auth identity-auth"><header><EvergreenBrand/><h1>Seu espaço.<br/>Sua equipe.</h1><p>Planeje, converse e trabalhe junto.</p></header>
+ return <main className="collab-auth identity-auth"><header><EvergreenBrand/></header>
  <section aria-labelledby="auth-title"><h2 id="auth-title">{onboarding?'Vamos começar':mode==='signup'?'Crie sua conta':mode==='recover'||mode==='reset'?'Redefinir senha':mode==='code'||mode==='confirm'?'Confirme seu e-mail':'Entrar na Evergreen'}</h2>
  <p>{onboarding?'Crie um espaço para sua equipe ou entre em um espaço que já foi compartilhado com você.':mode==='signup'?'Seu nome, e-mail e senha. Sem convite para se cadastrar.':'Tudo o que sua equipe precisa, em um só lugar.'}</p>
  {onboarding?<><form onSubmit={e=>{e.preventDefault();const f=new FormData(e.currentTarget);void run(async()=>{await identityRequest('create-workspace',{name:String(f.get('workspace'))});setSession(await identity.refresh())})}}><label>Nome do espaço<input name="workspace" placeholder="Ex.: Evergreen" required minLength={2} maxLength={80}/></label><button className="primary" disabled={pending}>{pending?'Criando…':'Criar espaço de trabalho'}</button><small>O novo espaço começa vazio e separado das outras equipes.</small></form>

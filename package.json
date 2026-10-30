@@ -18,7 +18,8 @@
     "test:platform:security": "node scripts/platform-security-check.mjs",
     "test:identity": "node scripts/identity-check.mjs",
     "test:platform:ui": "node scripts/platform-browser-check.mjs",
-    "test:local:regression": "node scripts/local-regression-check.mjs"
+    "test:local:regression": "node scripts/local-regression-check.mjs",
+    "test:platform:release": "node scripts/platform-security-check.mjs --release"
   },
   "dependencies": {
     "@react-three/fiber": "9.8.2",

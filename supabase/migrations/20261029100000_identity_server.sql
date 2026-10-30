@@ -51,6 +51,7 @@ create or replace function evergreen_private.require_staff_invite() returns trig
  then raise exception 'Convite da empresa necessário.' using errcode='42501';end if;
  return new;end $$;
 
+revoke all on function evergreen_private.require_staff_invite() from public,anon,authenticated;
 create function public.eg_identity_bootstrap(p_invite uuid default null,p_name text default null,p_job_title text default null,p_timezone text default null) returns void language plpgsql security definer set search_path='' as $$
  declare u auth.users;n text;j text;z text;
  begin
