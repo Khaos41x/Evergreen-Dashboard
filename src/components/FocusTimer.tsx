@@ -17,17 +17,20 @@ function getDisplaySeconds(session: FocusSession, elapsedMs: number) {
 
 export function FocusTimer({ session, onComplete }: { session: FocusSession; onComplete: () => void }) {
   const ringRef = useRef<HTMLDivElement>(null)
-  const completedRef = useRef(false)
+  const completedRef = useRef<string | null>(null)
+  const completeRef=useRef(onComplete);completeRef.current=onComplete
+  const {startedAt,durationMs,status,mode,pausedAt,accumulatedPausedMs}=session
   const [displaySeconds, setDisplaySeconds] = useState(() => getDisplaySeconds(session, getFocusElapsedMs(session)))
 
   useEffect(() => {
-    completedRef.current = session.status === 'completed'
+    const sessionKey=`${startedAt}:${durationMs}:${mode}`
+    const snapshot:FocusSession={startedAt,durationMs,status,mode,pausedAt,accumulatedPausedMs,title:'',description:''}
     let frame = 0
     let interval:ReturnType<typeof setInterval>|undefined
     const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches
     const render = () => {
-      const elapsedMs = getFocusElapsedMs(session)
-      const nextSeconds = getDisplaySeconds(session, elapsedMs)
+      const elapsedMs = getFocusElapsedMs(snapshot)
+      const nextSeconds = getDisplaySeconds(snapshot, elapsedMs)
       setDisplaySeconds(current => current === nextSeconds ? current : nextSeconds)
 
       const progress = session.mode === 'timer' && session.durationMs
@@ -35,9 +38,9 @@ export function FocusTimer({ session, onComplete }: { session: FocusSession; onC
         : 0
       ringRef.current?.style.setProperty('--timer-progress', `${progress * 100}%`)
 
-      if (session.mode === 'timer' && session.durationMs !== null && elapsedMs >= session.durationMs && session.status === 'running' && !completedRef.current) {
-        completedRef.current = true
-        onComplete()
+      if (session.mode === 'timer' && session.durationMs !== null && elapsedMs >= session.durationMs && session.status === 'running' && completedRef.current !== sessionKey) {
+        completedRef.current = sessionKey
+        completeRef.current()
         return
       }
       if (session.status === 'running'&&!reduced) frame = requestAnimationFrame(render)
@@ -45,7 +48,7 @@ export function FocusTimer({ session, onComplete }: { session: FocusSession; onC
     render()
     if(reduced&&session.status==='running')interval=setInterval(render,1000)
     return () => {cancelAnimationFrame(frame);if(interval)clearInterval(interval)}
-  }, [session, onComplete])
+  }, [startedAt,durationMs,status,mode,pausedAt,accumulatedPausedMs])
 
   const statusLabel = session.status === 'idle' ? "PRONTO" : session.status === 'paused' ? "PAUSADO" : session.status === 'completed' ? "CONCLUÍDO" : session.mode === 'timer' ? "TEMPORIZADOR" : "CRONÔMETRO"
   const footer = session.status === 'idle' ? "Comece quando quiser" : session.mode === 'timer' && session.durationMs !== null ? `de ${Math.round(session.durationMs / 60000)} min` : "Tempo decorrido"

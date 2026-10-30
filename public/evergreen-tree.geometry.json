@@ -1,0 +1,8 @@
+{
+  "source_sha256": "459a7674bf308c16648620d695e44412ec39967cfbb21a3b3e15344bcab88c51",
+  "points": 45190,
+  "stride_bytes": 8,
+  "encoding": "little-endian int16 x,y,z; uint16 intensity",
+  "depth": "Reconstructed from a 2D reference, not the original 3D model",
+  "runtime_raster": false
+}

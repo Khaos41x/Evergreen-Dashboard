@@ -1,5 +1,6 @@
+import {HeroTree} from '../components/HeroTree'
 import { useEffect, useState } from 'react'
-import { Activity, CalendarDays, ChevronRight, CircleCheck, CircleGauge, CirclePlay, Ellipsis, Headphones, ListTodo, Orbit, Pause, Play, Plus, Square, SquareCheckBig, Target, UserRoundPlus, UsersRound } from 'lucide-react'
+import { Activity, CalendarDays, ChevronRight, CircleCheck, CircleGauge, CirclePlay, Ellipsis, ListTodo, Orbit, Pause, Play, Plus, Square, SquareCheckBig, Target, UserRoundPlus, UsersRound } from 'lucide-react'
 import type { FocusSession, Objective, Person, Task, TeamMember, WorkspaceActivity } from '../types'
 import { AssigneeAvatar } from '../components/ui'
 import { FocusTimer } from '../components/FocusTimer'
@@ -21,7 +22,8 @@ function relativeTime(timestamp: number) {
   return `${Math.floor(hours / 24)} dias atrás`
 }
 
-export function HomePage({ tasks, objectives, activities, teamMembers, currentUser, focusSession, openTasks, addTask, createObjective, openFocus, pauseFocus, resumeFocus, requestEndFocus, completeFocus, timezone, connected, focusedTodayMs, dailyGoalMinutes, onInvite }: {
+export function HomePage({ tasks, objectives, activities, teamMembers, currentUser, focusSession, openTasks, addTask, createObjective, openFocus, pauseFocus, resumeFocus, requestEndFocus, completeFocus, timezone, connected, focusedTodayMs, dailyGoalMinutes, onInvite, organizationName }: {
+  organizationName?:string
   onInvite?:()=>void
   focusedTodayMs?: number
   dailyGoalMinutes?: number
@@ -69,19 +71,18 @@ export function HomePage({ tasks, objectives, activities, teamMembers, currentUs
   return <main className="reference-home">
     <div className="home-top-grid">
       <section className="reference-hero">
-        <div className="hero-art" aria-hidden="true" />
+        <div className="hero-art" aria-hidden="true"><HeroTree/></div>
         {focusSession.status !== 'idle' && <div className="hero-team" aria-label="Pessoas nesta sessão de foco"><AssigneeAvatar person={currentUser} size="lg" /></div>}
         <FocusTimer session={focusSession} onComplete={completeFocus} />
         <div className="hero-copy">
           <h1>{greeting}, {firstName}.</h1>
-          <p>Veja o que importa hoje.</p>
+          <p>Veja o que importa hoje{organizationName?` no ${organizationName}`:''}.</p>
           <div className="hero-buttons">
             {focusSession.status === 'idle' ? <button onClick={openFocus}><Play /> Iniciar foco</button> : <>
               <button onClick={focusSession.status === 'paused' ? resumeFocus : pauseFocus}>{focusSession.status === 'paused' ? <Play /> : <Pause />}{focusSession.status === 'paused' ? "Retomar" : "Pausar"}</button>
               <button onClick={requestEndFocus}><Square /> Encerrar sessão</button>
             </>}
           </div>
-          <div className="focus-note"><Headphones /><span><strong>{focusSession.status === 'idle' ? "Tudo pronto para começar" : focusSession.status === 'paused' ? "Foco pausado" : "Modo de foco"}</strong>{focusSession.status !== 'idle' && <small>{focusSession.status === 'paused' ? "Retome quando quiser." : `${elapsedMinutes} min em foco in this session.`}</small>}</span></div>
         </div>
       </section>
 
