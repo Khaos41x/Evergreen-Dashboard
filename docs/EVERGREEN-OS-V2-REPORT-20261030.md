@@ -18,7 +18,7 @@ Os testes de interface usam respostas HTTP sintéticas; os de banco executam SQL
 | Hub e Evergreen Group como organização própria | IMPLEMENTADA, PENDENTE DE HOMOLOGAÇÃO | Workspace geral separado do ambiente reservado dos fundadores; diretório com acesso autorizado |
 | Empresa independente e Builder de oito etapas | IMPLEMENTADA, PENDENTE DE HOMOLOGAÇÃO | Criação transacional, slug único, reenvio idempotente, convites e rollback de entradas inválidas; nenhum vínculo automático com o grupo |
 | Níveis A0–A6 e E0–E6 | IMPLEMENTADA, PENDENTE DE HOMOLOGAÇÃO | Nomes personalizáveis, permissões técnicas no servidor; cargos e participação separados; grupo ativo exige deliberação |
-| Três assentos Chairman | IMPLEMENTADA, PENDENTE DE HOMOLOGAÇÃO | Três posições/IDs permanentes, aceite individual, igualdade de autoridade-base após ativação, bloqueio de remoção unilateral e de rotas antigas de desvio |
+| Três assentos Chairman | IMPLEMENTADA, PENDENTE DE HOMOLOGAÇÃO | Três posições/IDs permanentes, aceite individual, igualdade de autoridade-base após ativação, bloqueio de remoção unilateral e de rotas antigas de desvio; sucessão unânime restaura a autoridade do novo titular e preserva direitos independentes nas empresas |
 | Propostas, votos e execução | IMPLEMENTADA, PENDENTE DE HOMOLOGAÇÃO | Dois votos ordinários por padrão no grupo; unanimidade para assentos/políticas estruturais; conflitos, votos imutáveis, prazo e revalidação de acesso |
 | Vínculo empresa/grupo ou parceria | IMPLEMENTADA, PENDENTE DE HOMOLOGAÇÃO | Aprovações dos dois lados e escopos explícitos; aprovação do grupo pelo conselho quando ativo |
 | Sociedade e evidência privada | IMPLEMENTADA, PENDENTE DE HOMOLOGAÇÃO | Percentuais exatos, proposta versus documentada, comprovação privada e deliberação; retirar acesso não apaga participação nem histórico |
@@ -84,7 +84,7 @@ Tabelas adicionadas cobrem níveis/atribuições, espaço geral do grupo, pedido
 | Comando | Resultado local |
 | --- | --- |
 | `npm run build` | Compilação TypeScript e build passaram; chunk WorldScene de aproximadamente 947 kB continua lazy e mantém o aviso de tamanho existente |
-| `npm run test:platform:security` | 41 grupos de verificações e replay passaram; relatório `output/platform/sql-results.json` |
+| `npm run test:platform:security` | 42 grupos de verificações e replay passaram; relatório `output/platform/sql-results.json` |
 | `npm run test:identity` | 14 grupos passaram; inclui bloqueio de sete novas ações quando a sessão não é recente |
 | `npm run test:os:ui` | Fluxos em 390, 790 e 1440 px, incluindo autorização direta no Cofre e manutenção do mesmo identificador; `output/os/browser-results.json` |
 | `npm run test:collaboration-ui` | Sete larguras: 320, 375, 390, 430, 768, 790 e 1440 px; fixture HTTP, sem prova de Realtime hospedado |
@@ -115,5 +115,6 @@ Commits locais de implementação:
 
 - d072519 — correção do resumo de foco e árvore com geometria/profundidade.
 - 46be7dc — Hub de organizações, governança colegiada, controles financeiros, colaboração e testes.
+- 7b725e4 — transição segura de autoridade na sucessão de um Chairman, com teste completo.
 
 O commit de documentação contém este relatório. Nenhum push ou deploy OS V2 foi realizado durante a preparação local. O pacote de evidências inclui somente os relatórios desta execução; relatórios antigos de produção não foram reutilizados como homologação OS V2.
