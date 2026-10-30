@@ -1,3 +1,5 @@
+> Ativação real de30/10: limitação distribuída por Postgres habilitada com prova de servidor, RLS e rota BFF verificadas. [Estado e limites](ACTIVATION-HOLDING-20261030.md).
+
 > Extensão Holding de 30/10: [implementação, controles e limites de ativação](HOLDING-OPERATING-SYSTEM.md). A nova migração e os provedores reais continuam não verificados no ambiente hospedado.
 
 > **Estado atual30/10 após autorização:** banco atualizado no Supabase dedicado: produtividade e pacote atômico Identity/Finanças/Fundadores/cadastro comum aplicados. Restrição histórica de convites não aplicada e retirada das migrações ativas. Registros preservados,38tabelas comRLS. Logo transparente maior centralizada e sem título promocional na autenticação. Detalhes e limites em [ACTIVATION-20261030](ACTIVATION-20261030.md). Os estados pendentes descritos abaixo pertencem às etapas anteriores; publicação e E2E de provedores continuam pendentes.

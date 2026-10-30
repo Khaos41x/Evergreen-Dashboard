@@ -1,3 +1,5 @@
+> Atualização real: migrações aplicadas, proprietário configurado e versão publicada após aprovação explícita. Ver [ACTIVATION-HOLDING-20261030.md](ACTIVATION-HOLDING-20261030.md). O estado abaixo registra a entrega local anterior à ativação; integrações de produtos continuam dependentes das credenciais.
+
 # Evergreen Holding — implementação local e ativação
 
 Esta entrega amplia o aplicativo existente: holding → empresa/espaço de trabalho → aplicações. Não cria empresas de exemplo. Cargo profissional permanece separado de autorização. As decisões financeiras e as integrações exigem sessão válida e confirmação recente de identidade.

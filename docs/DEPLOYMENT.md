@@ -1,3 +1,5 @@
+> Versão atual: [ativação Holding30/10](ACTIVATION-HOLDING-20261030.md), deployment dpl_Am7BTBk7XhbiWDpTnvJeDQbvYEEW. O registro abaixo é histórico da primeira publicação.
+
 # Publicação Evergreen
 
 URL de produção: https://evergreen-holding.vercel.app
