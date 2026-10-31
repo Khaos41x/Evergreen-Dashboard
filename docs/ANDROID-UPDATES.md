@@ -35,6 +35,8 @@ A política de certificado fixa o certificado de TESTE atual. O workflow Android
 
 ## Publicação
 
-Preparado localmente; a publicação e conferência HTTP serão registradas em output/native/update-publication.json após conclusão. Não inferir sucesso remoto dos testes de fixtures.
+Publicado e conferido em31/10/2026 às15h20 (UTC−3), exclusivamente no projeto evergreen-android-downloads. Deployment dpl_5BhuZ2ufBtFM6W1ZJGcCj7YvFNm8, estado READY; fonte funcional no commit592fd15. Link público: https://evergreen-android-downloads.vercel.app/Evergreen.apk. O site do sistema evergreen-holding preservou o deployment dpl_8CZfjvVCB1utokNUXjcTh9A9hs5x; nenhuma migração Supabase foi executada.
+
+O verificador scripts/mobile-release-live-check.mjs buscou o manifesto real sem credenciais, confirmou CORS público/Cache-Control:no-store e conferiu os dois downloads (alias e versão2 imutável): status200, MIME de APK, attachment,11.623.485 bytes e SHA-256 local idêntico. Resultado em output/native/update-publication.json. Também foi executado fetch real em Edge com origem https://localhost simulada e a CSP efetivamente empacotada: o manifesto remoto retornou200, sem bloqueio de CORS/CSP (output/native/update-live-browser.json). Esta evidência é remota HTTP/navegador; não é instalação nativa. O verificador pode ser repetido após preparar o pacote local correspondente. Não inferir sucesso de dispositivo dos testes de fixtures.
 
 Fontes: [Capacitor App.getInfo](https://capacitorjs.com/docs/apis/app), [Capacitor Browser](https://capacitorjs.com/docs/apis/browser), [versionamento Android](https://developer.android.com/studio/publish/versioning).

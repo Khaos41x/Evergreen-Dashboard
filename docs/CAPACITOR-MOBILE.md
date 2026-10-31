@@ -1,6 +1,6 @@
 # Evergreen Holdings — Capacitor
 
-Implementação local em 31/10/2026, sobre a aplicação existente. Não houve publicação na Vercel nem migração no Supabase hospedado nesta etapa.
+Conversão inicial em31/10/2026 sobre a aplicação existente. O projeto Vercel do sistema principal e o Supabase hospedado não foram alterados nesta etapa. O APK foi posteriormente publicado em um projeto separado de downloads, incluindo a versão1.0.1; veja ANDROID-UPDATES.md.
 
 ## Resultado e limites
 
@@ -16,7 +16,7 @@ React, TypeScript, Vite, Tailwind, Supabase, schema existente e identidade visua
 
 ## Avisos de atualização Android
 
-A versão1.0.1 (build2) adiciona aviso opcional de versões posteriores. Instale-a uma vez pelo link de download para receber avisos futuros. A comparação usa o build real; baixar e instalar requer ação do usuário. Publicação do APK, controles de assinatura, testes e limites em [ANDROID-UPDATES.md](ANDROID-UPDATES.md). O SHA e o tamanho do primeiro APK acima são históricos, não os do build2.
+A versão1.0.1 (build2), publicada no projeto separado de downloads, adiciona aviso opcional de versões posteriores. Instale-a uma vez pelo link de download para receber avisos futuros. A comparação usa o build real; baixar e instalar requer ação do usuário. Publicação do APK, controles de assinatura, testes e limites em [ANDROID-UPDATES.md](ANDROID-UPDATES.md). O SHA e o tamanho do primeiro APK acima são históricos, não os do build2.
 
 ## Comandos
 
