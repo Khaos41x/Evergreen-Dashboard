@@ -16,3 +16,9 @@ README.md
 PRODUCT.md
 DESIGN.md
 .env.example
+
+android
+ios
+native
+resources
+capacitor.config.ts

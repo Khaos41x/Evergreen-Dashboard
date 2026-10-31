@@ -1,3 +1,6 @@
+import {nativeAuthBody,openOAuth,configureNativeAuth} from '../../mobile/auth'
+import {native} from '../../mobile/transport'
+import {apiFetch} from '../../mobile/transport'
 export interface IdentitySession {
   user:{id:string;email?:string;user_metadata:Record<string,unknown>}
   expires_at?:number
@@ -10,7 +13,7 @@ let inFlight:Promise<{data:{session:IdentitySession|null};error:Error|null}>|nul
 export class IdentityError extends Error {code:string;status:number;constructor(message:string,code:string,status:number){super(message);this.code=code;this.status=status}}
 export async function identityRequest<T=Record<string,unknown>>(action:string,body?:unknown):Promise<T>{
  let response:Response
- try{response=await fetch('/api/identity/'+action,{method:body===undefined?'GET':'POST',credentials:'same-origin',headers:body===undefined?{}:{'Content-Type':'application/json'},body:body===undefined?undefined:JSON.stringify(body),cache:'no-store'})}catch{throw new IdentityError('Não foi possível conectar. Seus dados foram preservados.','NETWORK_ERROR',0)}
+ try{response=await apiFetch('/api/identity/'+action,{method:body===undefined?'GET':'POST',credentials:'same-origin',headers:body===undefined?{}:{'Content-Type':'application/json'},body:body===undefined?undefined:JSON.stringify(body),cache:'no-store'})}catch{throw new IdentityError('Não foi possível conectar. Seus dados foram preservados.','NETWORK_ERROR',0)}
  const result=await response.json().catch(()=>({error:{code:'SERVER_UNAVAILABLE',message:'Serviço de identidade indisponível.'}}))
  if(!response.ok||result?.error)throw new IdentityError(result?.error?.message||'Não foi possível concluir o acesso.',result?.error?.code||'REQUEST_FAILED',response.status)
  return result as T
@@ -35,14 +38,14 @@ export const identity={
  onAuthStateChange:(listener:Listener)=>{listeners.add(listener);return{data:{subscription:{unsubscribe:()=>{listeners.delete(listener)}}}}},
  signInWithPassword:async(body:{email:string;password:string})=>{try{const result=await signed('password',body);return{data:result,error:null}}catch(error){return{data:null,error}}},
  signOut:async(body?:{scope?:'local'|'others'|'global'})=>{try{await identityRequest('logout',body||{scope:'local'});if(body?.scope!=='others'){emit('SIGNED_OUT',null);try{localStorage.setItem('evergreen.logout',String(Date.now()))}catch{/* Session is already revoked. */}}return{error:null}}catch(error){if(error instanceof IdentityError&&error.status===401){emit('SIGNED_OUT',null);return{error:null}}return{error}}},
- config:()=>identityRequest<{google:boolean;passkeys:boolean;email:boolean;cookieSessions:boolean}>('config'),
- sendEmail:(body:{email:string;next?:string;invite?:string;reauth?:boolean})=>identityRequest('email',body),
- signup:async(body:{email:string;password:string;name:string;job_title:string;timezone:string;invite?:string;next?:string})=>{const result=await identityRequest<{session:IdentitySession|null;pendingConfirmation:boolean}>('signup',body);if(result.session)emit('SIGNED_IN',result.session);return result},
- recover:(email:string)=>identityRequest('recover',{email}),
+ config:()=>identityRequest<{google:boolean;passkeys:boolean;email:boolean;cookieSessions:boolean;nativeAuth?:boolean}>('config').then(config=>{configureNativeAuth(config.nativeAuth===true);return native?{...config,google:config.google&&config.nativeAuth===true,passkeys:false}:config}),
+ sendEmail:(body:{email:string;next?:string;invite?:string;reauth?:boolean})=>identityRequest('email',{...body,...nativeAuthBody()}),
+ signup:async(body:{email:string;password:string;name:string;job_title:string;timezone:string;invite?:string;next?:string})=>{const result=await identityRequest<{session:IdentitySession|null;pendingConfirmation:boolean}>('signup',{...body,...nativeAuthBody()});if(result.session)emit('SIGNED_IN',result.session);return result},
+ recover:(email:string)=>identityRequest('recover',{email,...nativeAuthBody()}),
  updatePassword:(password:string)=>signed('update-password',{password}),
  refresh:async()=>{const result=await identityRequest<{session:IdentitySession}>('session');emit('SIGNED_IN',result.session);return result.session},
  verifyEmail:(body:{email:string;code:string;reauth?:boolean})=>signed('verify-email',body),
- google:async(body:{next?:string;invite?:string;reauth?:boolean})=>{const result=await identityRequest<{url:string}>('google',body);window.location.assign(result.url)},
+ google:async(body:{next?:string;invite?:string;reauth?:boolean})=>{const result=await identityRequest<{url:string}>('google',{...body,...nativeAuthBody()});await openOAuth(result.url)},
  async passkey(reauth=false){
   if(!window.PublicKeyCredential||!navigator.credentials)throw new Error("Este navegador não oferece suporte a chaves de acesso.")
   const start=await identityRequest<{challenge_id:string;options:PublicKeyCredentialRequestOptionsJSON}>('passkey/auth/start',{})
@@ -66,3 +69,5 @@ export function clearLegacyAuthStorage(projectUrl:string){
 
 window.addEventListener('evergreen:session-expired',()=>emit('SIGNED_OUT',null))
 window.addEventListener('storage',e=>{if(e.key==='evergreen.logout')emit('SIGNED_OUT',null)})
+
+window.addEventListener('evergreen:native-auth',event=>emit('SIGNED_IN',(event as CustomEvent).detail))

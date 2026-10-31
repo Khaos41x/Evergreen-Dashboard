@@ -1,3 +1,4 @@
+import {nativePushChecks} from './native-push-sql-check.mjs'
 import {libraryChecks} from './library-sql-check.mjs'
 import {osChecks} from './os-sql-check.mjs'
 import {profileChecks} from './profile-sql-check.mjs'
@@ -185,6 +186,7 @@ if(!process.argv.includes('--release'))await profileChecks({pg,as,val,denied,a,b
 if(!process.argv.includes('--release'))await holdingChecks({pg,as,val,denied,a,b,c,w,other,group,ca,cb,ac,bc,checks});
 if(!process.argv.includes('--release'))await osChecks({pg,as,val,denied,sessions,checks});
 if(!process.argv.includes('--release'))await libraryChecks(pg,{as,val,denied,users:[a,b,c],checks})
+if(!process.argv.includes('--release'))await nativePushChecks({pg,as,val,denied,a,b,w,sessions,checks})
 await pg.exec('reset role');await pg.query('delete from auth.sessions where id=$1',[sessions.get(b)])
 await as(b);assert.equal((await val('select eg_identity_context() value')).active,false)
 assert.equal(await val('select count(*)::int value from eg_records'),0)

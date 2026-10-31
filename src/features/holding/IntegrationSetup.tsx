@@ -1,9 +1,10 @@
+import {apiFetch} from '../../mobile/transport'
 import {useEffect,useRef,useState,type ReactNode} from 'react'
 import {failure} from '../../collaboration/client'
 export type Readiness={ready:boolean;encryption:boolean;storage:boolean;scheduled:boolean}
 export function IntegrationSetup({workspace,children}:{workspace:string;children:(status:Readiness)=>ReactNode}){
  const [state,setState]=useState<{workspace:string;status:Readiness}|null>(null),[error,setError]=useState(''),[revision,setRevision]=useState(0),serial=useRef(0)
- useEffect(()=>{const n=++serial.current;setState(null);setError('');void fetch('/api/integrations/status?workspace_id='+encodeURIComponent(workspace),{credentials:'same-origin',cache:'no-store'}).then(async r=>{const result=await r.json();if(!r.ok)throw new Error(result.error?.message||'Não foi possível verificar as integrações.');if(typeof result.ready!=='boolean'||typeof result.encryption!=='boolean'||typeof result.storage!=='boolean'||typeof result.scheduled!=='boolean')throw new Error('O servidor não retornou o estado das integrações.');if(n===serial.current)setState({workspace,status:result})}).catch(e=>{if(n===serial.current)setError(failure(e))});return()=>{serial.current++}},[workspace,revision])
+ useEffect(()=>{const n=++serial.current;setState(null);setError('');void apiFetch('/api/integrations/status?workspace_id='+encodeURIComponent(workspace),{credentials:'same-origin',cache:'no-store'}).then(async r=>{const result=await r.json();if(!r.ok)throw new Error(result.error?.message||'Não foi possível verificar as integrações.');if(typeof result.ready!=='boolean'||typeof result.encryption!=='boolean'||typeof result.storage!=='boolean'||typeof result.scheduled!=='boolean')throw new Error('O servidor não retornou o estado das integrações.');if(n===serial.current)setState({workspace,status:result})}).catch(e=>{if(n===serial.current)setError(failure(e))});return()=>{serial.current++}},[workspace,revision])
  if(error)return <div role="alert" className="holding-notice"><p>{error}</p><button onClick={()=>setRevision(v=>v+1)}>Verificar novamente</button></div>
  const status=state?.workspace===workspace?state.status:null
  if(!status)return <p role="status">Verificando a preparação das integrações…</p>

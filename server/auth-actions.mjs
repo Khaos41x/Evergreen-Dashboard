@@ -1,3 +1,4 @@
+import {nativeCallback,nativeRedirect,verifyNativeFlow} from './native-auth.mjs'
 import { HttpError, bodyJSON, enforceOrigin, json, throttle } from './security.mjs'
 import { checked, clearFlow, flowState, publicIdentity, readFlow, requireRecent, validatedSession } from './identity.mjs'
 
@@ -5,8 +6,9 @@ const validEmail = value => typeof value === 'string' && value.length <= 254 && 
 function requireFeature(enabled, code, message) { if (!enabled) throw new HttpError(503, code, message) }
 export async function authActions(req, res, config, context, action, query) {
   const reply = (status, value) => { context.commit(); json(res, status, value) }
-  if (action === 'config' && req.method === 'GET') return reply(200, { google: config.google, passkeys: config.passkeys, email: true, cookieSessions: true })
+  if (action === 'config' && req.method === 'GET') return reply(200, { google: config.google, passkeys: config.passkeys, email: true, cookieSessions: true, nativeAuth:config.env.NATIVE_AUTH_ENABLED==='true' })
   if (action === 'session' && req.method === 'GET') return reply(200, { session: publicIdentity(await validatedSession(context)) })
+  if(action==='native-callback'&&req.method==='GET'){await throttle(req,config,'native-callback');res.statusCode=303;res.setHeader('Location',nativeRedirect(config,query));res.end();return}
   if (action === 'callback' && req.method === 'GET') {
     await throttle(req,config,'callback')
     const flow = readFlow(req, res, config), checkpoint = context.checkpoint(), code = query.get('code')
@@ -20,7 +22,16 @@ export async function authActions(req, res, config, context, action, query) {
   enforceOrigin(req, config)
   const body = await bodyJSON(req)
   await throttle(req, config, action, body.email || '')
-  const callback = config.origin + '/api/identity/callback'
+  if(action==='native-exchange'){
+    verifyNativeFlow(req,res,config,body.nativeState)
+    if(typeof body.code!=='string'||!body.code||body.code.length>4096)throw new HttpError(400,'AUTH_CODE_REQUIRED','Código inválido.')
+    const flow=readFlow(req,res,config),checkpoint=context.checkpoint()
+    const data=checked(await context.client.auth.exchangeCodeForSession(body.code))
+    if(flow.user&&data.user?.id!==flow.user){context.restore(checkpoint);throw new HttpError(403,'ACCOUNT_MISMATCH','Use a mesma conta para confirmar sua identidade.')}
+    const valid=await validatedSession(context,{bootstrap:true,invite:flow.invite});clearFlow(res,config)
+    return reply(200,{session:publicIdentity(valid),next:flow.next})
+  }
+  const callback = ['google','signup','email','recover'].includes(action)?nativeCallback(config,body,res):config.origin+'/api/identity/callback'
   if (action === 'google') {
     requireFeature(config.google, 'GOOGLE_NOT_CONFIGURED', 'O acesso Google precisa ser configurado pelo administrador.')
     const current = body.reauth ? await validatedSession(context) : null

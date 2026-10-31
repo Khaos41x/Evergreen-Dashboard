@@ -45,9 +45,11 @@ export function FocusTimer({ session, onComplete }: { session: FocusSession; onC
       }
       if (session.status === 'running'&&!reduced) frame = requestAnimationFrame(render)
     }
+    const resumeClock=()=>{cancelAnimationFrame(frame);render()}
+    window.addEventListener('evergreen:resume',resumeClock);document.addEventListener('visibilitychange',resumeClock)
     render()
     if(reduced&&session.status==='running')interval=setInterval(render,1000)
-    return () => {cancelAnimationFrame(frame);if(interval)clearInterval(interval)}
+    return () => {window.removeEventListener('evergreen:resume',resumeClock);document.removeEventListener('visibilitychange',resumeClock);cancelAnimationFrame(frame);if(interval)clearInterval(interval)}
   }, [startedAt,durationMs,status,mode,pausedAt,accumulatedPausedMs])
 
   const statusLabel = session.status === 'idle' ? "PRONTO" : session.status === 'paused' ? "PAUSADO" : session.status === 'completed' ? "CONCLUÍDO" : session.mode === 'timer' ? "TEMPORIZADOR" : "CRONÔMETRO"

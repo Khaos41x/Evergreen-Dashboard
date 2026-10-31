@@ -1,0 +1,19 @@
+/* Native shell only; the web layout and official brand assets remain authoritative. */
+html[data-native=true]{--safe-top:max(env(safe-area-inset-top,0px),var(--safe-area-inset-top,0px));--safe-bottom:max(env(safe-area-inset-bottom,0px),var(--safe-area-inset-bottom,0px));overscroll-behavior:none}
+html[data-native=true] body{padding-top:var(--safe-top);padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px);background:#070a09;-webkit-tap-highlight-color:transparent}
+html[data-native=true] #root{height:calc(100dvh - var(--safe-top));min-height:0}
+html[data-native=true] :is(button,[role=button],summary){touch-action:manipulation}
+html[data-native=true] :is(input,textarea,select){font-size:max(1rem,16px)!important;scroll-margin-block:90px}
+html[data-native=true] .collab-auth{padding-bottom:calc(24px + var(--safe-bottom));min-height:100%}
+html[data-native=true] :is(.overlay,.collab-modal){padding-top:calc(16px + var(--safe-top));padding-bottom:calc(16px + var(--safe-bottom))}
+html[data-native=true] .collab-bottom{padding-bottom:calc(4px + var(--safe-bottom))}
+html[data-native=true] :is(.economy-page,.holding-page,.world-page){padding-bottom:calc(24px + var(--safe-bottom))}
+@media(max-width:768px){
+ html[data-native=true] :is(button,[role=button],summary){min-height:48px}
+ html[data-native=true] :is(button[aria-label],.world-camera-controls button){min-width:44px}
+ html[data-native=true] .collab-app{padding-bottom:calc(66px + var(--safe-bottom))}
+ html[data-native=true] .collab-sidebar{padding-top:var(--safe-top)}
+ html[data-native=true] .collab-main{min-height:0}
+ html[data-native=true] .world-node-label{font-size:11px}
+}
+@media(prefers-reduced-motion:reduce){html[data-native=true] *{scroll-behavior:auto!important}}

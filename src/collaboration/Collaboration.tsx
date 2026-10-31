@@ -1,3 +1,4 @@
+import {preparePush} from '../mobile/push'
 import {ProjectsModule} from '../features/productivity/ProjectsModule'
 import {CompanyContext,useHolding,type HoldingScope} from '../features/holding/context'
 import '../features/holding/holding.css'
@@ -65,6 +66,7 @@ export function Collaboration({ session, onLocal }: { session: Session; onLocal:
     try { return JSON.parse(localStorage.getItem(selectionKey) ?? '{}') ?? {} } catch { return {} }
   })
   const [workspaceId, setWorkspaceId] = useState(initialSelection.workspaceId ?? '')
+  useEffect(()=>{void preparePush(session.user.id);return()=>{void preparePush(null)}},[session.user.id])
   const holding=useHolding(session.user.id)
   const organizationDirectory=useOSResource<Directory>('eg_os_context',{})
   useFounderPresence((organizationDirectory.data?.groups||[]).filter(g=>g.library_access).map(g=>g.id))
@@ -206,6 +208,8 @@ export function Collaboration({ session, onLocal }: { session: Session; onLocal:
     setNotice("Importação confirmada. Dados locais preservados. caixa de entrada e sessões de foco permanecem no backup local; detalhes legados foram arquivados na descrição.")
   }
   const navigate = (next: Screen) => { if(next!=='holding'&&next!=='group'){setAllGroup(null);setStrategicCompany(null)}setWorld(false); setScreen(next); setMenu(false); setNotice('') }
+  useEffect(()=>{const back=(event:Event)=>{if(menu){event.preventDefault();setMenu(false)}else if(palette){event.preventDefault();setPalette(false)}else if(world){event.preventDefault();setWorld(false)}else if(!['home','organizations'].includes(screen)){event.preventDefault();navigate('home')}};window.addEventListener('evergreen:back',back);return()=>window.removeEventListener('evergreen:back',back)},[menu,palette,world,screen])
+
   const openEditor = (item: RecordItem | null) => { editorOpener.current = document.activeElement as HTMLElement | null; if(!item)setCreateKind(screen==='records'?'project':'task');setRecord(item); setCreating(true) }
   const command=(action:string)=>{
     setWorld(false)

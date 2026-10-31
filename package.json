@@ -26,9 +26,23 @@
     "test:holding:receipts": "node scripts/receipt-browser-check.mjs",
     "test:organization:ui": "node scripts/organization-browser-check.mjs",
     "test:os:ui": "node scripts/os-browser-check.mjs",
-    "test:library:ui": "node scripts/library-browser-check.mjs"
+    "test:library:ui": "node scripts/library-browser-check.mjs",
+    "mobile:sync": "npm run build && cap sync && node scripts/native-hardening.mjs",
+    "mobile:android": "cap open android",
+    "mobile:ios": "cap open ios",
+    "mobile:doctor": "node scripts/mobile-doctor.mjs",
+    "mobile:apk": "node scripts/mobile-apk.mjs",
+    "test:mobile:bridge": "node scripts/native-check.mjs",
+    "test:mobile:ui": "node scripts/native-browser-check.mjs",
+    "mobile:assets": "capacitor-assets generate --android --ios --assetPath resources --iconBackgroundColor \"#f3f4f2\" --iconBackgroundColorDark \"#f3f4f2\" --splashBackgroundColor \"#f3f4f2\" --splashBackgroundColorDark \"#f3f4f2\""
   },
   "dependencies": {
+    "@capacitor/android": "8.6.0",
+    "@capacitor/app": "8.1.2",
+    "@capacitor/browser": "8.0.5",
+    "@capacitor/core": "8.6.0",
+    "@capacitor/ios": "8.6.0",
+    "@capacitor/push-notifications": "8.1.3",
     "@react-three/fiber": "9.8.2",
     "@supabase/ssr": "0.12.7",
     "@supabase/supabase-js": "2.118.0",
@@ -41,6 +55,8 @@
     "vite": "latest"
   },
   "devDependencies": {
+    "@capacitor/assets": "4.0.0",
+    "@capacitor/cli": "8.6.0",
     "@electric-sql/pglite": "0.5.12",
     "@types/node": "22.18.6",
     "@types/react": "latest",
@@ -51,5 +67,10 @@
     "postcss": "latest",
     "tailwindcss": "^3.4.17",
     "typescript": "latest"
+  },
+  "overrides": {
+    "glob": "14.0.3",
+    "minimatch": "11.0.3",
+    "uuid": "11.1.1"
   }
 }

@@ -99,6 +99,25 @@ try{
  r=await call('/api/identity/passkey/delete',{id:'fixture-key'});assert.equal(r.response.status,200)
  const native=requests.slice(retryBefore).filter(x=>x.path.includes('/passkeys/'));assert.ok(native.some(x=>x.path==='/auth/v1/passkeys/registration/verify'&&x.body.challenge_id==='fixture-registration'));assert.ok(native.some(x=>x.path==='/auth/v1/passkeys/authentication/verify'));assert.ok(native.filter(x=>!x.path.includes('/authentication/')).every(x=>x.headers.authorization?.startsWith('Bearer ')))
  checks.push('native Supabase passkey registration/authentication/list/update/delete transport; cryptographic provider proof remains NOT_VERIFIED')
+ const state='a'.repeat(64)
+ r=await call('/api/identity/google',{nativeState:state,next:'/economy'});assert.equal(r.response.status,503,'Native auth must be explicitly configured')
+ env.NATIVE_AUTH_ENABLED='true'
+ r=await call('/api/identity/google',{nativeState:state,next:'/economy'});assert.equal(r.response.status,200)
+ const nativeOAuth=new URL(r.data.url);pkceChallenge=nativeOAuth.searchParams.get('code_challenge');const mobileCallback=new URL(nativeOAuth.searchParams.get('redirect_to'));assert.equal(mobileCallback.pathname,'/api/identity/native-callback');assert.equal(mobileCallback.searchParams.get('state'),state)
+ const providerBeforeRedirect=requests.length
+ r=await call('/api/identity/native-callback?state='+state+'&code=mobile-single-code',undefined,{cookies:false});assert.equal(r.response.status,303);assert.ok(r.response.headers.get('location').startsWith('evergreen://auth/callback?code='));assert.equal(requests.length,providerBeforeRedirect,'External browser callback must not establish a browser session')
+ r=await call('/api/identity/native-exchange',{nativeState:'b'.repeat(64),code:'mobile-single-code'});assert.equal(r.response.status,403)
+ r=await call('/api/identity/native-exchange',{nativeState:state,code:'mobile-single-code'});assert.equal(r.response.status,200,JSON.stringify(r.data));assert.equal(r.data.next,'/economy');assert.ok(!/access_token|refresh_token/.test(r.text));assert.ok(lastVerifier.length>20)
+ r=await call('/api/identity/native-exchange',{nativeState:state,code:'mobile-single-code'});assert.equal(r.response.status,403,'Native callback replay must fail')
+ r=await call('/api/mobile/push/config');assert.equal(r.response.status,200);assert.deepEqual(r.data,{android:false,ios:false})
+ r=await call('/api/mobile/push/register',{platform:'android',token:'synthetic-push-token'});assert.equal(r.response.status,503)
+ r=await call('/api/mobile/push/dispatch',{});assert.equal(r.response.status,401)
+ env.NATIVE_PUSH_ENABLED='true';env.NATIVE_PUSH_SERVICE_KEY='fixture-service-only';env.INTEGRATIONS_ENCRYPTION_KEY=Buffer.alloc(32,7).toString('base64');env.CRON_SECRET='fixture-scheduler-secret-at-least-32-characters';env.FCM_SERVICE_ACCOUNT_JSON='{}'
+ r=await call('/api/mobile/push/register',{platform:'android',token:'synthetic-push-token-123456',user_id:'FORGED_OTHER_USER'});assert.equal(r.response.status,200,JSON.stringify(r.data));assert.deepEqual(r.data,{registered:true})
+ const deviceWrite=requests.findLast(x=>x.path==='/rest/v1/eg_mobile_devices');assert.equal(deviceWrite.body.user_id,user.id);assert.equal(deviceWrite.body.session_id,'fixture-id');assert.equal(deviceWrite.body.token_hash,createHash('sha256').update('synthetic-push-token-123456').digest('hex'));assert.ok(!deviceWrite.body.token_cipher.includes('synthetic-push-token'));assert.equal(deviceWrite.headers.authorization,'Bearer fixture-service-only');assert.ok(!r.text.includes('synthetic-push-token'));env.NATIVE_PUSH_ENABLED='false'
+
+ checks.push('native PKCE: explicit opt-in, code-only external callback, state-bound vault exchange, safe context return, no token disclosure and replay denial')
+ checks.push('push unavailable without infrastructure; configured registration uses verified user/session, encrypted token and server-only credential; scheduler requires secret')
  const beforeRaw=requests.length
  const rawResponse=await fetch(base+'/api/identity/email',{method:'POST',headers:{origin:base,'content-type':'text/plain'},body:'{}'});assert.equal(rawResponse.status,415);assert.equal(beforeRaw,requests.length)
  recent=false;r=await call('/api/identity/passkey/register/start',{});assert.equal(r.response.status,428);recent=true

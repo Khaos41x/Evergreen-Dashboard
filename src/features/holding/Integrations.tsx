@@ -1,3 +1,4 @@
+import {apiFetch} from '../../mobile/transport'
 import {IntegrationSetup} from './IntegrationSetup'
 import {checked,db} from '../../collaboration/client'
 import {useEffect,useRef,useState,type FormEvent} from 'react'
@@ -5,7 +6,7 @@ import {useOperation} from './useOperation'
 export type Integration={id:string;workspace_id:string;application_id:string;provider:string;resource_id:string;label:string;state:string;last_sync:string|null;last_error:string|null}
 export type Application={id:string;workspace_id:string;name:string;description:string;url:string|null;archived:boolean}
 const labels:Record<string,string>={cloudflare:'Cloudflare',vercel:'Vercel',supabase:'Supabase',asaas:'Asaas'}
-export async function integrationRequest(action:string,body:Record<string,unknown>){const r=await fetch('/api/integrations/'+action,{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify(body)});const data=await r.json();if(!r.ok)throw Object.assign(new Error(data.error?.message||data.message||'Não foi possível concluir a conexão.'),{status:r.status,code:data.error?.code||data.code});return data}
+export async function integrationRequest(action:string,body:Record<string,unknown>){const r=await apiFetch('/api/integrations/'+action,{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify(body)});const data=await r.json();if(!r.ok)throw Object.assign(new Error(data.error?.message||data.message||'Não foi possível concluir a conexão.'),{status:r.status,code:data.error?.code||data.code});return data}
 export function Integrations({workspace,apps,integrations,email,from,to,refresh}:{workspace:string;apps:Application[];integrations:Integration[];email:string;from:string;to:string;refresh:()=>Promise<void>}){
  const [books,setBooks]=useState<{id:string;name:string}[]>([]),[hook,setHook]=useState<{url:string;token:string}|null>(null),[offsets,setOffsets]=useState<Record<string,number>>({})
  const [provider,setProvider]=useState('cloudflare'),[resources,setResources]=useState<{id:string;name:string}[]>([]),[limited,setLimited]=useState(false),[notice,setNotice]=useState(''),[resource,setResource]=useState('')

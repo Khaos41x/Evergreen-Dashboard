@@ -24,7 +24,8 @@ export function useProductivity(workspaceId:string,recordIds:string[],enabled=tr
     channel.subscribe(status=>{if(status==='SUBSCRIBED')void refresh()})
     const timer=setInterval(()=>void refresh(),15000)
     window.addEventListener('focus',refresh)
-    return()=>{generation.current++;clearInterval(timer);window.removeEventListener('focus',refresh);void db().removeChannel(channel)}
+    window.addEventListener('evergreen:resume',refresh)
+    return()=>{generation.current++;clearInterval(timer);window.removeEventListener('focus',refresh);window.removeEventListener('evergreen:resume',refresh);void db().removeChannel(channel)}
   },[refresh,workspaceId,enabled])
   return {...(loaded===workspaceId?data:empty),initialLoading:!!workspaceId&&loaded!==workspaceId,loading:loading||!!workspaceId&&loaded!==workspaceId,error,refresh}
 }

@@ -49,8 +49,9 @@ export function HomePage({ tasks, objectives, activities, teamMembers, currentUs
 
   useEffect(() => {
     if (focusSession.status !== 'running') return
+    const resume=()=>setNow(Date.now());window.addEventListener('evergreen:resume',resume)
     const timer = window.setInterval(() => setNow(Date.now()), 1000)
-    return () => window.clearInterval(timer)
+    return () => {window.clearInterval(timer);window.removeEventListener('evergreen:resume',resume)}
   }, [focusSession.status])
 
   const elapsedMs = getFocusElapsedMs(focusSession, now)
