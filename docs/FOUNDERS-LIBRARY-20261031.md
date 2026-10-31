@@ -1,4 +1,6 @@
-# Biblioteca dos fundadores — incremento local de 31/10/2026
+# Biblioteca dos fundadores — incremento de 31/10/2026
+
+Atualização: a versão `c67fda0` foi aplicada e publicada com aprovação explícita. Evidência remota e limites em [ACTIVATION-FOUNDERS-LIBRARY-20261031.md](ACTIVATION-FOUNDERS-LIBRARY-20261031.md).
 
 Pedido: escritório reservado aos fundadores, biblioteca com três mesas executivas, identificação e presença de cada titular, cofre maior no canto superior esquerdo. A cena mantém a identidade Evergreen e o financeiro independente em `/economy`.
 
@@ -30,4 +32,4 @@ No momento, o servidor guarda o último heartbeat por pessoa/grupo. Com múltipl
 
 As capturas em `output/library/` têm nomes claramente sintéticos de QA, incluindo nomes completos para verificar a quebra das etiquetas. Não demonstram a presença de Miguel em produção. Nenhum teste local substitui duas contas reais no Supabase/Vercel. O revisor independente pontuou como resolvidas as duas correções de nomes completos e visibilidade do cofre no celular, com veredito `ship` nesse escopo: `FOUNDERS-LIBRARY-DESIGN-REVIEW-20261031.md`. O detector Impeccable foi tentado uma vez, mas o engine 0.1.5 não está instalado e o cache não pôde ser criado; não há resultado automático de detector a declarar.
 
-Esta migração nova e a versão da biblioteca **ainda não foram aplicadas/publicadas**. A aprovação anterior foi para o pacote OS V2 `57c94c4`. A ativação daquela versão está em `ACTIVATION-OS-V2-20261031.md`; a biblioteca requer aprovação concreta antes de alterar produção.
+O usuário aprovou separadamente a biblioteca `c67fda0`, após o pacote OS V2 `57c94c4`. A migração `evergreen_founders_library` e o frontend foram publicados; as validações locais acima continuam classificadas como locais. Registros: `ACTIVATION-OS-V2-20261031.md` e `ACTIVATION-FOUNDERS-LIBRARY-20261031.md`.

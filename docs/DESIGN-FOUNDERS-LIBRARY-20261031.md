@@ -63,6 +63,8 @@ components:
 
 # Evergreen — Biblioteca dos fundadores
 
+Atualização posterior ao registro de design: a biblioteca foi aplicada e publicada após aprovação explícita. Consulte [ACTIVATION-FOUNDERS-LIBRARY-20261031.md](ACTIVATION-FOUNDERS-LIBRARY-20261031.md). As evidências visuais abaixo continuam sendo capturas locais de QA.
+
 ## Overview
 
 Registro extraído do código em 31/10/2026. A autoridade visual continua em [DESIGN.md](../DESIGN.md) e [.impeccable/design.json](../.impeccable/design.json); a extensão anterior está em [DESIGN-EVERGREEN-OS-V2.md](DESIGN-EVERGREEN-OS-V2.md). Este arquivo acrescenta os valores observados da biblioteca, sem substituir esses arquivos nem promover materiais da cena a tokens globais.

@@ -25,6 +25,6 @@ A revisão automática inicialmente rejeitou a aplicação por suspeitar de muda
 
 ## Biblioteca solicitada depois da aprovação
 
-A biblioteca exclusiva dos três titulares é um incremento separado, com a migração local `20261031142237_founders_library.sql`. A consulta remota nesta etapa confirmou que sua tabela de presença ainda não existe. Não foi incluída silenciosamente no pacote OS V2 aprovado. Implementação, testes e preparação de publicação são descritos em `FOUNDERS-LIBRARY-20261031.md`.
+A biblioteca exclusiva dos três titulares é um incremento separado, com a migração local `20261031142237_founders_library.sql`. A consulta remota desta etapa OS V2 confirmou que sua tabela de presença ainda não existia. Não foi incluída silenciosamente no pacote OS V2 aprovado. Posteriormente, o usuário aprovou a versão `c67fda0`, e a biblioteca foi publicada separadamente; veja `ACTIVATION-FOUNDERS-LIBRARY-20261031.md` e `FOUNDERS-LIBRARY-20261031.md`.
 
 Não houve push, merge, e-mails de convite ou movimentação financeira real nesta publicação. O deployment anterior `dpl_HRKDWToPMp3k28T2rf8vvyKiKcyg` identifica a versão anterior de frontend; voltar apenas o frontend não desfaz a migração aditiva do banco.
