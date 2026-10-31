@@ -1,3 +1,4 @@
+import {libraryChecks} from './library-sql-check.mjs'
 import {osChecks} from './os-sql-check.mjs'
 import {profileChecks} from './profile-sql-check.mjs'
 import {ownerAndRateChecks} from './owner-rate-check.mjs'
@@ -183,6 +184,7 @@ if(!process.argv.includes('--release'))await ownerAndRateChecks({pg,as,val,denie
 if(!process.argv.includes('--release'))await profileChecks({pg,as,val,denied,a,b,c,w,other,group,checks});
 if(!process.argv.includes('--release'))await holdingChecks({pg,as,val,denied,a,b,c,w,other,group,ca,cb,ac,bc,checks});
 if(!process.argv.includes('--release'))await osChecks({pg,as,val,denied,sessions,checks});
+if(!process.argv.includes('--release'))await libraryChecks(pg,{as,val,denied,users:[a,b,c],checks})
 await pg.exec('reset role');await pg.query('delete from auth.sessions where id=$1',[sessions.get(b)])
 await as(b);assert.equal((await val('select eg_identity_context() value')).active,false)
 assert.equal(await val('select count(*)::int value from eg_records'),0)

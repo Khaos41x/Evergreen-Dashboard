@@ -1,5 +1,7 @@
 # Evergreen OS V2 — entrega e homologação
 
+Atualização de 31/10/2026: o pacote aprovado `57c94c4` foi aplicado e publicado. Evidência remota e limites em [ACTIVATION-OS-V2-20261031.md](ACTIVATION-OS-V2-20261031.md). O texto abaixo registra o estado local anterior à aprovação.
+
 Data: 30/10/2026. Escopo: diretivas Master Build e Master Implementation V2, mais os seis comentários do início. A V2 prevalece sobre a definição anterior de fundadores ilimitados.
 
 ## Estado desta entrega

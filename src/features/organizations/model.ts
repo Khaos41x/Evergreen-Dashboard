@@ -1,7 +1,7 @@
 import {useCallback,useEffect,useRef,useState} from 'react'
 import {checked,db,failure} from '../../collaboration/client'
 export type Organization={id:string;name:string;slug:string|null;description:string;sector:string;type:string;legal_state:string;visibility:string;group_id:string|null;link_type:'GROUP_COMPANY'|'EXTERNAL';level:string;level_name:string;job_title:string;relationship:string|null;admin:boolean;unread:number}
-export type OrganizationGroup={id:string;name:string;workspace_id:string;chairman:boolean;admin:boolean;council_active:boolean}
+export type OrganizationGroup={id:string;name:string;workspace_id:string;chairman:boolean;admin:boolean;council_active:boolean;library_access?:boolean}
 export type Directory={groups:OrganizationGroup[];companies:Organization[]}
 export type Proposal={id:string;title:string;body:string;kind:string;payload:Record<string,unknown>;status:string;proposer_id:string;required_votes:number;conflicts:string[];eligible:string[];deadline:string;version:number;votes:{user_id:string;approve:boolean}[]}
 export type OrganizationPerson={id:string;name:string;job_title:string;role:string;level:string|null;level_name:string|null;relationship:string|null}
