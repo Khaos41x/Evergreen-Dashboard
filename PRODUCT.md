@@ -1,6 +1,6 @@
 # Evergreen — direção atual do produto
 
-Incremento mobile de 31/10/2026: a base existente recebeu Capacitor 8.6.0, projetos Android/iOS, adaptação nativa de transporte/ciclo de vida/áreas seguras e preparação de push. Todos os módulos e as permissões existentes permanecem. Build e testes locais passaram; APK bloqueado por SDK36/JDK21 ausentes e iOS sem Mac/Xcode. Não houve alteração de produção nesta etapa. Estado detalhado: docs/CAPACITOR-MOBILE.md.
+Incremento mobile de 31/10/2026: a base existente recebeu Capacitor 8.6.0, projetos Android/iOS, adaptação nativa de transporte/ciclo de vida/áreas seguras e preparação de push. Todos os módulos e as permissões existentes permanecem. Build web e testes locais passaram. APK Android debug compilado e assinatura verificada; instalação/execução pendentes porque o emulador exige cerca de 7,4 GB livres, acima do espaço disponível. iOS permanece sem Mac/Xcode. Não houve alteração de produção nesta etapa. Estado detalhado: docs/CAPACITOR-MOBILE.md.
 
 Atualização: 30/10/2026. Este registro prevalece sobre descrições históricas de cadastro exclusivamente por convite e interface em inglês.
 

@@ -8,9 +8,11 @@ Capacitor estável **8.6.0**, com `core`, CLI, Android e iOS fixados na mesma ve
 
 React, TypeScript, Vite, Tailwind, Supabase, schema existente e identidade visual foram preservados. Home, tarefas, foco, objetivos, ocorrências, mensagens, trabalho, informações, economia, fundadores e escritório 3D usam os componentes e permissões existentes. A biblioteca continua reservada aos três assentos; instalar o app não concede acesso adicional.
 
-**Não há APK entregue:** `npm run mobile:apk` foi executado e encerrou em `BLOCKED_ENVIRONMENT`, antes do Gradle, porque o SDK Android 36 e JDK 21 válido não foram localizados. `JAVA_HOME` aponta para `C:\Program Files\Java\jdk-17`, mas nem esse diretório foi confirmado pelo verificador. Android Studio/adb não foram encontrados no ambiente auditado. Não foram instalados SDKs, aceitas licenças ou criadas chaves de assinatura.
+**APK debug gerado em 31/10/2026:** `npm run mobile:apk` passou com Temurin 21.0.13+9, Android SDK Platform 36, Build Tools 36.0.0 e Gradle 8.14.3. O arquivo `output/native/Evergreen-Holdings-debug.apk` tem 11.319.764 bytes; SHA-256 `d10043fde6e4befbd906a964063caaa0a0ab4eecade69afee1fa6e97da2016d4`. `apksigner verify --verbose --print-certs` confirmou assinatura v2 de debug; `aapt2 dump badging` confirmou `com.evergreen.holdings`, versão 1.0 (1), minSdk24 e targetSdk36. O APK contém a CSP nativa e os assets web; não contém arquivos .env, keystores ou credenciais administrativas.
 
-**iOS não foi compilado:** este ambiente é Windows, sem Xcode. Também não há evidência de Apple Developer Team/provisionamento, Firebase ou credenciais APNs configurados. Código Java/Swift, armazenamento nativo de cookies, SSE nativo, teclado real, gestos, desempenho 3D e suspensão pelo sistema ainda precisam de compilação e validação em simulador/aparelho.
+**Execução Android não verificada:** emulator37.2.13 e imagem Android36 x86_64 foram instalados. WHPX foi detectado como utilizável, mas o emulador encerrou antes de iniciar por espaço insuficiente: exigiu 7.372,80 MiB livres e havia aproximadamente 3.473,59 MiB. Nenhum aparelho apareceu em `adb devices -l`; o APK não foi instalado nem aberto. Login, sessão privada, SSE e ciclo de vida reais permanecem pendentes. O bloqueio inicial de SDK/JDK foi resolvido; não confundir compilação com homologação em dispositivo.
+
+**iOS não foi compilado:** este ambiente é Windows, sem Xcode. Também não há evidência de Apple Developer Team/provisionamento, Firebase ou credenciais APNs configurados. O código Java foi compilado; o Swift ainda não. Armazenamento nativo de cookies, SSE nativo, teclado real, gestos, desempenho 3D e suspensão pelo sistema ainda precisam de validação em simulador/aparelho.
 
 ## Comandos
 
@@ -26,7 +28,21 @@ npm run mobile:apk
 
 `mobile:sync` executa build web, `cap sync` e aplica CSP apenas às cópias HTML empacotadas. Use esse comando após alterações; `cap sync` isolado não reaplica o endurecimento do HTML. O mesmo `dist` serve a versão web e não recebe a CSP específica nativa.
 
-Para Android, instale Android Studio compatível com Capacitor 8, JDK 21+, Android SDK Platform 36, Build Tools 36 e Platform Tools. Configure `JAVA_HOME` e `ANDROID_HOME`; o verificador procura `platforms/android-36/android.jar`. Abra o projeto `android/`, aguarde o Gradle e execute o app em emulador/dispositivo. O debug APK ficará em `output/native/Evergreen-Holdings-debug.apk` após uma compilação bem-sucedida. Debug APK não é assinatura de distribuição/Play Store.
+Para Android, instale Android Studio compatível com Capacitor 8, JDK 21+, Android SDK Platform 36, Build Tools 36 e Platform Tools. Configure `JAVA_HOME` e `ANDROID_HOME`; o verificador procura `platforms/android-36/android.jar`. Abra o projeto `android/`, aguarde o Gradle e execute o app em emulador/dispositivo. O debug APK ficará em `output/native/Evergreen-Holdings-debug.apk` após uma compilação bem-sucedida. Debug APK não é assinatura de distribuição/Play Store. A geração e instalação direta não exigem compra; nenhum plano ou serviço pago foi ativado nesta etapa. O aplicativo usa o backend existente.
+
+Também é possível usar as ferramentas CLI sem Android Studio. Para uma instalação portátil por projeto, crie `.android-toolchain.local.json` (ignorado pelo Git), com caminhos absolutos:
+
+```json
+{
+  "javaHome": "C:/ferramentas/jdk-21",
+  "sdkRoot": "C:/ferramentas/android-sdk",
+  "gradleUserHome": "C:/ferramentas/gradle-cache",
+  "windowsCertificateStore": true,
+  "javaSocketTempDir": "C:/diretorio-temporario-existente"
+}
+```
+
+`javaHome`/`sdkRoot` são alternativas locais a JAVA_HOME/ANDROID_HOME, sem substituir a instalação global. `gradleUserHome` é opcional. No Windows, `windowsCertificateStore` habilita a cadeia de confiança do sistema para esta compilação; TLS continua validado. `javaSocketTempDir` é opcional e permite evitar a falha `Invalid argument: connect` do JDK21 quando os sockets internos usam um caminho TEMP abreviado (8.3). Informe uma pasta existente, gravável e com caminho completo. Nenhuma política de firewall ou certificado foi desabilitada. O wrapper verifica o SHA-256 oficial da distribuição Gradle.
 
 Há um workflow **somente manual**, `.github/workflows/mobile-android.yml`, que prepara Node22/JDK21/SDK36 e gera um artefato debug. Defina as variáveis públicas do repositório `VITE_SUPABASE_URL` e `VITE_SUPABASE_PUBLISHABLE_KEY` antes de executá-lo. Ele não foi enviado ao GitHub nem executado nesta entrega. Nunca coloque `service_role`, chaves de provedor ou segredos em variáveis `VITE_`.
 
@@ -93,13 +109,14 @@ Não foi criado serviço permanente de execução em segundo plano nem alarme na
 | Colaboração web e projeção CSS nativa | Conversas, tarefas, perfil, equipe/projetos, foco/ajuda e retorno da biblioteca passaram em 390/790/1440 | HTTP sintético; não é E2E nativo |
 | Economia/Fundadores/Visão | Regressão existente passou em 390/478/1440, incluindo cofre e fallback sem WebGL | Navegador e fixtures |
 | Dependências | `npm audit` e `--omit=dev`: zero avisos após overrides corretivos | Inventário da data, não auditoria completa |
-| APK | Bloqueado em pré-requisitos | SDK36/JDK21 ausentes |
+| Android Lint | `:app:lintDebug` passou: zero erros e 35 avisos | Avisos de recursos/ícones gerados, versões disponíveis, ordem do manifest e dataExtractionRules; não prova runtime |
+| APK Android | assembleDebug passou; assinatura v2 e manifest verificados | Debug, sem instalação em aparelho; emulador bloqueado por espaço |
 | iOS | Projeto gerado e sincronizado | Sem Mac/Xcode/provisionamento |
 
 Capturas e relatórios ficam em `output/native/`, `output/platform/` e `output/collaboration-ui-focused-results.json`. Dados QA são sintéticos. O detector Impeccable não executou por falta do engine0.1.5/cache; não há resultado automático a declarar. A revisão de interface cobre apenas a projeção web; conformidade nativa e testes físicos permanecem pendentes.
 
 ## Pendências antes de chamar o aplicativo de pronto
 
-Compilar Java/Swift; instalar APK em Android e app em iPhone; validar login e restauração de sessão após matar/reabrir o app e reiniciar o aparelho; testar expiração/revogação/troca de conta; validar Google/link/OTP/recovery com o backend publicado; testar SSE, anexos, teclado, Back, safe areas reais, acessibilidade e 3D; configurar e homologar push; preparar assinatura/distribuição. A versão Vercel em produção não foi substituída por este trabalho.
+Compilar Swift; instalar APK em Android e app em iPhone; validar login e restauração de sessão após matar/reabrir o app e reiniciar o aparelho; testar expiração/revogação/troca de conta; validar Google/link/OTP/recovery com o backend publicado; testar SSE, anexos, teclado, Back, safe areas reais, acessibilidade e 3D; configurar e homologar push; preparar assinatura/distribuição. A versão Vercel em produção não foi substituída por este trabalho.
 
 Fontes consultadas: [Capacitor8](https://capacitorjs.com/docs/updating/8-0), [instalação em projeto existente](https://capacitorjs.com/docs/getting-started), [ciclo de vida/deep links](https://capacitorjs.com/docs/apis/app), [Push Notifications](https://capacitorjs.com/docs/apis/push-notifications), [Supabase deep linking](https://supabase.com/docs/guides/auth/native-mobile-deep-linking), [FCM HTTPv1](https://firebase.google.com/docs/cloud-messaging/send/v1-api), [APNs](https://developer.apple.com/documentation/usernotifications/sending-notification-requests-to-apns).

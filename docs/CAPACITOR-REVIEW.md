@@ -9,3 +9,7 @@ O revisor confirmou continuidade da marca, cores, hierarquia serifada/sans, layo
 As capturas são de navegador desktop com CSS nativo e respostas sintéticas. Não são imagens de emulador ou dispositivo. HIG/Material, teclado, gestos, áreas seguras físicas, ciclo de vida real e armazenamento nativo continuam pendentes. A geração de APK foi bloqueada por falta do SDK36 e JDK21 válido; iOS exige macOS/Xcode. O detector estava indisponível, sem score ou resultado automático.
 
 A passagem documental posterior criou `DESIGN-CAPACITOR-MOBILE.md`. Os arquivos `DESIGN.md` e `.impeccable/design.json` foram comparados antes/depois e mantiveram seus hashes; o incremento não definiu outra identidade visual. Fonte, testes, instruções e pendências em `CAPACITOR-MOBILE.md`.
+
+## Atualização posterior — compilação Android
+
+O bloqueio de SDK/JDK descrito na revisão acima foi resolvido em 31/10/2026. `assembleDebug` compilou Java e gerou o APK; assinatura debug v2 e manifest foram verificados com as ferramentas do Android SDK. Android Lint passou com zero erros e 35 avisos registrados no relatório. Isso não altera o escopo do parecer visual: o emulador Android36 não iniciou por espaço insuficiente (7.372,80 MiB exigidos, aproximadamente 3.473,59 MiB disponíveis), e não havia aparelho conectado. Instalação, autenticação e runtime nativos continuam `NOT_VERIFIED`. Evidências atuais em `CAPACITOR-MOBILE.md` e `output/native/`.

@@ -24,3 +24,4 @@ ios/App/App/GoogleService-Info.plist
 *.jks
 *.p12
 *.mobileprovision
+.android-toolchain.local.json
