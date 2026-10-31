@@ -1,0 +1,5 @@
+{
+  "appId": "com.evergreen.holdings",
+  "signingCertificateSha256": "df860fd91807fd1a09a8ce9d9240e52c126151448544085b8db5faf591460d02",
+  "distribution": "debug-direct-download"
+}

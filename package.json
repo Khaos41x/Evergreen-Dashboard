@@ -34,7 +34,11 @@
     "mobile:apk": "node scripts/mobile-apk.mjs",
     "test:mobile:bridge": "node scripts/native-check.mjs",
     "test:mobile:ui": "node scripts/native-browser-check.mjs",
-    "mobile:assets": "capacitor-assets generate --android --ios --assetPath resources --iconBackgroundColor \"#f3f4f2\" --iconBackgroundColorDark \"#f3f4f2\" --splashBackgroundColor \"#f3f4f2\" --splashBackgroundColorDark \"#f3f4f2\""
+    "mobile:assets": "capacitor-assets generate --android --ios --assetPath resources --iconBackgroundColor \"#f3f4f2\" --iconBackgroundColorDark \"#f3f4f2\" --splashBackgroundColor \"#f3f4f2\" --splashBackgroundColorDark \"#f3f4f2\"",
+    "mobile:release": "node scripts/mobile-release.mjs",
+    "test:mobile:updates": "node scripts/mobile-update-check.mjs",
+    "test:mobile:updates:ui": "node scripts/mobile-update-browser-check.mjs",
+    "test:mobile:release": "node scripts/mobile-release-check.mjs"
   },
   "dependencies": {
     "@capacitor/android": "8.6.0",

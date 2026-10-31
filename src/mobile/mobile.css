@@ -17,3 +17,23 @@ html[data-native=true] :is(.economy-page,.holding-page,.world-page){padding-bott
  html[data-native=true] .world-node-label{font-size:11px}
 }
 @media(prefers-reduced-motion:reduce){html[data-native=true] *{scroll-behavior:auto!important}}
+
+.mobile-app-shell,.mobile-app-content{display:contents}
+html[data-native=true] .mobile-app-shell{display:flex;flex-direction:column;height:100%;min-height:0}
+html[data-native=true] .mobile-app-content{display:block;flex:1;min-height:0;overflow:auto}
+html[data-native=true] .mobile-app-content .collab-app{height:100%;min-height:0}
+.mobile-update-notice{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:16px;flex:0 0 auto;max-height:45dvh;overflow:auto;width:100%;box-sizing:border-box;padding:14px max(16px,var(--safe-right,0px)) 14px max(16px,var(--safe-left,0px));border-bottom:1px solid var(--line,#1b2320);background:var(--raised,#0d1312);color:var(--text,#f3f4f2)}
+.mobile-update-copy{min-width:0}
+@media(max-width:600px){.mobile-update-notice{grid-template-columns:minmax(0,1fr);gap:12px}}
+.mobile-update-notice p{margin:0}
+.mobile-update-title{font-size:16px;font-weight:600;line-height:1.4}
+.mobile-update-description{margin-top:6px!important;color:var(--soft,#bdc7c3);font-size:14px;line-height:1.5}
+.mobile-update-error{margin-top:8px!important;color:#ffb7a8;font-size:14px;line-height:1.5}
+.mobile-update-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:0}
+.mobile-update-actions button{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:10px 14px;border:1px solid transparent;border-radius:8px;font:600 14px/1.4 Inter,ui-sans-serif,sans-serif;touch-action:manipulation}
+.mobile-update-download{background:var(--primary,#10d994);color:var(--primary-ink,#04150f)}
+.mobile-update-download:hover{background:var(--primary-hover,#36e7ac)}
+.mobile-update-later{background:transparent;color:var(--text,#f3f4f2)}
+.mobile-update-later:hover{background:var(--workspace-active,#153e30)}
+.mobile-update-actions button:focus-visible{outline:2px solid var(--primary,#10d994);outline-offset:3px}
+.mobile-update-actions button:disabled{opacity:.65;cursor:wait}

@@ -14,6 +14,10 @@ React, TypeScript, Vite, Tailwind, Supabase, schema existente e identidade visua
 
 **iOS não foi compilado:** este ambiente é Windows, sem Xcode. Também não há evidência de Apple Developer Team/provisionamento, Firebase ou credenciais APNs configurados. O código Java foi compilado; o Swift ainda não. Armazenamento nativo de cookies, SSE nativo, teclado real, gestos, desempenho 3D e suspensão pelo sistema ainda precisam de validação em simulador/aparelho.
 
+## Avisos de atualização Android
+
+A versão1.0.1 (build2) adiciona aviso opcional de versões posteriores. Instale-a uma vez pelo link de download para receber avisos futuros. A comparação usa o build real; baixar e instalar requer ação do usuário. Publicação do APK, controles de assinatura, testes e limites em [ANDROID-UPDATES.md](ANDROID-UPDATES.md). O SHA e o tamanho do primeiro APK acima são históricos, não os do build2.
+
 ## Comandos
 
 Execute na raiz `Evergreen-Dashboard`:

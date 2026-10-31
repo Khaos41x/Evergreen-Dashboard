@@ -2,6 +2,8 @@
 
 Incremento mobile de 31/10/2026: a base existente recebeu Capacitor 8.6.0, projetos Android/iOS, adaptação nativa de transporte/ciclo de vida/áreas seguras e preparação de push. Todos os módulos e as permissões existentes permanecem. Build web e testes locais passaram. APK Android debug compilado e assinatura verificada; instalação/execução pendentes porque o emulador exige cerca de 7,4 GB livres, acima do espaço disponível. iOS permanece sem Mac/Xcode. Não houve alteração de produção nesta etapa. Estado detalhado: docs/CAPACITOR-MOBILE.md.
 
+Atualização Android1.0.1: aviso opcional de novas versões, com download pelo navegador e confirmação de instalação no Android. É necessário instalar esta versão uma vez para receber avisos futuros. Mesma identidade e certificado do APK inicial; sem serviços pagos de atualização. Detalhes e limites: docs/ANDROID-UPDATES.md.
+
 Atualização: 30/10/2026. Este registro prevalece sobre descrições históricas de cadastro exclusivamente por convite e interface em inglês.
 
 O Evergreen é o espaço de produtividade e colaboração de um pequeno grupo e das empresas da holding. Não é um SaaS para venda. A interface deve ser clara, rápida, em português do Brasil, preservando o visual escuro/esmeralda existente.
