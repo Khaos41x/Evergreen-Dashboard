@@ -25,6 +25,24 @@ public class EvergreenSessionPlugin extends Plugin {
     private final Map<String,Long> expires=new HashMap<>();
     private final Map<String,HttpURLConnection> streams=new ConcurrentHashMap<>();
     private boolean loaded=false;
+    // CapacitorCookies installs a process-wide handler even when document.cookie
+    // patching is disabled. Prevent URLConnection from mirroring API credentials
+    // into that WebView/shared jar; this bridge supplies its private Cookie header.
+    private static final class SessionCookieGuard extends CookieHandler {
+        private final CookieHandler delegate;
+        SessionCookieGuard(CookieHandler delegate){this.delegate=delegate;}
+        private boolean api(URI uri){return "evergreen-holding.vercel.app".equalsIgnoreCase(uri.getHost());}
+        @Override public Map<String,List<String>> get(URI uri,Map<String,List<String>> headers) throws IOException {
+            return api(uri)||delegate==null?Collections.emptyMap():delegate.get(uri,headers);
+        }
+        @Override public void put(URI uri,Map<String,List<String>> headers) throws IOException {
+            if(!api(uri)&&delegate!=null)delegate.put(uri,headers);
+        }
+    }
+    private static synchronized void isolateCookies(){
+        CookieHandler current=CookieHandler.getDefault();
+        if(!(current instanceof SessionCookieGuard))CookieHandler.setDefault(new SessionCookieGuard(current));
+    }
     private SecretKey key() throws Exception {
         KeyStore store=KeyStore.getInstance("AndroidKeyStore");store.load(null);
         if(!store.containsAlias("evergreen-session-v1")){
@@ -61,6 +79,7 @@ public class EvergreenSessionPlugin extends Plugin {
         if(!getContext().getSharedPreferences("evergreen-session",Context.MODE_PRIVATE).edit().putString("sealed",Base64.encodeToString(sealed.toByteArray(),Base64.NO_WRAP)).commit())throw new IOException("Session persistence unavailable");
     }
     private HttpURLConnection open(String path,String method) throws Exception {
+        isolateCookies();
         if(path==null||!path.startsWith("/api/")||path.contains("\\")||path.contains("\r")||path.contains("\n"))throw new IOException("Invalid API path");
         URI url=URI.create(ORIGIN).resolve(path).normalize();
         if(!ORIGIN.equals(url.getScheme()+"://"+url.getAuthority())||!url.getPath().startsWith("/api/"))throw new IOException("Origin denied");

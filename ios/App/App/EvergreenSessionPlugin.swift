@@ -42,6 +42,7 @@ public class EvergreenSessionPlugin: CAPPlugin, CAPBridgedPlugin {
               url.scheme == "https", url.host == "evergreen-holding.vercel.app", url.port == nil, url.user == nil, url.password == nil,
               url.standardized.path.hasPrefix("/api/") else { throw URLError(.badURL) }
         var request = URLRequest(url: url, cachePolicy: .reloadIgnoringLocalCacheData, timeoutInterval: 55)
+        request.httpShouldHandleCookies = false
         request.httpMethod = method; request.setValue(origin, forHTTPHeaderField: "Origin")
         lock.lock(); defer { lock.unlock() }
         request.setValue(try readCookies().map { "\($0.name)=\($0.value)" }.joined(separator: "; "), forHTTPHeaderField: "Cookie")
