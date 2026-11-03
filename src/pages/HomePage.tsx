@@ -77,8 +77,8 @@ export function HomePage({ tasks, objectives, activities, teamMembers, currentUs
         <FocusTimer session={focusSession} onComplete={completeFocus} />
         <div className="hero-copy">
           <h1>{greeting}, {firstName}.</h1>
-          <p>Veja o que importa hoje{organizationName?` no ${organizationName}`:''}.</p>
-          <div className="hero-buttons">
+          <p>Veja o que importa hoje{organizationName?`${organizationName.trim().toLowerCase()==='orkto'?' na':' no'} ${organizationName}`:''}.</p>
+          <div className={`hero-buttons${focusSession.status !== 'idle' ? ' hero-buttons-active' : ''}`}>
             {focusSession.status === 'idle' ? <button onClick={openFocus}><Play /> Iniciar foco</button> : <>
               <button onClick={focusSession.status === 'paused' ? resumeFocus : pauseFocus}>{focusSession.status === 'paused' ? <Play /> : <Pause />}{focusSession.status === 'paused' ? "Retomar" : "Pausar"}</button>
               <button onClick={requestEndFocus}><Square /> Encerrar sessão</button>

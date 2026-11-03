@@ -5,7 +5,10 @@ node_modules
 !.env.example
 output
 docs
-scripts
+scripts/*
+!scripts/auth-config-check.mjs
+!scripts/mobile-ota.mjs
+!scripts/native-csp.mjs
 supabase
 .impeccable
 *.tsbuildinfo
@@ -22,3 +25,6 @@ ios
 native
 resources
 capacitor.config.ts
+
+.android-toolchain.local.json
+.mobile-update-signing.local.pem

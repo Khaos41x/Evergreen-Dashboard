@@ -31,7 +31,7 @@ try{
   await assert.rejects(m.fetchAndroidRelease(),{name:'AbortError'});assert.equal(timeout,8000)
  }finally{globalThis.setTimeout=originalTimer}
 }finally{globalThis.fetch=original}
-const csp=readFileSync('scripts/native-hardening.mjs','utf8');assert.ok(csp.includes(m.releaseOrigin))
+const csp=readFileSync('scripts/native-csp.mjs','utf8');assert.ok(csp.includes(m.releaseOrigin))
 mkdirSync('output/native',{recursive:true})
 const result={environment:'Local automated release metadata tests; not Android runtime',checks:['strict schema, app/platform and version validation','download URL allowlist rejects credentials, redirects, arbitrary hosts and versions','build-number comparison prevents downgrade and repeated notices','24-hour defer is scoped to a build; a newer build is not suppressed','public request omits cookies, disables caching and follows no redirects','offline, HTTP errors, non-JSON, malformed or oversized responses, cancellation','native CSP allows only the expected release origin']}
 writeFileSync('output/native/update-results.json',JSON.stringify(result,null,2));console.log(JSON.stringify(result,null,2))

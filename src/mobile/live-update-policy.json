@@ -1,0 +1,9 @@
+{
+  "schema": 1,
+  "appId": "com.evergreen.holdings",
+  "platform": "android",
+  "minBuild": 5,
+  "maxBuild": 7,
+  "nativeVersion": "1.2.3",
+  "displayVersion": "1.3"
+}

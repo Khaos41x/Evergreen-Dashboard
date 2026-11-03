@@ -40,3 +40,13 @@ Publicado e conferido em31/10/2026 às15h20 (UTC−3), exclusivamente no projeto
 O verificador scripts/mobile-release-live-check.mjs buscou o manifesto real sem credenciais, confirmou CORS público/Cache-Control:no-store e conferiu os dois downloads (alias e versão2 imutável): status200, MIME de APK, attachment,11.623.485 bytes e SHA-256 local idêntico. Resultado em output/native/update-publication.json. Também foi executado fetch real em Edge com origem https://localhost simulada e a CSP efetivamente empacotada: o manifesto remoto retornou200, sem bloqueio de CORS/CSP (output/native/update-live-browser.json). Esta evidência é remota HTTP/navegador; não é instalação nativa. O verificador pode ser repetido após preparar o pacote local correspondente. Não inferir sucesso de dispositivo dos testes de fixtures.
 
 Fontes: [Capacitor App.getInfo](https://capacitorjs.com/docs/apis/app), [Capacitor Browser](https://capacitorjs.com/docs/apis/browser), [versionamento Android](https://developer.android.com/studio/publish/versioning).
+
+
+## Publicação 1.2 — 31/10/2026
+
+A versão web/PWA 1.2 e o APK 1.2.0 (versionCode 4) foram publicados. As migrações pendentes foram aplicadas ao projeto Evergreen, incluindo o ajuste de nível legado para exibição no perfil. Os estados anteriores deste documento são históricos; evidências atuais, hashes, regras e limites estão em [RELEASE-1.2.md](RELEASE-1.2.md). Instalação em aparelho e operações autenticadas hospedadas ainda não foram homologadas nesta rodada.
+
+
+## Android 1.2.1 - 01/11/2026
+
+Build 5 publicado com atualizacoes web assinadas hospedadas no proprio Evergreen. Instale uma vez por cima do APK anterior. Novas publicacoes de producao geram o pacote automaticamente; mudancas nativas ainda exigem APK. Evidencias, limites e detalhes em [ANDROID-LIVE-UPDATES.md](ANDROID-LIVE-UPDATES.md).

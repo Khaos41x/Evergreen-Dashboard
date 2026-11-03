@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import type { FocusSession } from '../types'
 import { getFocusElapsedMs } from '../state/useFocusSession'
 
@@ -55,7 +55,7 @@ export function FocusTimer({ session, onComplete }: { session: FocusSession; onC
   const statusLabel = session.status === 'idle' ? "PRONTO" : session.status === 'paused' ? "PAUSADO" : session.status === 'completed' ? "CONCLUÍDO" : session.mode === 'timer' ? "TEMPORIZADOR" : "CRONÔMETRO"
   const footer = session.status === 'idle' ? "Comece quando quiser" : session.mode === 'timer' && session.durationMs !== null ? `de ${Math.round(session.durationMs / 60000)} min` : "Tempo decorrido"
 
-  return <div ref={ringRef} className={`hero-timer ${session.mode==='stopwatch'?'stopwatch':''} ${session.status === 'paused' ? 'paused' : ''} ${session.status === 'idle' ? 'idle' : ''}`}>
+  return <div ref={ringRef} style={{'--timer-character-count':formatSeconds(displaySeconds).length} as CSSProperties} className={`hero-timer ${session.mode==='stopwatch'?'stopwatch':''} ${session.status === 'paused' ? 'paused' : ''} ${session.status === 'idle' ? 'idle' : ''}`}>
     <div><small>{statusLabel}</small><strong>{formatSeconds(displaySeconds)}</strong><span>{footer}</span></div>
   </div>
 }

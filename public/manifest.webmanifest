@@ -1,0 +1,26 @@
+{
+  "id": "/",
+  "name": "Evergreen Holdings",
+  "short_name": "Evergreen",
+  "description": "Seu espaço de trabalho e suas empresas, em um só lugar.",
+  "lang": "pt-BR",
+  "start_url": "/hub",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#070a09",
+  "theme_color": "#070a09",
+  "icons": [
+    {
+      "src": "/pwa/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa/icon-1024.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

@@ -51,3 +51,6 @@ O pacote OS V2 `57c94c4` foi aplicado e publicado com aprovação explícita em 
 ## Biblioteca dos fundadores — pedido de 31/10/2026
 
 O escritório compartilhado da Visão passa a ser uma biblioteca exclusiva dos titulares dos três assentos, com três mesas executivas fixas, presença real e um cofre maior no canto superior esquerdo. Contas pendentes permanecem vagas; nomes não atribuem assentos. O acesso é verificado no servidor e não concede acesso financeiro automático. O diretório 2D e o modo pessoal existente são preservados. O incremento `c67fda0` foi aplicado e publicado com aprovação explícita; controles do banco e verificações públicas passaram, mas a homologação autenticada com duas contas reais continua pendente: docs/ACTIVATION-FOUNDERS-LIBRARY-20261031.md.
+
+
+Publicação 1.2 em 31/10/2026: web/PWA e APK 1.2.0/code4 ativos nos domínios existentes; menções por nome, equipe com migrações aplicadas, instalação PWA e ajustes anteriores de perfil/foco. O PWA não armazena APIs ou navegações privadas no cache. Evidências e limites: docs/RELEASE-1.2.md.

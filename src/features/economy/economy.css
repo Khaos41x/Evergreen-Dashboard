@@ -4,3 +4,6 @@
 .economy-editor{scroll-margin-top:24px}.economy-editor h2:focus-visible{outline:2px solid #00cda2;outline-offset:7px}.world-heading h1:focus-visible{outline:2px solid #00cda2}
 
 .economy-page{scrollbar-color:#365541 #090f0d;scrollbar-width:thin}.economy-page input,.economy-page textarea,.identity-stepup input{caret-color:#00cda2}.economy-page ::selection{background:#174f39;color:#e4ede8}
+
+.founders-page .economy-wordmark>strong{font:400 clamp(26px,3vw,32px)/1.15 var(--heading-font,Georgia,serif);letter-spacing:-.018em;color:#e4ede8}
+.founders-person{padding:22px 0;border-bottom:1px solid #293a32}.founders-person>header{display:flex;align-items:center;gap:12px}.founders-person h3{margin:0;font-size:22px}.founders-person ul{display:grid;gap:12px;padding:0;list-style:none;margin:16px 0 0}.founders-person li{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center}.founders-person li>strong{min-width:140px}.founders-person li>span{color:#a7bbaf}

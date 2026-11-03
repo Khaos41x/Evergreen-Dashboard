@@ -1,3 +1,4 @@
+import {invitationConfig,dispatchInvitations} from './invitations.mjs'
 import {nativePush,dispatchNativePush} from './native-push.mjs'
 import {asaasWebhook,scheduledReconciliation} from './asaas.mjs'
 import {integrationActions} from './integrations.mjs'
@@ -14,10 +15,12 @@ export function createHandler(env = process.env, options = {}) {
     let context
     try {
       const config = settings(env), url = new URL(req.url, config.origin)
+      if(url.pathname==='/api/invitations/dispatch')return await dispatchInvitations(req,res,config,options.invitationDependencies)
       if(url.pathname==='/api/mobile/push/dispatch')return await dispatchNativePush(req,res,config)
       if(url.pathname==='/api/integrations/reconcile')return await scheduledReconciliation(req,res,config)
       if(url.pathname.startsWith('/api/webhooks/asaas/'))return await asaasWebhook(req,res,config,url.pathname.slice('/api/webhooks/asaas/'.length))
       context = serverSession(req, res, config)
+      if(url.pathname==='/api/invitations/config')return await invitationConfig(req,res,config,context)
       if(url.pathname.startsWith('/api/mobile/push/'))return await nativePush(req,res,config,context,url.pathname.slice('/api/mobile/push/'.length))
       if(url.pathname.startsWith('/api/integrations/'))return await integrationActions(req,res,config,context,url.pathname.slice('/api/integrations/'.length))
       if (url.pathname.startsWith('/api/identity/')) return await authActions(req, res, config, context, url.pathname.slice('/api/identity/'.length), url.searchParams)
@@ -31,6 +34,10 @@ export function createHandler(env = process.env, options = {}) {
         const html = options.indexHTML ? await options.indexHTML() : await readFile(new URL('../dist/index.html', import.meta.url), 'utf8'); context.commit(); res.setHeader('Content-Type', 'text/html; charset=utf-8'); res.end(html); return
       }
       throw new HttpError(404, 'NOT_FOUND', 'Recurso indisponível.')
-    } catch (error) { if (res.headersSent) { res.end(); return } context?.commit(); if (req.url?.startsWith('/api/page') && error.status === 401) { res.statusCode=303; res.setHeader('Location','/login?next='+encodeURIComponent('/'+new URL(req.url,'http://local').searchParams.get('view'))); res.end(); return } errorJSON(res, error, req.url?.startsWith('/api/backend')) }
+    } catch (error) { if (res.headersSent) { res.end(); return } context?.commit();
+      if (req.method==='GET' && req.url?.startsWith('/api/identity/callback')) {
+        res.statusCode=303;res.setHeader('Location','/login?auth_error='+(['otp_expired','flow_state_expired'].includes(error.code)?'expired':'callback'));res.end();return
+      }
+      if (req.url?.startsWith('/api/page') && error.status === 401) { res.statusCode=303; res.setHeader('Location','/login?next='+encodeURIComponent('/'+new URL(req.url,'http://local').searchParams.get('view'))); res.end(); return } errorJSON(res, error, req.url?.startsWith('/api/backend')) }
   }
 }

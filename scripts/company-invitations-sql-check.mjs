@@ -1,0 +1,53 @@
+import assert from 'node:assert/strict'
+export async function companyInvitationChecks(pg,{as,val,denied,a,b,c,checks}){
+ await as(a);const w=await val("select eg_create_workspace('Invitation test A') value");
+ await as(c);await pg.query("select eg_identity_bootstrap(null,'Charlie fixture')");const other=await val("select eg_create_workspace('Invitation isolated B') value");
+ await as(a);
+ const create=async(user,level='A5',department=null,request=crypto.randomUUID())=>val('select eg_create_company_invite($1,$2,$3,$4,$5,$6) value',[w,user+'@test.invalid',level,'CTO',department,request]);
+ const action=(id,op)=>val('select eg_company_invite_action($1,$2) value',[id,op]);
+ const request=crypto.randomUUID(),first=await create(b,'A5',null,request);
+ assert.equal((await create(b,'A5',null,request)).id,first.id);
+ await denied('select eg_create_company_invite($1,$2,$3,$4,$5,$6)',[w,c+'@test.invalid','A5','CTO',null,request]);
+ assert.equal(await val("select count(*)::int value from eg_notifications where recipient_id=$1 and resource_id=$2 and type='invitation.created'",[a,first.id]),1);
+ await denied("select eg_complete_invitation_delivery(gen_random_uuid(),gen_random_uuid(),'fake')");
+ await as(b);
+ assert.equal(await val('select count(*)::int value from eg_notifications where recipient_id=$1',[a]),0);
+ const received=await val('select eg_company_invites_snapshot() value');assert.ok(received.received.some(i=>i.id===first.id));
+ assert.equal(await val("select count(*)::int value from eg_notifications where recipient_id=$1 and resource_id=$2 and type='invitation.received'",[b,first.id]),1);
+ await denied('select eg_create_company_invite($1,$2)',[other,a+'@test.invalid']);
+ assert.equal((await action(first.id,'accept')).status,'accepted');
+ assert.equal((await action(first.id,'accept')).status,'accepted');
+ assert.equal(await val('select count(*)::int value from eg_members where workspace_id=$1 and user_id=$2',[w,b]),1);
+ await denied("select eg_company_people_action($1,'department',$2)",[w,{name:'Escalation'}]);
+ await as(a);assert.equal(await val("select count(*)::int value from eg_notifications where resource_id=$1 and type='invitation.accepted'",[first.id]),1);
+ checks.push('company invitation create/accept + confirmed membership and sender/recipient notifications are transactional, scoped, persistent and idempotent');
+ const second=await create(c);await as(b);await denied('select eg_company_invite_action($1,$2)',[second.id,'accept']);
+ await as(c);assert.equal((await action(second.id,'decline')).status,'declined');
+ await as(a);assert.equal(await val('select count(*)::int value from eg_members where workspace_id=$1 and user_id=$2',[w,c]),0);
+ assert.equal(await val("select count(*)::int value from eg_notifications where resource_id=$1 and type='invitation.declined'",[second.id]),1);
+ const expired=await create(c);await pg.exec('reset role');await pg.query("update eg_invites set expires_at=now()-interval '1 second' where id=$1",[expired.id]);
+ await as(c);assert.equal((await action(expired.id,'accept')).status,'expired');
+ await as(a);assert.equal(await val("select count(*)::int value from eg_notifications where resource_id=$1 and type='invitation.expired'",[expired.id]),1);
+ const cancelled=await create(c);assert.equal((await action(cancelled.id,'cancel')).status,'cancelled');await as(c);assert.equal((await action(cancelled.id,'accept')).status,'cancelled');
+ await as(a);const mail=await create(c);
+ async function service(){await pg.exec('reset role');await pg.query("select set_config('request.jwt.claim.sub','',false),set_config('request.jwt.claims',$1,false)",[JSON.stringify({role:'service_role'})]);await pg.exec('set role service_role')}
+ await service();let queue=await val('select eg_claim_invitation_deliveries(5) value'),job=queue.find(j=>j.invitation_id===mail.id);assert.ok(job);
+ await pg.query('select eg_complete_invitation_delivery($1,$2,null)',[job.id,job.lease_id]);
+ await as(a);assert.equal(await val("select count(*)::int value from eg_notifications where resource_id=$1 and type='invitation.sent'",[mail.id]),0);assert.equal(await val("select count(*)::int value from eg_notifications where resource_id=$1 and type='invitation.delivery_failed'",[mail.id]),1);
+ await pg.exec('reset role');await pg.query("update eg_invitation_deliveries set available_at=now()-interval '1 minute' where id=$1",[job.id]);
+ await service();queue=await val('select eg_claim_invitation_deliveries(5) value');job=queue.find(j=>j.invitation_id===mail.id);assert.ok(job);
+ await pg.query('select eg_complete_invitation_delivery($1,$2,$3)',[job.id,job.lease_id,'provider-confirmed-fixture']);await pg.query('select eg_complete_invitation_delivery($1,$2,$3)',[job.id,job.lease_id,'provider-confirmed-fixture']);
+ await as(a);assert.equal(await val("select count(*)::int value from eg_notifications where resource_id=$1 and type='invitation.sent'",[mail.id]),1);
+ checks.push('invitation decline/cancel/expiry grant no access; worker notifications distinguish pending/failure/provider-accepted and dedupe retries');
+ const department=await val("select eg_company_people_action($1,'department',$2) value",[w,{name:'Engineering'}]);
+ await pg.query("select eg_company_people_action($1,'department_member',$2)",[w,{department_id:department,user_id:b}]);
+ const record=await val("insert into eg_records(workspace_id,kind,title)values($1,'project','Department project') returning id value",[w]);
+ await pg.query("select eg_company_people_action($1,'resource',$2)",[w,{department_id:department,record_id:record}]);
+ const people=await val('select eg_company_people($1) value',[w]);assert.ok(people.members.find(u=>u.id===b).departments.includes(department));assert.ok(people.resources.find(r=>r.id===record).departments.includes(department));
+ await denied("select eg_company_people_action($1,'suspend',$2)",[w,{user_id:a}]);
+ await pg.query("select eg_company_people_action($1,'suspend',$2)",[w,{user_id:b}]);await as(b);await denied('select eg_company_people($1)',[w]);assert.ok(!(await val('select eg_identity_context() value')).workspaces.some(x=>x.id===w));
+ await as(a);await pg.query("select eg_company_people_action($1,'restore',$2)",[w,{user_id:b}]);await denied("select eg_os_assign_level($1,$2,'A0')",[w,b]);await pg.query("select eg_os_assign_level($1,$2,'A1')",[w,b]);
+ await as(b);assert.equal((await val('select eg_company_people($1) value',[w])).can_manage,true);await denied('select eg_company_people($1)',[other]);await denied("select eg_company_people_action($1,'department',$2)",[other,{name:'Cross company'}]);
+ checks.push('departments/positions/resources persist within company; suspension removes access, self/owners protected; unilateral APEX assignment denied and administrative access isolated across companies');
+ await as(a);
+}

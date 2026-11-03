@@ -1,3 +1,5 @@
+import {onboardingChecks} from './onboarding-sql-check.mjs'
+import {companyInvitationChecks} from './company-invitations-sql-check.mjs'
 import {nativePushChecks} from './native-push-sql-check.mjs'
 import {libraryChecks} from './library-sql-check.mjs'
 import {osChecks} from './os-sql-check.mjs'
@@ -183,10 +185,13 @@ checks.push('persistent due-date reminders deduplicate, relevant comments notify
 
 if(!process.argv.includes('--release'))await ownerAndRateChecks({pg,as,val,denied,sessions,checks});
 if(!process.argv.includes('--release'))await profileChecks({pg,as,val,denied,a,b,c,w,other,group,checks});
+if(process.argv.includes('--profile-only')){await libraryChecks(pg,{as,val,denied,users:[a,b,c],checks});mkdirSync('output/platform',{recursive:true});writeFileSync('output/platform/sql-profile-results.json',JSON.stringify({environment:'PGlite Auth/session fixtures; NOT hosted Supabase',checks},null,2));console.log(JSON.stringify({passed:checks.length,scope:'profile and founder-library checks plus migration and baseline replay',checks},null,2));await pg.close();process.exit(0)}
 if(!process.argv.includes('--release'))await holdingChecks({pg,as,val,denied,a,b,c,w,other,group,ca,cb,ac,bc,checks});
 if(!process.argv.includes('--release'))await osChecks({pg,as,val,denied,sessions,checks});
 if(!process.argv.includes('--release'))await libraryChecks(pg,{as,val,denied,users:[a,b,c],checks})
 if(!process.argv.includes('--release'))await nativePushChecks({pg,as,val,denied,a,b,w,sessions,checks})
+if(!process.argv.includes('--release'))await companyInvitationChecks(pg,{as,val,denied,a,b,c,checks})
+if(!process.argv.includes('--release'))await onboardingChecks(pg,{as,val,denied,a,b,c,checks})
 await pg.exec('reset role');await pg.query('delete from auth.sessions where id=$1',[sessions.get(b)])
 await as(b);assert.equal((await val('select eg_identity_context() value')).active,false)
 assert.equal(await val('select count(*)::int value from eg_records'),0)

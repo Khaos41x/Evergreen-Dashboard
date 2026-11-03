@@ -44,7 +44,9 @@ export const identity={
  recover:(email:string)=>identityRequest('recover',{email,...nativeAuthBody()}),
  updatePassword:(password:string)=>signed('update-password',{password}),
  refresh:async()=>{const result=await identityRequest<{session:IdentitySession}>('session');emit('SIGNED_IN',result.session);return result.session},
- verifyEmail:(body:{email:string;code:string;reauth?:boolean})=>signed('verify-email',body),
+ verifyEmail:(body:{email:string;code:string;reauth?:boolean;type?:'email'|'signup'|'recovery'})=>signed('verify-email',body),
+ verifyLink:(body:{token_hash:string;type:'email'|'signup'|'recovery'})=>signed('verify-link',body),
+ resendConfirmation:(email:string)=>identityRequest('resend-confirmation',{email}),
  google:async(body:{next?:string;invite?:string;reauth?:boolean})=>{const result=await identityRequest<{url:string}>('google',{...body,...nativeAuthBody()});await openOAuth(result.url)},
  async passkey(reauth=false){
   if(!window.PublicKeyCredential||!navigator.credentials)throw new Error("Este navegador não oferece suporte a chaves de acesso.")

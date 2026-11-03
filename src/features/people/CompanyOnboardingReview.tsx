@@ -1,0 +1,12 @@
+import {useCallback,useEffect,useRef,useState} from 'react'
+import {checked,db} from '../../collaboration/client'
+import {useOperation} from '../holding/useOperation'
+import '../identity/company-onboarding.css'
+type Request={user_id:string;name:string;email:string;relationship:'founder'|'partner';revision:number}
+export function CompanyOnboardingReview({workspace,email,onChanged}:{workspace:string;email:string;onChanged:()=>void}){
+ const [requests,setRequests]=useState<Request[]>([]),[loadError,setLoadError]=useState(''),[notice,setNotice]=useState(''),[loading,setLoading]=useState(true),serial=useRef(0),operation=useOperation(email)
+ const load=useCallback(async()=>{const n=++serial.current;setLoadError('');try{const result=await checked(db().rpc('eg_company_onboarding_pending',{p_workspace:workspace}));if(n===serial.current)setRequests(result as Request[])}catch{if(n===serial.current)setLoadError('Não foi possível carregar os vínculos informados.')}finally{if(n===serial.current)setLoading(false)}},[workspace])
+ useEffect(()=>{setRequests([]);setLoading(true);void load();return()=>{serial.current++}},[load])
+ async function review(request:Request,accept:boolean){await operation.run(async()=>{await checked(db().rpc('eg_company_onboarding_review',{p_workspace:workspace,p_user:request.user_id,p_revision:request.revision,p_accept:accept}));setNotice(accept?'Vínculo confirmado. O acesso de integrante está disponível para essa pessoa.':'Solicitação recusada.');await load();onChanged()})}
+ return <section className="onboarding-review"><h3>Vínculos informados</h3><p>Confirme quem é fundador ou sócio desta empresa. A confirmação libera o espaço de trabalho, sem conceder administração ou acesso financeiro.</p>{loading&&<p role="status">Carregando vínculos…</p>}{loadError&&<p role="alert">{loadError} <button type="button" onClick={()=>void load()}>Tentar novamente</button></p>}{operation.error&&<p role="alert">{operation.error}</p>}{notice&&<p role="status">{notice}</p>}{requests.map(request=><article key={request.user_id}><div><strong>{request.name}</strong><p>{request.email} · {request.relationship==='founder'?'Fundador':'Sócio'}</p></div><div className="onboarding-review-actions"><button className="primary" disabled={operation.busy} onClick={()=>void review(request,true)}>Confirmar vínculo e acesso</button><button disabled={operation.busy} onClick={()=>void review(request,false)}>Recusar</button></div></article>)}{!loading&&!loadError&&!requests.length&&<p>Nenhum vínculo aguardando confirmação.</p>}{operation.dialog}</section>
+}

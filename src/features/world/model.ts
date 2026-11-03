@@ -1,5 +1,5 @@
 export type WorldPresence = 'online' | 'away' | 'focusing' | 'unknown' | 'local' | 'offline'
-export interface WorldMember { id: string; name: string; presence: WorldPresence; seat?:number;seatNumber?:number;vacant?:boolean;lastSeen?:string|null; jobTitle?:string; company?:string; focus?:string; avatarUrl?:string }
+export interface WorldMember { id: string; name: string; presence: WorldPresence; seat?:number;seatNumber?:number;vacant?:boolean;lastSeen?:string|null; jobTitle?:string; company?:string; focus?:string; avatarUrl?:string;officeName?:string }
 export interface WorldTask { id: string; title: string; status: string; projectId: string | null; assigneeId: string | null; progress: number; canComplete: boolean }
 export interface WorldProject { id: string; name: string; description: string }
 export interface WorldActivity { id: string; title: string; actorId: string | null; resourceId: string | null; at: string }
@@ -14,7 +14,7 @@ export interface WorldActions {
   onOpenEconomy?:()=>void; onOpenFounders?:()=>void
   onOpenTask: (id: string) => void; onOpenProject: (id: string) => void
   onCompleteTask?: (id: string) => Promise<void>; onFocusTask?: (id: string) => void
-  onOpenChannel?: (id: string) => void; onCreateTask?: () => void
+  onOpenChannel?: (id: string) => void; onCreateTask?: () => void;onRenameOffice?:(name:string)=>Promise<void>
 }
 export const presenceLabels: Record<WorldPresence, string> = { offline:'Offline',online: 'Disponível', away: 'Ausente', focusing: 'Em foco', unknown: 'Presença não verificada', local: 'Somente neste navegador' }
 export function tasksFor(data: WorldData, selection: WorldSelection) {
