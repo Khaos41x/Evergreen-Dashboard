@@ -1,0 +1,7 @@
+# Navegação — 04/11/2026
+
+A versão em localhost é o servidor de desenvolvimento; as rotas /economy e /vision acompanham a origem atual. O Capacitor usa hostname interno localhost de propósito e não deve ser alterado para corrigir links web. A versão pública está em https://evergreen-holding.vercel.app. A auditoria de src/public não encontrou links de Economia/Visão fixos em localhost. Removida a orientação antiga de convite que sugeria substituir localhost por um endereço LAN; para compartilhar fora do computador deve ser usada a versão online.
+
+Ajustes solicitados nas anotações: Economia/Cofre agora usam Vault; Conselho usa Landmark; removida a indicação Ctrl K da busca, preservando o atalho existente; seletor HTML nativo substituído por botão expansível e opções de grupo/empresa com nomes completos, seleção e fechamento por Escape com retorno de foco; bandeira do Brasil oculta em até 768px, preservada no desktop. A seção Empresas e atuação não foi modificada.
+
+Build TypeScript/Vite passou. scripts/navigation-ui-check.mjs passou em 390, 629 e 1440px: alternância empresa/grupo, foco Escape, ícones, ausência de badge/overflow/erros, estilo da bandeira mobile. Usa React real e props sintéticas; fixture da bandeira valida CSS, sem sessão hospedada. Evidências ignoradas em output/navigation/results.json e sidebar-*.png. Teste de colaboração existente atualizado para refletir novo botão e bandeira condicional. Esta rodada não publicou deploy, novo APK nem alterou Supabase.
