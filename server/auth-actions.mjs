@@ -4,6 +4,13 @@ import { HttpError, bodyJSON, enforceOrigin, json, throttle } from './security.m
 import { checked, clearFlow, flowState, publicIdentity, readFlow, requireRecent, validatedSession } from './identity.mjs'
 
 const validEmail = value => typeof value === 'string' && value.length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
+// Provider acceptance does not establish delivery. Normalize only explicit mail failures.
+async function emailRequest(invoke) {
+  const normalize = error => Number(error?.status) >= 500 && /error sending .*email|smtp/i.test(String(error?.message || ''))
+    ? new HttpError(503, 'EMAIL_DELIVERY_FAILED', 'Não foi possível enviar o e-mail de acesso. O responsável precisa verificar o provedor de envio.') : error
+  try { const result = await invoke(); if (result.error) result.error = normalize(result.error); return result }
+  catch (error) { throw normalize(error) }
+}
 function requireFeature(enabled, code, message) { if (!enabled) throw new HttpError(503, code, message) }
 export async function authActions(req, res, config, context, action, query) {
   const reply = (status, value) => { context.commit(); json(res, status, value) }
@@ -53,20 +60,20 @@ export async function authActions(req, res, config, context, action, query) {
     flowState(req,res,config,body);
     const checkpoint=context.checkpoint();
     try {
-      const data=checked(await context.client.auth.signUp({email:body.email.trim(),password:body.password,options:{data:metadata,emailRedirectTo:callback,captchaToken:body.captchaToken}}));
+      const data=checked(await emailRequest(()=>context.client.auth.signUp({email:body.email.trim(),password:body.password,options:{data:metadata,emailRedirectTo:callback,captchaToken:body.captchaToken}})));
       return reply(200,{pendingConfirmation:!data.session,session:data.session?publicIdentity(await validatedSession(context,{bootstrap:true,invite:body.invite||null})):null});
     } catch(error) { context.restore(checkpoint);throw error }
   }
   if (action === 'recover') {
     if(!validEmail(body.email))throw new HttpError(400,'INVALID_EMAIL','Informe um e-mail válido.');
     flowState(req,res,config,{next:'/login?recovery=1'});
-    const result=await context.client.auth.resetPasswordForEmail(body.email.trim(),{redirectTo:callback,captchaToken:body.captchaToken});
+    const result=await emailRequest(()=>context.client.auth.resetPasswordForEmail(body.email.trim(),{redirectTo:callback,captchaToken:body.captchaToken}));
     if(result.error&&result.error.code!=='user_not_found')throw result.error;
     return reply(200,{pendingConfirmation:true});
   }
   if (action === 'resend-confirmation') {
     if (!validEmail(body.email)) throw new HttpError(400,'INVALID_EMAIL','Informe um e-mail válido.')
-    const result = await context.client.auth.resend({type:'signup',email:body.email.trim(),options:{emailRedirectTo:callback,captchaToken:body.captchaToken}})
+    const result = await emailRequest(()=>context.client.auth.resend({type:'signup',email:body.email.trim(),options:{emailRedirectTo:callback,captchaToken:body.captchaToken}}))
     if (result.error && !['user_not_found','user_already_exists','email_not_confirmed'].includes(result.error.code)) throw result.error
     return reply(200,{pendingConfirmation:true})
   }
@@ -96,7 +103,7 @@ export async function authActions(req, res, config, context, action, query) {
     const current = body.reauth ? await validatedSession(context) : null;
     if (current && body.email.trim().toLowerCase() !== current.user.email?.toLowerCase()) throw new HttpError(403, 'ACCOUNT_MISMATCH', 'Confirme o e-mail da sua conta atual.');
     flowState(req, res, config, body, current);
-    const result = await context.client.auth.signInWithOtp({ email: body.email.trim(), options: { shouldCreateUser: false, emailRedirectTo: callback, captchaToken: body.captchaToken } });
+    const result = await emailRequest(()=>context.client.auth.signInWithOtp({ email: body.email.trim(), options: { shouldCreateUser: false, emailRedirectTo: callback, captchaToken: body.captchaToken } }));
     if (result.error && !['user_not_found', 'signup_disabled'].includes(result.error.code)) throw result.error;
     return reply(200, { pendingConfirmation: true, message: 'Se a conta existir, você receberá um código ou link de acesso por e-mail.' });
   }

@@ -77,9 +77,11 @@ try{
   assert.deepEqual(errors,[]);results.push({width,environment:'synthetic team fixture / software WebGL',monitorRaycast:true,keyboardSelection:true,touchSelection:width<=768,zoomAndPan:true,failedMutationPreserved:true,pagination:true,scopeIsolation:true,contextLossRecovery:true,metrics,detailedMetrics,touchTargets,idleExtraFrames:after-before,pageErrors:errors});await page.close()
  }
  const fallback=await browser.newPage({viewport:{width:390,height:900}})
+ const fallbackRequests=[];fallback.on('request',request=>fallbackRequests.push(request.url()))
  await fallback.addInitScript(()=>{const original=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(type,...args){if(type==='webgl2')return null;return original.call(this,type,...args)}})
  await fallback.goto(origin+'/output/world/team.html');await fallback.getByText('Este dispositivo não disponibilizou WebGL2.',{exact:false}).waitFor();await fallback.getByRole('button',{name:'Ver estação de Ana QA 1',exact:true}).click();await fallback.locator('.world-details h2').filter({hasText:'Ana QA 1'}).waitFor();await fallback.screenshot({path:'output/world/fallback-390.png',fullPage:true});await fallback.close()
- results.push({webglUnavailableFallback:true,directoryActionsWithoutGPU:true})
+ assert.equal(fallbackRequests.some(url=>/WorldScene|@react-three|\/three\./.test(url)),false,'Unsupported GPU must not download the 3D scene')
+ results.push({webglUnavailableFallback:true,directoryActionsWithoutGPU:true,noSceneDownloadWithoutWebGL:true})
  const broken=await browser.newPage({viewport:{width:390,height:900}})
  const breakChunk=route=>route.abort('failed');await broken.route('**/src/features/world/WorldScene.tsx*',breakChunk)
  await broken.goto(origin+'/output/world/team.html');await broken.getByText('Não foi possível carregar o ambiente 3D.',{exact:false}).waitFor()

@@ -61,6 +61,13 @@ try{
  r=await a.call('verify-email',{email,code:otp.code,type:'recovery'});assert.equal(r.status,200)
  fixture.setFailMail(true);r=await a.call('recover',{email});assert.equal(r.status,429);assert.match(r.data.error.message,/Aguarde/);fixture.setFailMail(false)
  checks.push('expired recovery rejected; recovery OTP accepted independently of PKCE; send throttling reported without false success')
+ fixture.setFailMail('smtp');const mailCount=fixture.outbox.length
+ for(const [action,payload] of [['recover',{email}],['resend-confirmation',{email}],['email',{email}],['signup',{email:'smtp-failure@example.invalid',password,name:'SMTP QA'}]]){
+  const failure=await a.call(action,payload);assert.equal(failure.status,503);assert.equal(failure.data.error.code,'EMAIL_DELIVERY_FAILED');assert.match(failure.data.error.message,/Não foi possível enviar/);assert.ok(!failure.data.pendingConfirmation);assert.doesNotMatch(failure.text,/Error sending|smtp.gmail|535/)
+ }
+ assert.equal(fixture.outbox.length,mailCount);fixture.setFailMail(false)
+ checks.push('actual SDK handles provider SMTP 500 with safe actionable 503; signup, resend, recovery and OTP never report send success')
+
  const d=browser();fixture.setFailBootstrap(true)
  r=await d.call('password',{email,password:'LOCAL-NEW-Password-123'});assert.ok(r.status>=400);assert.equal([...d.jar.keys()].some(k=>k.startsWith('eg-auth')),false);fixture.setFailBootstrap(false)
  r=await d.call('recover',{email},{headers:{origin:'https://evil.invalid'}});assert.equal(r.status,403)

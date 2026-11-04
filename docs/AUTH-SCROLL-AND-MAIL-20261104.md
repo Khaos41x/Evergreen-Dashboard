@@ -1,0 +1,15 @@
+# Acesso: rolagem e envio de e-mail — 04/11/2026
+
+A página bloqueava a rolagem do body, mas a autenticação podia crescer além da janela sem criar um scrollport próprio. Reproduzido no React Root real a 1440 × 640: login, cadastro e confirmação tinham o rodapé inacessível por rolagem. Corrigido com altura limitada e rolagem na própria tela de autenticação; a área útil do shell nativo é respeitada.
+
+O provedor hospedado foi consultado em modo de leitura e a recuperação da conta de QA previamente autorizada foi solicitada. O SMTP está ativo com smtp.gmail.com:465, mas os registros de autenticação mostram HTTP 500 e Gmail 535 / 5.7.8, Username and Password not accepted. Nenhuma senha, token ou cookie foi lido, registrado ou alterado. A credencial de aplicativo precisa ser substituída pelo titular no painel. Entrega real continua bloqueada por essa credencial; não foi corrigida nem confirmada.
+
+A API passa a tratar explicitamente a falha de envio do provedor como EMAIL_DELIVERY_FAILED / 503 com mensagem segura em português. Cadastro, reenvio, OTP e recuperação não devem sinalizar sucesso nessa situação. A orientação após cadastro aceito foi ajustada para não prometer e-mail quando uma conta já existe (o Supabase pode devolver uma resposta de privacidade sem novo envio). A conta do proprietário já está confirmada: deve entrar ou recuperar o acesso, não criar a mesma conta novamente.
+
+Validação: test:auth:scroll usa o React Root real em Chromium e entrada por roda do mouse, a 320, 390, 567 e 1440 px / altura 640, em web e com CSS de safe areas nativo. Login, cadastro, confirmação, erro de envio e recuperação: 40 cenários. API substituída por respostas locais, sem envio. As variantes nativas são emulação de CSS, não teste em aparelho. Evidência antes/depois em output/auth-scroll. test:auth:p0 acrescenta falha SMTP 500 usando o SDK real e um provedor local, com teste dos quatro caminhos de envio; test:identity e build completam as verificações locais.
+
+Nenhum deploy, migração, alteração de permissões ou redefinição de senha foi executado nesta correção. A configuração hospedada da credencial aguarda ação do titular. A falha observada não é um problema da caixa de spam: o Gmail recusou a autenticação SMTP antes da entrega.
+
+## Reteste após atualização da credencial pelo titular
+
+Às 17:50 de 04/11/2026 (UTC-3), foi repetida uma única solicitação de recuperação para grupocoller@gmail.com, a conta de QA previamente autorizada. O localhost retornou HTTP 200 / pendingConfirmation=true, sem o erro SMTP anterior. Uma consulta de leitura confirmou recovery_sent_at=2026-11-04T20:50:36.237748Z para essa conta, posterior ao início do teste. Isso confirma o processamento do pedido pelo provedor, mas a chegada à caixa de entrada e a abertura do link ainda dependem de confirmação do destinatário. Nenhuma redefinição de senha ou sessão foi realizada. Evidência: output/auth-mail/gmail-retest.json. A pendência de credencial registrada acima é histórica; a pendência atual é confirmar recebimento na caixa de entrada.

@@ -19,6 +19,7 @@ export async function authFixture(){
   res.setHeader('content-type','application/json');res.setHeader('x-supabase-api-version','2024-01-01')
   const ok=data=>res.end(JSON.stringify(data)),bad=(code,status=400)=>{res.statusCode=status;ok({code,message:'Provider detail must not leak '+code})}
   const email=String(body.email||'').toLowerCase(),u=users.get(email)
+  if(failMail==='smtp'&&['/auth/v1/signup','/auth/v1/resend','/auth/v1/recover','/auth/v1/otp'].includes(url.pathname)){res.statusCode=500;return ok({message:'Error sending recovery email'})}
   if(url.pathname==='/auth/v1/signup'){
    if(u)return ok({...userView(u),identities:[]})
    const next={id:randomUUID(),email,password:body.password,confirmed:false,metadata:body.data,workspaces:[],profile:false};users.set(email,next);mail(next,'signup',url.searchParams.get('redirect_to'));return ok(userView(next))

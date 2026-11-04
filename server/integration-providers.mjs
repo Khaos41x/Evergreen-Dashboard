@@ -8,22 +8,32 @@ export function dateRange(from,to){
 export async function providerJSON(url,token,init={},fetcher=fetch){
  const target=new URL(url);if(target.protocol!=='https:'||!hosts.has(target.hostname)||target.port||target.username||target.password)throw new HttpError(403,'PROVIDER_TARGET_DENIED','Destino do provedor não autorizado.')
  let response;try{response=await fetcher(target,{...init,headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},redirect:'error',signal:AbortSignal.timeout(15000)})}catch{throw new HttpError(502,'PROVIDER_UNAVAILABLE','Não foi possível consultar o provedor. Tente novamente.')}
- if(!response.ok){if(response.status===429)throw new HttpError(429,'PROVIDER_LIMIT','O provedor atingiu seu limite. Aguarde e tente novamente.');throw new HttpError(400,'PROVIDER_PERMISSION','A fonte não disponibilizou os dados. Confira token, escopo, projeto, plano e instrumentação.')}
- const bytes=await response.arrayBuffer();if(bytes.byteLength>2097152)throw new HttpError(413,'PROVIDER_DATA_LIMIT','A resposta da fonte excedeu o limite. Reduza o período.')
- try{const data=JSON.parse(new TextDecoder().decode(bytes));if(data.errors?.length||data.success===false)throw Error();return data}catch{throw new HttpError(400,'PROVIDER_DATA_INVALID','A fonte não retornou o conjunto de dados solicitado. Verifique as permissões e o plano.')}
+ if(!response.ok){if(response.status===401||response.status===403)throw new HttpError(403,'PROVIDER_CREDENTIAL_DENIED','A credencial foi recusada. Confira validade, equipe, projeto e permissões de leitura.');if(response.status===429)throw new HttpError(429,'PROVIDER_LIMIT','O provedor atingiu seu limite. Aguarde e tente novamente.');throw new HttpError(400,'PROVIDER_PERMISSION','A fonte não disponibilizou os dados. Confira token, escopo, projeto, plano e instrumentação.')}
+ const limit=2097152,oversized=()=>new HttpError(413,'PROVIDER_DATA_LIMIT','A resposta da fonte excedeu o limite. Reduza o período.')
+ if(Number(response.headers.get('content-length'))>limit){await response.body?.cancel();throw oversized()}
+ const reader=response.body?.getReader(),chunks=[];let size=0
+ if(reader){try{for(;;){const {value,done}=await reader.read();if(done)break;size+=value.byteLength;if(size>limit){await reader.cancel();throw oversized()}chunks.push(value)}}finally{reader.releaseLock()}}
+ const bytes=new Uint8Array(size);let offset=0;for(const chunk of chunks){bytes.set(chunk,offset);offset+=chunk.byteLength}
+ try{const data=JSON.parse(new TextDecoder().decode(bytes));if(!data||typeof data!=='object'||data.errors?.length||data.success===false)throw Error();return data}catch{throw new HttpError(400,'PROVIDER_DATA_INVALID','A fonte não retornou o conjunto de dados solicitado. Verifique as permissões e o plano.')}
 }
 export function providerConfig(provider,config={}){
+ if(!config||Array.isArray(config)||typeof config!=='object')throw new HttpError(400,'PROVIDER_CONFIG_INVALID','Confira as opções do serviço selecionado.')
  if(!['cloudflare','vercel','supabase','asaas'].includes(provider))throw new HttpError(400,'PROVIDER_INVALID','Provedor não suportado.')
  if(provider==='asaas'){asaasEnvironment(config.environment);if(!/^[0-9a-f-]{36}$/.test(config.companyId||''))throw new HttpError(400,'FINANCE_COMPANY','Selecione o livro financeiro autorizado.');return{environment:config.environment,companyId:config.companyId}}
  const teamId=String(config.teamId||'');if(teamId&&!/^[A-Za-z0-9_-]{1,100}$/.test(teamId))throw new HttpError(400,'TEAM_INVALID','Identificador da equipe inválido.')
  return provider==='vercel'?{teamId}:{}
 }
+function resourceList(value){
+ if(!Array.isArray(value)||value.some(r=>!r||typeof r.id!=='string'||!r.id||typeof r.name!=='string'))throw new HttpError(502,'PROVIDER_DATA_INVALID','A fonte não retornou uma lista válida de recursos. Tente novamente.')
+ return value.map(({id,name})=>({id,name}))
+}
 export async function discoverResources(provider,token,config={},fetcher=fetch){
  const cfg=providerConfig(provider,config);let rows=[],limited=false
- if(provider==='cloudflare'){const d=await providerJSON('https://api.cloudflare.com/client/v4/zones?per_page=50',token,{},fetcher);rows=(d.result||[]).map(x=>({id:x.id,name:x.name}));limited=Number(d.result_info?.total_count)>rows.length}
- if(provider==='vercel'){const u=new URL('https://api.vercel.com/v10/projects');u.searchParams.set('limit','100');if(cfg.teamId)u.searchParams.set('teamId',cfg.teamId);const d=await providerJSON(u,token,{},fetcher);rows=(d.projects||d||[]).map(x=>({id:x.id,name:x.name}));limited=!!d.pagination?.next}
- if(provider==='supabase'){const d=await providerJSON('https://api.supabase.com/v1/projects',token,{},fetcher);rows=(Array.isArray(d)?d:[]).map(x=>({id:x.id,name:x.name}))}
+ if(provider==='cloudflare'){const d=await providerJSON('https://api.cloudflare.com/client/v4/zones?per_page=50',token,{},fetcher);rows=resourceList(d.result);limited=Number(d.result_info?.total_count)>rows.length}
+ if(provider==='vercel'){const u=new URL('https://api.vercel.com/v10/projects');u.searchParams.set('limit','100');if(cfg.teamId)u.searchParams.set('teamId',cfg.teamId);const d=await providerJSON(u,token,{},fetcher);rows=resourceList(d.projects);limited=!!d.pagination?.next}
+ if(provider==='supabase'){const d=await providerJSON('https://api.supabase.com/v1/projects',token,{},fetcher);rows=resourceList(d)}
  if(provider==='asaas'){const d=await asaasJSON('/wallets/',token,cfg.environment,fetcher);const wallets=Array.isArray(d.data)?d.data:d.id?[d]:Array.isArray(d)?d:[];rows=wallets.map(w=>({id:w.id,name:'Carteira Asaas · '+w.id}));if(!rows.length)throw new HttpError(400,'ASAAS_WALLET','A credencial não disponibilizou a carteira desta conta.')}
+ if(!Array.isArray(rows)||rows.some(r=>typeof r?.id!=='string'||!r.id||typeof r?.name!=='string'))throw new HttpError(502,'PROVIDER_DATA_INVALID','A fonte não retornou uma lista válida de recursos. Tente novamente.')
  return{resources:rows,limited}
 }
 const number=v=>{if(v===null||v===undefined||!/^\d+(\.\d+)?$/.test(String(v)))return null;const n=Number(v);return Number.isFinite(n)&&n>=0?n:null}

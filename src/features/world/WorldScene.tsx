@@ -29,9 +29,10 @@ function Batch({ items, geometry, material, onSelect, shadow = true }: { items: 
     ref.current.instanceMatrix.needsUpdate = true; if (ref.current.instanceColor) ref.current.instanceColor.needsUpdate = true
     ref.current.computeBoundingSphere(); invalidate()
   }, [items, invalidate])
+  // Imperative instance geometry is owned by Office and shared across batches.
   const clicked = (e: ThreeEvent<MouseEvent>) => { const item = items[e.instanceId ?? -1]; if (item?.pick && e.delta < 5) { e.stopPropagation(); onSelect(item.pick) } }
   if (!items.length) return null
-  return <instancedMesh ref={ref} args={[geometry, material, items.length]} castShadow={shadow} receiveShadow={shadow} onClick={clicked} onPointerOver={e => { if (items[e.instanceId ?? -1]?.pick) { e.stopPropagation(); gl.domElement.style.cursor = 'pointer' } }} onPointerOut={() => { gl.domElement.style.cursor = 'grab' }} />
+  return <instancedMesh dispose={null} ref={ref} args={[geometry, material, items.length]} castShadow={shadow} receiveShadow={shadow} onClick={clicked} onPointerOver={e => { if (items[e.instanceId ?? -1]?.pick) { e.stopPropagation(); gl.domElement.style.cursor = 'pointer' } }} onPointerOut={() => { gl.domElement.style.cursor = 'grab' }} />
 }
 function CameraRig({ layout, selection, members, projects, command, labels, metrics, reduced, visible, onSlow,library }: Props) {
   const { camera, gl, size, invalidate } = useThree(), controls = useRef<OrbitControls | null>(null)
@@ -101,21 +102,27 @@ function CameraRig({ layout, selection, members, projects, command, labels, metr
 function Office(props: Props) {
   const { members, projects, tasks, selection, onSelect, layout, low, onFailure } = props
   const { gl, invalidate } = useThree()
-  const failure = useRef(onFailure); failure.current = onFailure
+  const failure = useRef(onFailure), shadowUpdates=useRef(0); failure.current = onFailure
   const resources = useMemo(() => ({ box: new BoxGeometry(1, 1, 1), sphere: new SphereGeometry(1, 8, 6), cylinder: new CylinderGeometry(1, 1, 1, 12), matte: new MeshStandardMaterial({ color: 'white', roughness: .76, metalness: .12 }), metal: new MeshStandardMaterial({ color: 'white', roughness: .4, metalness: .5 }), luminous: new MeshStandardMaterial({ color: 'white', emissive: '#b4d9c2', emissiveIntensity: .3, roughness: .5, metalness: .08 }) }), [])
   useEffect(() => {
     const lost = (e: Event) => { e.preventDefault(); failure.current() }
     gl.domElement.addEventListener('webglcontextlost', lost)
     return () => { gl.domElement.removeEventListener('webglcontextlost', lost); gl.domElement.style.cursor = ''; Object.values(resources).forEach(r => r.dispose()) }
   }, [gl, resources])
-  useEffect(() => { gl.shadowMap.enabled = !low; gl.shadowMap.needsUpdate = true; invalidate() }, [gl, low, invalidate])
+  useEffect(() => {
+    gl.shadowMap.enabled = !low; gl.shadowMap.autoUpdate = false; gl.shadowMap.needsUpdate = true; invalidate()
+    return () => { gl.shadowMap.autoUpdate = true }
+  }, [gl, low, invalidate])
   // Render once per requested frame, then sample actual renderer counters.
   useFrame(state => {
+    // Camera pan/zoom does not move furniture: reuse its shadow map until content or the vault moves.
+    if(props.vaultOpening&&!low)state.gl.shadowMap.needsUpdate=true
+    if(state.gl.shadowMap.enabled&&state.gl.shadowMap.needsUpdate)shadowUpdates.current++
     state.gl.render(state.scene, state.camera)
-    if(props.metrics.current){props.metrics.current.dataset.drawCalls=String(state.gl.info.render.calls);props.metrics.current.dataset.triangles=String(state.gl.info.render.triangles);props.metrics.current.dataset.dpr=String(state.gl.getPixelRatio())}
+    if(props.metrics.current){props.metrics.current.dataset.shadowUpdates=String(shadowUpdates.current);props.metrics.current.dataset.drawCalls=String(state.gl.info.render.calls);props.metrics.current.dataset.triangles=String(state.gl.info.render.triangles);props.metrics.current.dataset.dpr=String(state.gl.getPixelRatio())}
   },1)
   const batches = useMemo(() => {
-    if(props.library)return libraryGeometry(members,selection)
+    if(props.library)return libraryGeometry(members,selection,low)
     const wood: Item[] = [], metal: Item[] = [], screen: Item[] = [], plants: Item[] = [], planters: Item[] = [], architecture: Item[] = [], floor: Item[] = []
     const add = (list: Item[], at: Item['at'], size: Item['size'], color: string, pick?: Item['pick']) => list.push({ at, size, color, pick })
     add(architecture, [0, -.46, 0], [layout.width + .5, .65, layout.depth + .5], '#1d3227')
@@ -166,7 +173,8 @@ function Office(props: Props) {
     // Lounge and access ramp are architecture, never fake employee stations.
     add(wood, [0, .45, layout.depth / 2 - .8], [2.3, .75, .8], '#b0a58a'); add(metal, [0, .13, layout.depth / 2 + .4], [3.1, .2, 1.1], '#364d3c')
     return { wood, metal, screen, plants, planters, architecture, floor }
-  }, [members, projects, tasks, selection, layout,props.library])
+  }, [members, projects, tasks, selection, layout,props.library,low])
+  useEffect(()=>{gl.shadowMap.needsUpdate=true;invalidate()},[batches,gl,invalidate])
   return <group dispose={null}>
     <ambientLight intensity={.65} /><hemisphereLight args={['#c7d8ca', '#2f4431', 2.2]} />
     <directionalLight position={[6, 15, 9]} intensity={3.2} color="#ffe7bf" castShadow={!low} shadow-mapSize={[1024, 1024]} shadow-camera-left={-18} shadow-camera-right={18} shadow-camera-top={18} shadow-camera-bottom={-18} shadow-normalBias={.035} shadow-bias={-.0001} />

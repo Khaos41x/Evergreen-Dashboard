@@ -42,7 +42,10 @@
     "test:mobile:updates": "node scripts/mobile-update-check.mjs",
     "test:mobile:updates:ui": "node scripts/mobile-update-browser-check.mjs",
     "test:mobile:release": "node scripts/mobile-release-check.mjs",
-    "test:mobile:ota": "node scripts/mobile-ota-check.mjs"
+    "test:mobile:ota": "node scripts/mobile-ota-check.mjs",
+    "test:auth:scroll": "node scripts/auth-scroll-check.mjs",
+    "test:profiles:refresh": "node scripts/avatar-refresh-check.mjs",
+    "test:holding:connection-ui": "node scripts/integration-flow-browser-check.mjs"
   },
   "dependencies": {
     "@capacitor/android": "8.6.0",

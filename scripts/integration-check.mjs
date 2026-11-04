@@ -10,6 +10,20 @@ assert.equal(decryptCredential(encrypted,aad,env),credential);assert.throws(()=>
 for(const pair of[['','2026-10-01'],['2026-02-30','2026-03-01'],['2026-10-02','2026-10-01'],['2025-01-01','2026-10-30'],['2026-99-99','2026-10-30']])assert.throws(()=>dateRange(...pair));assert.equal(dateRange('2026-10-01','2026-10-30').end,'2026-10-31T00:00:00.000Z')
 let called=false;await assert.rejects(()=>providerJSON('https://attacker.invalid/key',credential,{},async()=>{called=true}));assert.equal(called,false);await assert.rejects(()=>providerJSON('https://api.vercel.com/test',credential,{},async()=>new Response('{}',{status:429})));checks.push('period boundaries, no arbitrary URLs, provider limits fail explicitly')
 const fixture=(value)=>async()=>new Response(JSON.stringify(value),{headers:{'Content-Type':'application/json'}})
+for(const provider of ['cloudflare','vercel','supabase']){
+ await assert.rejects(()=>discoverResources(provider,credential,{},fixture({wrong:'shape'})),e=>e.code==='PROVIDER_DATA_INVALID')
+}
+await assert.rejects(()=>discoverResources('cloudflare',credential,{},fixture({result:[null]})),e=>e.code==='PROVIDER_DATA_INVALID')
+await assert.rejects(()=>discoverResources('vercel',credential,{},fixture({projects:[{id:'x'}]})),e=>e.code==='PROVIDER_DATA_INVALID')
+await assert.rejects(()=>discoverResources('supabase',credential,null,fixture([])),e=>e.code==='PROVIDER_CONFIG_INVALID')
+await assert.rejects(()=>providerJSON('https://api.vercel.com/test',credential,{},fixture(null)),e=>e.code==='PROVIDER_DATA_INVALID')
+for(const status of[401,403])await assert.rejects(()=>providerJSON('https://api.vercel.com/test',credential,{},async()=>new Response('{}',{status})),e=>e.code==='PROVIDER_CREDENTIAL_DENIED'&&e.status===403)
+let cancelled=false,pulls=0
+const stream=new ReadableStream({pull(controller){pulls++;controller.enqueue(new Uint8Array(1048576));},cancel(){cancelled=true}})
+await assert.rejects(()=>providerJSON('https://api.vercel.com/test',credential,{},async()=>new Response(stream)),e=>e.code==='PROVIDER_DATA_LIMIT')
+assert.equal(cancelled,true);assert.ok(pulls<6,'stream must be cancelled before buffering the full response')
+checks.push('malformed discovery lists and null payloads rejected; credential denial actionable; oversized streaming payload cancelled at the byte limit')
+
 const cf=await syncProvider({provider:'cloudflare',resource_id:'zone_fixture'},credential,'2026-10-01','2026-10-30',fixture({data:{viewer:{zones:[{httpRequests1dGroups:[{dimensions:{date:'2026-10-10'},sum:{requests:120,bytes:2048,threats:1,countryMap:[{clientCountryName:'BR',requests:80}]},uniq:{uniques:10}}]}]}}}));assert.equal(cf.metrics.find(m=>m.key==='requests').value,120);assert.ok(!cf.metrics.some(m=>m.key==='visitors'));assert.equal(cf.series[0].unique_ips,10)
 const vercel=await syncProvider({provider:'vercel',resource_id:'prj_fixture',config:{}},credential,'2026-10-01','2026-10-30',async url=>fixture({data:url.searchParams.get('by')==='day'?[{timestamp:'2026-10-10',pageviews:100,visitors:30}]:[{country:'BR',pageviews:60}]})());assert.equal(vercel.metrics[0].value,100);assert.ok(!vercel.metrics.some(m=>m.key==='visitors'))
 const sb=await syncProvider({provider:'supabase',resource_id:'project_fixture'},credential,'2026-10-01','2026-10-30',async(_url,init)=>{const q=JSON.parse(init.body).query;assert.ok(q.includes('auth.users'));assert.ok(!/insert|update|delete/i.test(q));return fixture(q.includes('users_total')?[{users_total:'50',signups:'5',accounts_last_login:'9'}]:[{day:'2026-10-10',signups:'5'}])()});assert.equal(sb.metrics.find(m=>m.key==='signups').value,5);assert.ok(sb.metrics.some(m=>m.key==='accounts_last_login'&&m.aggregation==='snapshot'));checks.push('Cloudflare requests not visitors; Vercel uniques non-additive; Supabase read-only aggregate counts and distinct login semantics')
