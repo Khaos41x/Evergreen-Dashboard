@@ -19,7 +19,16 @@
 .founder-library .world-node-label>span{overflow:visible;text-overflow:clip;overflow-wrap:anywhere}
 .founder-library .world-node-label i{margin-top:4px}
 .founder-library .world-station-list strong{white-space:normal;overflow-wrap:anywhere;text-overflow:clip}
-.founder-library .vault-label{max-width:none;white-space:nowrap;font-weight:600}
+.founder-library .vault-label {
+  z-index: 1;
+  max-width: none;
+  padding: 5px 8px;
+  border-color: #628f7a;
+  color: #f3fbf6;
+  background: #102d23;
+  white-space: nowrap;
+  font-weight: 650;
+}
 @media(max-width:768px){.founder-library .world-node-label:not(.selected):not(.vault-label),.founder-library .world-node-label.selected{max-width:122px;font-size:10px;padding:6px 8px}.founder-library .world-node-label small{font-size:9px}.founder-library .vault-label{font-size:10px}}
 .world-office-label{color:#d4e8da!important;font-size:14px!important;font-weight:600}
 .world-seat-holder{color:#edf4ee!important;font-size:11px!important}

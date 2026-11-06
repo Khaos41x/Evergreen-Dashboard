@@ -14,6 +14,8 @@ import {createRoot} from 'react-dom/client';
 import {Collaboration} from '/src/collaboration/Collaboration.tsx';
 ${process.env.EG_NATIVE_CSS?"import '/src/mobile/mobile.css';document.documentElement.dataset.native='true';document.documentElement.style.setProperty('--safe-area-inset-top','28px');document.documentElement.style.setProperty('--safe-area-inset-bottom','24px');":''}
 import '/src/styles.css'; import '/src/styles-extra.css'; import '/src/home-reference.css'; import '/src/collaboration/collaboration.css';
+import '/src/features/appearance/themes.css'; import { initializeTheme } from '/src/features/appearance/theme.ts';
+initializeTheme();
 createRoot(document.getElementById('root')).render(React.createElement(Collaboration,{session:{user:{id:'${a}',email:'alice@fixture.invalid',user_metadata:{}}},onLocal:()=>{}}));
 </script>`)
 // A second server with fixture-only public environment; no .env or user server modifications.
@@ -25,7 +27,7 @@ const results=[]
 try {
  for(const width of (process.env.COLLAB_WIDTHS?process.env.COLLAB_WIDTHS.split(',').map(Number):[320,375,390,430,768,790,1440])) {
   fixture.messages=[];fixture.records=[];fixture.officeRename=null;fixture.roleUpdates=[];fixture.profileRelationship='founder';fixture.profileHonors=false
-  const context=await browser.newContext({viewport:{width,height:900},hasTouch:width<=768})
+  const context=await browser.newContext({viewport:{width,height:width===763?451:900},hasTouch:width<=768})
   await context.route('**/api/backend?**',async route=>{
    const req=route.request(),url=new URL(new URL(req.url()).searchParams.get('target')??new URL(route.request().url()).searchParams.get('path'),'https://fixture.supabase.invalid'),table=url.pathname.split('/').at(-1).replace('eg_',''),method=req.method()
    const headers={'content-type':'application/json','access-control-allow-origin':'*','access-control-allow-headers':'*','access-control-allow-methods':'*'}
@@ -71,15 +73,99 @@ try {
   const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error'&&!m.text().includes('WebSocket'))console.log(m.text())})
   await page.goto(`${origin}/output/playwright/fixture.html`,{waitUntil:'networkidle'})
   async function go(label){if(label==='Configurações'){if(width<=600)await page.getByRole('navigation',{name:'Navegação mobile'}).getByRole('button',{name:'Ajustes',exact:true}).click();else await page.getByRole('button',{name:'Configurações',exact:true}).click();return}if(width<=600){await page.getByRole('navigation',{name:'Navegação mobile'}).getByRole('button',{name:label==='Mensagens'?'Conversas':label,exact:true}).click();return}if(width<=1000)await page.getByRole('button',{name:'Abrir menu',exact:true}).click();await page.getByRole('navigation',{name:'Navegação principal'}).getByRole('button',{name:({Mensagens:'Conversas',Tarefas:'Trabalho',Início:'Hoje'})[label]||label,exact:true}).click()}
-  await page.locator('.collab-top').waitFor();await go('Mensagens')
+  await page.locator('.collab-top').waitFor()
+  if ([390, 1440].includes(width)) {
+   await go('Configurações')
+   const picker = page.locator('.appearance-picker')
+   for (const [theme, expected] of [['black', 'rgb(8, 8, 8)'], ['electric', 'rgb(8, 13, 27)'], ['light', 'rgb(246, 246, 243)'], ['evergreen', 'rgba(0, 0, 0, 0)']]) {
+    await picker.locator('label[data-preview="' + theme + '"]').click()
+    assert.ok(await picker.locator('input[value="' + theme + '"]').isChecked())
+    assert.equal(await page.evaluate(() => document.documentElement.dataset.theme), theme)
+    assert.equal(await page.locator('.collab-main').evaluate(el => getComputedStyle(el).backgroundColor), expected)
+   }
+   await picker.locator('label[data-preview="light"]').click()
+   await picker.screenshot({path: 'output/playwright/themes-' + width + '.png'})
+   const stamp = new Date(Date.now() - 1).toISOString()
+   fixture.records = [
+    {id: crypto.randomUUID(), kind: 'task', title: 'Minha entrega da semana', status: 'done', workspace_id: w, assignee_id: a, completed_at: stamp, created_at: stamp},
+    {id: crypto.randomUUID(), kind: 'task', title: 'Entrega de outra pessoa', status: 'done', workspace_id: w, assignee_id: 'other', completed_at: stamp, created_at: stamp},
+   ]
+   fixture.focus = [
+    {id: 'focus-qa', user_id: a, workspace_id: w, status: 'completed', started_at: stamp, ended_at: stamp, elapsed_ms: 25 * 60_000},
+    {id: 'focus-other', user_id: 'other', workspace_id: w, status: 'completed', started_at: stamp, ended_at: stamp, elapsed_ms: 100 * 60_000},
+   ]
+   await page.goto(origin + '/output/playwright/fixture.html')
+   assert.equal(await page.evaluate(() => document.documentElement.dataset.theme), 'light')
+   const organizationMark = page.locator('.os-hub .os-page-heading .evergreen-symbol')
+   await organizationMark.waitFor()
+   assert.equal(await organizationMark.evaluate(el => getComputedStyle(el).filter), 'none')
+   await page.locator('.workspace-company-trigger').waitFor({state: 'attached'})
+   if (width < 1000) await page.getByRole('button', {name: 'Abrir menu', exact: true}).click()
+   await page.locator('.workspace-company-trigger').click()
+   await page.locator('.workspace-company-options').getByText(workspaceName, {exact: true}).click()
+   const progress = page.getByRole('region', {name: 'Progresso da semana'})
+   await progress.getByText('15 XP na semana', {exact: false}).waitFor()
+   assert.equal(await progress.locator('progress').getAttribute('value'), '15')
+   assert.equal(await progress.locator('li[data-earned="true"]').count(), 2)
+   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false)
+   await progress.screenshot({path: 'output/playwright/progresso-' + width + '.png'})
+   const hero = page.locator('.reference-hero')
+   await hero.locator('h1').waitFor()
+   await page.locator('.domain-home').evaluate(el => el.scrollTop = 0)
+   const dial = await hero.locator('.hero-timer').boundingBox()
+   const start = await hero.getByRole('button', {name: 'Iniciar foco', exact: true}).boundingBox()
+   assert.ok(start.x + start.width <= dial.x, 'Focus action and dial must not overlap')
+   if (width <= 390) assert.ok((await hero.boundingBox()).height < 300, 'Focus card should fit above the day summary on mobile')
+   await page.screenshot({path: 'output/playwright/refined-home-' + width + '.png'})
+   await hero.getByRole('button', {name: 'Iniciar foco', exact: true}).click()
+   await page.getByRole('dialog', {name: 'Iniciar foco', exact: true}).waitFor()
+   await page.keyboard.press('Escape')
+   await page.locator('.my-day-panel').getByRole('button', {name: 'Adicionar tarefa', exact: true}).click()
+   await page.getByRole('dialog').getByLabel('Título', {exact: true}).waitFor()
+   await page.keyboard.press('Escape')
+   if (width <= 600) {
+    const home = page.getByRole('navigation', {name: 'Navegação mobile'}).getByRole('button', {name: 'Hoje', exact: true})
+    await home.click()
+    await hero.waitFor()
+    assert.equal(await home.getAttribute('aria-current'), 'page')
+   }
+   await go('Configurações')
+   await picker.locator('label[data-preview="evergreen"]').click()
+   fixture.records = []
+   fixture.focus = []
+   await page.goto(origin + '/output/playwright/fixture.html')
+   console.log('Aparência e progresso validados em ' + width + 'px')
+  }
+  await go('Mensagens')
   await page.getByRole('heading',{name:'# geral',exact:true}).waitFor().catch(async e=>{console.log(JSON.stringify({errors,body:await page.locator('body').innerText()}));await page.screenshot({path:'output/playwright/fixture-failure.png'});throw e})
   if(width<=1000) {
    const opener=page.getByRole('button',{name:'Abrir menu',exact:true});await opener.click()
-   assert.ok(await page.getByRole('dialog',{name:'Espaços de trabalho e canais'}).isVisible())
+   const drawer = page.getByRole('dialog',{name:'Espaços de trabalho e canais'})
+   assert.equal((await drawer.boundingBox()).x, 0, 'The drawer should start at the viewport edge')
+   assert.equal(await opener.getAttribute('aria-expanded'), 'true')
    assert.equal(await page.locator('.collab-main').getAttribute('inert'),'')
    await page.keyboard.press('Shift+Tab');assert.ok(await page.evaluate(()=>document.activeElement.closest('.collab-sidebar')!==null))
    await page.screenshot({path:`output/playwright/fixture-drawer-${width}.png`,fullPage:true})
    await page.keyboard.press('Escape');assert.ok(await opener.evaluate(el=>document.activeElement===el))
+   if (width === 763) {
+    await page.evaluate(() => localStorage.setItem('evergreen.appearance.v1', 'electric'))
+    await page.goto(origin + '/output/playwright/fixture.html')
+    await go('Mensagens')
+    await opener.click()
+    const scrim = page.locator('.collab-menu-scrim')
+    await page.mouse.move(width - 10, 80)
+    assert.equal(await scrim.evaluate(el => getComputedStyle(el).backgroundColor), 'rgba(0, 0, 0, 0.58)')
+    assert.ok(await drawer.evaluate(el => el.scrollHeight > el.clientHeight))
+    const close = drawer.getByRole('button', {name: 'Fechar menu', exact: true})
+    const closeTop = (await close.boundingBox()).y
+    await drawer.evaluate(el => el.scrollTop = el.scrollHeight)
+    assert.equal((await close.boundingBox()).y, closeTop, 'The close button should stay visible while scrolling')
+    await drawer.evaluate(el => el.scrollTop = 0)
+    await page.screenshot({path: 'output/playwright/drawer-azul-763.png'})
+    await page.mouse.click(width - 10, 80)
+    await drawer.waitFor({state: 'hidden'})
+    assert.ok(await opener.evaluate(el=>document.activeElement===el))
+   }
   }
   const composer=page.getByLabel('Mensagem',{exact:true});await page.getByLabel('Mencionar pessoa',{exact:true}).selectOption(a);assert.equal(await composer.inputValue(),'@Fixture Alice ');assert.ok(!(await composer.inputValue()).includes(a));await composer.fill('Linha de teste');await composer.press('Shift+Enter');assert.ok((await composer.inputValue()).includes('\n'),`Shift+Enter should add a line break at ${width}px`);await composer.fill(`UI fixture message ${width}`);await composer.press('Enter');await page.getByText(`UI fixture message ${width}`,{exact:true}).waitFor();if(width<=600)assert.equal(await composer.evaluate(el=>getComputedStyle(el).minHeight),'48px',`Mobile composer should stay compact at ${width}px`)
   await page.getByRole('button',{name:'Editar',exact:true}).click();await page.getByLabel('Mensagem',{exact:true}).fill(`UI fixture edited ${width}`);await page.getByRole('button',{name:'Salvar edição'}).click();await page.getByText(`UI fixture edited ${width}`,{exact:true}).waitFor()
@@ -98,7 +184,7 @@ try {
     await page.screenshot({path:`output/playwright/release-people-${width}.png`,fullPage:true});await page.locator('.collab-top').getByRole('button',{name:'Meu perfil',exact:true}).click();await page.getByRole('heading',{name:'Meu perfil',exact:true}).waitFor();
     await companyRow.click();await page.locator('main.reference-home').waitFor();await page.locator('.hero-copy>p').getByText('Veja o que importa hoje na Orkto.',{exact:true}).waitFor();
     if(process.env.EG_TIMER_FALLBACK)await page.locator('.hero-timer strong').evaluate(el=>el.style.fontFamily='Arial, sans-serif');
-    const dial=await page.locator('.hero-timer').evaluate(el=>{const ring=el.getBoundingClientRect(),scale=ring.width/el.clientWidth,radius=ring.width/2-10*scale,cx=ring.x+ring.width/2,cy=ring.y+ring.height/2;return {parts:[...el.querySelectorAll('small,strong,span')].map(c=>({text:c.textContent,rect:c.getBoundingClientRect().toJSON(),font:getComputedStyle(c).font})),ring:ring.toJSON(),spacing:parseFloat(getComputedStyle(el.querySelector('strong')).letterSpacing),inside:[...el.querySelectorAll('small,strong,span')].every(child=>{const r=child.getBoundingClientRect();return [[r.left,r.top],[r.right,r.top],[r.left,r.bottom],[r.right,r.bottom]].every(([x,y])=>Math.hypot(x-cx,y-cy)<=radius+2)})}});
+    const dial=await page.locator('.hero-timer').evaluate(el=>{const ring=el.getBoundingClientRect(),scale=ring.width/el.clientWidth,radius=ring.width/2-parseFloat(getComputedStyle(el,'::before').top)*scale,cx=ring.x+ring.width/2,cy=ring.y+ring.height/2;return {parts:[...el.querySelectorAll('small,strong,span')].map(c=>({text:c.textContent,rect:c.getBoundingClientRect().toJSON(),font:getComputedStyle(c).font})),ring:ring.toJSON(),spacing:parseFloat(getComputedStyle(el.querySelector('strong')).letterSpacing),inside:[...el.querySelectorAll('small,strong,span')].every(child=>{const r=child.getBoundingClientRect();return [[r.left,r.top],[r.right,r.top],[r.left,r.bottom],[r.right,r.bottom]].every(([x,y])=>Math.hypot(x-cx,y-cy)<=radius+2)})}});
     assert.ok(dial.spacing>=0,'Digits must not overlap');if(!dial.inside)console.log('TIMER_LAYOUT',width,JSON.stringify(dial));await page.screenshot({path:`output/playwright/release-home-${width}.png`,fullPage:true});assert.equal(dial.inside,true,'Timer text must fit inside the circular dial');
     await page.locator('.collab-top').getByRole('button',{name:'Meu perfil',exact:true}).click();await page.getByRole('heading',{name:'Meu perfil',exact:true}).waitFor();
    }
@@ -147,7 +233,7 @@ try {
   await page.screenshot({path:`output/playwright/fixture-settings-${width}.png`,fullPage:true})
 
   if([390,1440].includes(width)){
-   if(width<=1000)await page.getByRole('button',{name:'Abrir menu',exact:true}).click();await page.getByRole('button',{name:'Empresas e equipe',exact:true}).click();await page.getByRole('heading',{name:'Equipe e trabalho por empresa',exact:true}).waitFor();const orgNav=page.getByRole('navigation',{name:'Organizar UI fixture workspace'});await orgNav.getByRole('button',{name:'Projetos',exact:true}).click();await page.getByRole('heading',{name:'Projetos da empresa',exact:true}).waitFor();await page.getByRole('button',{name:'Novo projeto',exact:true}).click();await page.getByRole('dialog').getByLabel('Título',{exact:true}).fill('Projeto integrado QA');assert.equal(await page.getByRole('dialog').getByLabel('Tipo',{exact:true}).inputValue(),'project');await page.getByRole('dialog').getByRole('button',{name:'Salvar item',exact:true}).click();await page.getByRole('heading',{name:'Projeto integrado QA',exact:true}).waitFor();assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);await page.screenshot({path:'output/playwright/organization-shell-projects-'+width+'.png',fullPage:true});if(width<=1000)await page.getByRole('button',{name:'Abrir menu',exact:true}).click();await page.getByRole('button',{name:'Empresas e equipe',exact:true}).click();await page.getByRole('navigation',{name:'Organizar UI fixture workspace'}).getByRole('button',{name:'Equipe e convites',exact:true}).click();await page.getByRole('heading',{name:'Membros e acesso',exact:true}).waitFor();assert.equal(await page.getByRole('heading',{name:'Equipe e trabalho por empresa',exact:true}).count(),0);await page.screenshot({path:'output/playwright/organization-shell-team-'+width+'.png',fullPage:true});
+   if(width<=1000)await page.getByRole('button',{name:'Abrir menu',exact:true}).click();await page.getByRole('button',{name:'Empresas e equipe',exact:true}).click();await page.getByRole('heading',{name:'Equipe e trabalho por empresa',exact:true}).waitFor();const orgNav=page.getByRole('navigation',{name:`Organizar ${workspaceName}`});await orgNav.getByRole('button',{name:'Projetos',exact:true}).click();await page.getByRole('heading',{name:'Projetos da empresa',exact:true}).waitFor();await page.getByRole('button',{name:'Novo projeto',exact:true}).click();await page.getByRole('dialog').getByLabel('Título',{exact:true}).fill('Projeto integrado QA');assert.equal(await page.getByRole('dialog').getByLabel('Tipo',{exact:true}).inputValue(),'project');await page.getByRole('dialog').getByRole('button',{name:'Salvar item',exact:true}).click();await page.getByRole('heading',{name:'Projeto integrado QA',exact:true}).waitFor();assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);await page.screenshot({path:'output/playwright/organization-shell-projects-'+width+'.png',fullPage:true});if(width<=1000)await page.getByRole('button',{name:'Abrir menu',exact:true}).click();await page.getByRole('button',{name:'Empresas e equipe',exact:true}).click();await page.getByRole('navigation',{name:`Organizar ${workspaceName}`}).getByRole('button',{name:'Equipe e convites',exact:true}).click();await page.getByRole('heading',{name:'Membros e acesso',exact:true}).waitFor();assert.equal(await page.getByRole('heading',{name:'Equipe e trabalho por empresa',exact:true}).count(),0);await page.screenshot({path:'output/playwright/organization-shell-team-'+width+'.png',fullPage:true});
   }
   if(width<=1000)await page.getByRole('button',{name:'Abrir menu',exact:true}).click();
   if(!await page.locator('.workspace-more').evaluate(el=>el.open))await page.locator('.workspace-more summary').click();await page.getByRole('navigation',{name:'Navegação principal',exact:true}).getByRole('button',{name:'Sala de foco',exact:true}).click();

@@ -1,6 +1,7 @@
+import { WeeklyProgress, type SavedFocus } from '../features/productivity/WeeklyProgress'
 import {HeroTree} from '../components/HeroTree'
 import { useEffect, useState } from 'react'
-import { Activity, CalendarDays, ChevronRight, CircleCheck, CircleGauge, CirclePlay, Ellipsis, ListTodo, Orbit, Pause, Play, Plus, Square, SquareCheckBig, Target, UserRoundPlus, UsersRound } from 'lucide-react'
+import { Activity, CalendarDays, ChevronRight, CircleGauge, CirclePlay, Ellipsis, ListTodo, Orbit, Pause, Play, Plus, Square, SquareCheckBig, Target, UserRoundPlus, UsersRound } from 'lucide-react'
 import type { FocusSession, Objective, Person, Task, TeamMember, WorkspaceActivity } from '../types'
 import { AssigneeAvatar } from '../components/ui'
 import { FocusTimer } from '../components/FocusTimer'
@@ -22,7 +23,8 @@ function relativeTime(timestamp: number) {
   return `${Math.floor(hours / 24)} dias atrás`
 }
 
-export function HomePage({ tasks, objectives, activities, teamMembers, currentUser, focusSession, openTasks, addTask, createObjective, openFocus, pauseFocus, resumeFocus, requestEndFocus, completeFocus, timezone, connected, focusedTodayMs, dailyGoalMinutes, onInvite, organizationName }: {
+export function HomePage({ tasks, objectives, activities, teamMembers, currentUser, focusSession, openTasks, addTask, createObjective, openFocus, pauseFocus, resumeFocus, requestEndFocus, completeFocus, timezone, connected, focusedTodayMs, dailyGoalMinutes, onInvite, organizationName, savedFocus = activities }: {
+  savedFocus?: SavedFocus[]
   organizationName?:string
   onInvite?:()=>void
   focusedTodayMs?: number
@@ -59,7 +61,7 @@ export function HomePage({ tasks, objectives, activities, teamMembers, currentUs
   const dayStart = new Date(); dayStart.setHours(0, 0, 0, 0)
   const completedFocusMs = activities.reduce((total, activity) => activity.createdAt >= dayStart.getTime() ? total + (activity.durationMs ?? 0) : total, 0)
   const focusedTodayMinutes = Math.floor((focusedTodayMs ?? (completedFocusMs + elapsedMs)) / 60000)
-  const progress = dailyGoalMinutes ? Math.min(100,100*focusedTodayMinutes/dailyGoalMinutes) : focusSession.mode === 'timer' && focusSession.durationMs ? Math.min(100, (elapsedMs / focusSession.durationMs) * 100) : 0
+  const goalProgress = dailyGoalMinutes ? Math.min(100, 100 * focusedTodayMinutes / dailyGoalMinutes) : null
   const activeTasks = tasks.filter(task => task.status !== 'done')
   const currentPriority = activeTasks.find(task => task.priority === 'urgent' || task.priority === 'high') ?? activeTasks[0]
   const nextAction = activeTasks.find(task => task.status === 'in-progress') ?? activeTasks.find(task => task.status === 'todo')
@@ -78,12 +80,12 @@ export function HomePage({ tasks, objectives, activities, teamMembers, currentUs
         <div className="hero-copy">
           <h1>{greeting}, {firstName}.</h1>
           <p>Veja o que importa hoje{organizationName?`${organizationName.trim().toLowerCase()==='orkto'?' na':' no'} ${organizationName}`:''}.</p>
-          <div className={`hero-buttons${focusSession.status !== 'idle' ? ' hero-buttons-active' : ''}`}>
+        </div>
+        <div className="hero-buttons">
             {focusSession.status === 'idle' ? <button onClick={openFocus}><Play /> Iniciar foco</button> : <>
               <button onClick={focusSession.status === 'paused' ? resumeFocus : pauseFocus}>{focusSession.status === 'paused' ? <Play /> : <Pause />}{focusSession.status === 'paused' ? "Retomar" : "Pausar"}</button>
               <button onClick={requestEndFocus}><Square /> Encerrar sessão</button>
             </>}
-          </div>
         </div>
       </section>
 
@@ -91,19 +93,27 @@ export function HomePage({ tasks, objectives, activities, teamMembers, currentUs
         <header><CalendarDays /><strong>Hoje</strong><time>{todayLabel}</time></header>
         <div className="today-list">
           <button onClick={openTasks}><Target className={currentPriority ? 'today-accent' : ''} /><span><small>Prioridade atual</small><strong>{currentPriority?.title ?? "Nenhuma prioridade definida"}</strong></span><ChevronRight /></button>
-          <div className="today-progress"><CircleGauge className="progress-ring-small" /><div><small>Progresso do foco <b>{Math.round(progress)}%</b></small><i><em style={{ width: `${progress}%` }} /></i><p>{focusedTodayMinutes}min em foco</p></div></div>
+          <div className="today-progress">
+            <CircleGauge className="today-focus-icon" aria-hidden="true" />
+            <div>
+              <small>Foco de hoje {goalProgress !== null && <b>{Math.round(goalProgress)}%</b>}</small>
+              <strong>{focusedTodayMinutes} {dailyGoalMinutes ? `de ${dailyGoalMinutes} min` : 'min em foco'}</strong>
+              {goalProgress !== null && <progress max={100} value={goalProgress} aria-label="Progresso da meta diária de foco" />}
+            </div>
+          </div>
           <button onClick={openTasks}><SquareCheckBig /><span><strong>Tarefas restantes</strong></span><b>{activeTasks.length}</b><ChevronRight /></button>
           <button onClick={openTasks}><CirclePlay /><span><small>Próxima ação</small><strong>{nextAction?.title ?? "Nenhuma próxima ação"}</strong></span><ChevronRight /></button>
-          <div className="today-static-row"><CircleCheck className="check-accent" /><span><small>Bloqueios</small><strong>Não avaliado</strong></span></div>
         </div>
       </section>
     </div>
 
+    <WeeklyProgress tasks={tasks} sessions={savedFocus} timezone={timezone} />
+
     <div className="home-bottom-grid">
       <section className="my-day-panel">
-        <header><ListTodo /><strong>Meu dia</strong><span>{activeTasks.length} {activeTasks.length === 1 ? 'tarefa' : 'tarefas'} · {focusedTodayMinutes}min em foco</span></header>
+        <header><ListTodo /><strong>Meu dia</strong><span>{activeTasks.length} {activeTasks.length === 1 ? 'tarefa' : 'tarefas'} · {focusedTodayMinutes} min em foco</span></header>
         {activeTasks.length > 0 ? <div className="my-day-list">{activeTasks.slice(0, 5).map(task => <div className="day-task no-project" key={task.id}><span className="day-check" /><button className="day-title" onClick={openTasks}>{task.title}</button><span className="day-flex" /><span className="task-dot" /><button className="day-more" onClick={openTasks} aria-label={`Abrir ${task.title}`}><Ellipsis /></button></div>)}</div> : <div className="home-empty-state my-day-empty"><strong>Nenhuma tarefa para hoje.</strong><span>Adicione sua primeira tarefa quando quiser.</span></div>}
-        <button className="add-day-task" onClick={addTask}><Plus /> Adicionar tarefa… <kbd>Ctrl</kbd><kbd>K</kbd></button>
+        <button className="add-day-task" onClick={addTask}><Plus /> Adicionar tarefa</button>
       </section>
 
       <section className="work-panel">

@@ -87,9 +87,12 @@ function CameraRig({ layout, selection, members, projects, command, labels, metr
       scratch.copy(point).project(camera); const x = (scratch.x + 1) * size.width / 2, y = (-scratch.y + 1) * size.height / 2
       const seat=members.find(m=>'member:'+m.id===key)?.seat
       const compactLabel=library&&size.width<540&&seat!==undefined
-      const labelX=compactLabel?(seat===0?70:seat===1?size.width-70:size.width*.55):x
-      const labelY=compactLabel?y+(seat===2?26:12):y-20
-      node.style.transform = `translate(${labelX}px,${labelY}px) translate(-50%,${compactLabel?'0':'-100%'})`; node.style.visibility = scratch.z > -1 && scratch.z < 1 && x > 0 && x < size.width && y > 0 && y < size.height ? 'visible' : 'hidden'
+      const firstDesk = library && seat === 0
+      const labelX = compactLabel ? (seat === 0 ? 70 : seat === 1 ? size.width - 70 : size.width * .55)
+        : firstDesk ? Math.max(84, x - 18) : x
+      const belowDesk = compactLabel || firstDesk
+      const labelY = belowDesk ? y + (seat === 2 ? 26 : 14) : y - 20
+      node.style.transform = `translate(${labelX}px,${labelY}px) translate(-50%,${belowDesk?'0':'-100%'})`; node.style.visibility = scratch.z > -1 && scratch.z < 1 && x > 0 && x < size.width && y > 0 && y < size.height ? 'visible' : 'hidden'
       if(key==='vault'){scratch.set(...propsLibraryVault(layout,library)).add(new Vector3(0,library?2:1.3,library?1.35:.85)).project(camera);node.dataset.pickX=String((scratch.x+1)*size.width/2);node.dataset.pickY=String((-scratch.y+1)*size.height/2)}
       node.dataset.screenX = String(x); node.dataset.screenY = String(y)
     })
@@ -176,9 +179,9 @@ function Office(props: Props) {
   }, [members, projects, tasks, selection, layout,props.library,low])
   useEffect(()=>{gl.shadowMap.needsUpdate=true;invalidate()},[batches,gl,invalidate])
   return <group dispose={null}>
-    <ambientLight intensity={.65} /><hemisphereLight args={['#c7d8ca', '#2f4431', 2.2]} />
-    <directionalLight position={[6, 15, 9]} intensity={3.2} color="#ffe7bf" castShadow={!low} shadow-mapSize={[1024, 1024]} shadow-camera-left={-18} shadow-camera-right={18} shadow-camera-top={18} shadow-camera-bottom={-18} shadow-normalBias={.035} shadow-bias={-.0001} />
-    <directionalLight position={[-9, 6, -6]} intensity={1.5} color="#8cc7ba" />
+    <ambientLight intensity={props.library ? .46 : .65} /><hemisphereLight args={props.library ? ['#edf3f0', '#667b70', 1.65] : ['#c7d8ca', '#2f4431', 2.2]} />
+    <directionalLight position={[6, 15, 9]} intensity={props.library ? 2.45 : 3.2} color={props.library ? "#fff2dd" : "#ffe7bf"} castShadow={!low} shadow-mapSize={[1024, 1024]} shadow-camera-left={-18} shadow-camera-right={18} shadow-camera-top={18} shadow-camera-bottom={-18} shadow-normalBias={.035} shadow-bias={-.0001} />
+    <directionalLight position={[-9, 6, -6]} intensity={props.library ? .85 : 1.5} color="#8cc7ba" />
     <Batch items={batches.architecture} geometry={resources.box} material={resources.matte} onSelect={onSelect} />
     <Batch items={batches.floor} geometry={resources.box} material={resources.matte} onSelect={onSelect} />
     <Batch items={batches.wood} geometry={resources.box} material={resources.matte} onSelect={onSelect} />

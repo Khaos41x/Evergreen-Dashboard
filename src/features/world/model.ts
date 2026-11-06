@@ -32,5 +32,5 @@ export function layoutWorld(memberCount: number, projectCount: number, slots?:nu
 }
 
 export const libraryStations:[number,number,number][]=[[-5,0,3],[1,0,-3],[6,0,5]]
-export const libraryVault:[number,number,number]=[-10,0,0]
+export const libraryVault:[number,number,number]=[-9.65,0,-4.25]
 export function layoutLibrary(slots:number[]){return{width:26,depth:20,stations:slots.map(s=>libraryStations[Math.max(0,Math.min(2,s))]),rooms:[] as [number,number,number][]}}

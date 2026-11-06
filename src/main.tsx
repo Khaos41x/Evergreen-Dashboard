@@ -8,6 +8,10 @@ import './styles.css'
 import './styles-extra.css'
 import './home-reference.css'
 import './mobile/mobile.css'
+import './features/appearance/themes.css'
+import { initializeTheme } from './features/appearance/theme'
+
+initializeTheme()
 
 void initializeLiveUpdates().catch(()=>{})
 void initializeMobile().catch(() => window.dispatchEvent(new CustomEvent('evergreen:native-error', {detail:'Não foi possível inicializar os recursos do aparelho.'})))

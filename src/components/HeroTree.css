@@ -1,16 +1,128 @@
-.reference-hero>.hero-art:has(.hero-tree-geometry){inset:0;width:100%;height:100%;background:none!important;opacity:1;mix-blend-mode:normal;mask-image:linear-gradient(to right,transparent 0%,#000 36%);-webkit-mask-image:linear-gradient(to right,transparent 0%,#000 36%);pointer-events:none}
-.hero-tree-geometry{display:block;width:100%;height:100%;background:transparent}
-.reference-hero .hero-buttons>button:first-child{width:236px;min-height:64px;height:auto;padding:17px 26px;font-size:20px;font-weight:650;gap:12px}.reference-hero .hero-buttons>button:first-child svg{width:23px;height:23px}
-.workspace-rail .workspace-evergreen{width:44px;min-height:54px;height:54px;background:transparent;border:0;padding:0;margin:0 0 8px}.workspace-rail .workspace-evergreen>.evergreen-symbol{width:34px;height:44px;margin:0}
-@media(max-width:600px){.reference-hero .hero-buttons>button:first-child{width:min(100%,236px);min-height:60px;font-size:18px;padding:16px 20px}.reference-hero>.hero-art:has(.hero-tree-geometry){opacity:.52;mask-image:linear-gradient(to bottom,transparent,#000 20%);-webkit-mask-image:linear-gradient(to bottom,transparent,#000 20%)}}
-@media(max-width:600px){.reference-hero:has(.hero-tree-geometry){min-height:520px}.reference-hero:has(.hero-tree-geometry) .hero-copy{width:100%;box-sizing:border-box;padding:24px 20px 0}.reference-hero:has(.hero-tree-geometry) .hero-copy h1{padding-right:34px}.reference-hero:has(.hero-tree-geometry) .hero-buttons{margin-top:28px;flex-wrap:wrap;gap:10px;max-width:100%}.reference-hero:has(.hero-tree-geometry) .hero-buttons>button{max-width:100%;flex-shrink:0;min-height:44px}.reference-hero:has(.hero-tree-geometry) .hero-timer{top:auto;bottom:22px;right:22px;width:176px;height:176px}.reference-hero:has(.hero-tree-geometry) .hero-timer strong{font-size:72px}.reference-hero:has(.hero-tree-geometry) .hero-team{right:18px;top:24px}}
-@media(max-width:600px){.reference-hero:has(.hero-tree-geometry) .hero-buttons>button:first-child{min-height:64px}}
+/* Focus controls and timer stay in the same grid, even with wrapped text. */
+.home-top-grid { container-type: inline-size; }
 
-/* Keep digits distinct and the caption inside the circular dial. */
-.reference-hero .hero-timer>div{width:calc(100% - 32px);text-align:center;gap:4px;min-width:0}
-.reference-hero .hero-timer strong{letter-spacing:.015em;font-variant-numeric:tabular-nums;white-space:nowrap;max-width:100%;line-height:1}
-.reference-hero .hero-timer small{margin:0}
-.reference-hero .hero-timer span{max-width:104px;margin-top:0;line-height:1.25;text-wrap:balance;overflow-wrap:normal;font-size:12px}
+.reference-home .reference-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) clamp(150px, 31%, 230px);
+  grid-template-areas: "intro timer" "actions timer";
+  align-content: center;
+  align-items: center;
+  gap: 20px clamp(16px, 4%, 40px);
+  min-height: 0;
+  padding: clamp(24px, 4%, 40px);
+}
 
-.reference-hero .hero-timer{container-type:inline-size}
-.reference-hero:has(.hero-tree-geometry) .hero-timer strong{font-size:calc(150cqi / var(--timer-character-count,5))}
+.reference-hero > .hero-art:has(.hero-tree-geometry) {
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background: none;
+  opacity: .68;
+  mix-blend-mode: normal;
+  mask-image: linear-gradient(to right, transparent, #000 42%);
+  pointer-events: none;
+}
+
+.hero-tree-geometry { display: block; width: 100%; height: 100%; }
+
+.reference-hero .hero-copy {
+  grid-area: intro;
+  width: auto;
+  padding: 0;
+  align-self: end;
+}
+
+.reference-hero .hero-copy h1 {
+  color: var(--text);
+  font: 400 clamp(30px, 5.3cqi, 56px)/1.04 var(--heading-font, var(--serif));
+  letter-spacing: -.026em;
+  overflow-wrap: anywhere;
+}
+
+.reference-hero .hero-copy > p {
+  margin: 8px 0 0;
+  color: var(--soft);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.reference-hero .hero-buttons {
+  grid-area: actions;
+  align-self: start;
+  z-index: 5;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0;
+}
+
+.reference-hero .hero-buttons > button {
+  width: fit-content;
+  max-width: 100%;
+  min-height: 44px;
+  height: auto;
+  padding: 10px 14px;
+  font-size: 14px;
+  line-height: 1.25;
+}
+
+.reference-hero .hero-buttons > button:first-child {
+  width: min(100%, 230px);
+  min-height: 56px;
+  padding: 13px 16px;
+  font-size: 17px;
+}
+
+.reference-hero .hero-buttons > button svg { width: 18px; height: 18px; flex: none; }
+.reference-hero .hero-team { top: 12px; right: 12px; }
+
+.reference-hero .hero-timer {
+  grid-area: timer;
+  position: relative;
+  inset: auto;
+  transform: none;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  container-type: inline-size;
+}
+
+.reference-hero .hero-timer::before { inset: clamp(6px, 4cqi, 10px); }
+.reference-hero .hero-timer > div { width: 80%; min-width: 0; gap: 4px; text-align: center; }
+.reference-hero .hero-timer strong {
+  max-width: 100%;
+  font-size: calc(150cqi / var(--timer-character-count, 5));
+  font-variant-numeric: tabular-nums;
+  letter-spacing: .015em;
+  line-height: 1;
+  white-space: nowrap;
+}
+.reference-hero .hero-timer small { margin: 0; font-size: 10px; }
+.reference-hero .hero-timer span {
+  max-width: min(100%, 104px);
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.2;
+  text-wrap: balance;
+}
+
+@container (max-width: 520px) {
+  .reference-home .reference-hero {
+    grid-template-columns: minmax(0, 1fr) clamp(112px, 35%, 146px);
+    grid-template-areas: "intro intro" "actions timer";
+    gap: 14px;
+    padding: 18px 16px;
+  }
+  .reference-hero .hero-buttons { align-self: center; }
+  .reference-hero .hero-buttons > button:first-child { min-height: 50px; font-size: 15px; }
+  .reference-hero:has(.hero-team) .hero-copy { padding-inline-end: 40px; }
+  .reference-hero > .hero-art:has(.hero-tree-geometry) {
+    opacity: .44;
+    mask-image: linear-gradient(to bottom, transparent 12%, #000 60%);
+  }
+  .reference-hero .hero-timer > div { gap: 2px; }
+  .reference-hero .hero-timer span { max-width: 64px; font-size: 9px; }
+}
+
+.workspace-rail .workspace-evergreen{width:44px;min-height:54px;height:54px;background:transparent;border:0;padding:0;margin:0 0 8px}
+.workspace-rail .workspace-evergreen>.evergreen-symbol{width:34px;height:44px;margin:0}
