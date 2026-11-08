@@ -1,0 +1,345 @@
+.collab-app {
+  --workspace-gutter: clamp(16px, 3vw, 40px);
+  --workspace-reading-width: 1160px;
+  font-family: var(--atlas-font, system-ui, sans-serif);
+}
+
+.collab-app .workspace-sidebar-scroll > .domain-nav {
+  margin-block: 6px 14px;
+  padding: 8px 0;
+  border-block: 1px solid var(--line);
+}
+
+.collab-app .workspace-sidebar-scroll .workspace-section-heading h2 {
+  color: var(--muted);
+  font: 550 12px/1.4 var(--atlas-font, system-ui, sans-serif);
+}
+
+.collab-app .workspace-sidebar-scroll :is(.domain-nav > button, .workspace-sidebar-link) {
+  justify-content: flex-start;
+  font-weight: 500;
+}
+
+.collab-app .workspace-company-trigger {
+  background: var(--panel);
+}
+
+.collab-app .collab-top > strong {
+  font: 600 15px/1.35 var(--atlas-font, system-ui, sans-serif);
+}
+
+.collab-app .collab-top :is(.workspace-top-search, .workspace-top-profile) {
+  flex-shrink: 0;
+}
+
+/* Start the workday with the real priority and task list, using focus as one action. */
+.collab-app .domain-home .reference-home {
+  max-width: var(--workspace-reading-width);
+  padding: 14px;
+  background: var(--bg);
+}
+
+.collab-app .domain-home .home-top-grid {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 20px;
+  height: auto;
+}
+
+.collab-app .domain-home .reference-home :is(.today-panel, .my-day-panel, .work-panel, .team-panel, .weekly-progress) {
+  min-height: 0;
+  border: 0;
+  border-top: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.collab-app .domain-home .today-panel { border-top: 0; }
+
+.collab-app .domain-home .today-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0;
+  padding: 0;
+}
+
+.collab-app .domain-home .reference-home .today-list > * {
+  min-height: 54px;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+}
+
+.collab-app .domain-home .reference-home .today-list > button:hover { background: var(--hover); }
+.collab-app .domain-home .today-list strong { white-space: normal; overflow-wrap: anywhere; }
+
+.collab-app .domain-home .home-bottom-grid {
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+  grid-template-areas: "tasks activity" "week team";
+  align-items: start;
+  gap: 20px 30px;
+  height: auto;
+  margin-block: 26px 16px;
+}
+
+.collab-app .domain-home .my-day-panel { grid-area: tasks; }
+.collab-app .domain-home .work-panel { grid-area: activity; }
+.collab-app .domain-home .team-panel { grid-area: team; }
+.collab-app .domain-home .home-bottom-grid > .weekly-progress {
+  grid-area: week;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
+  margin: 0;
+}
+
+.collab-app .domain-home .home-bottom-grid .weekly-score header {
+  height: auto;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+}
+.collab-app .domain-home .weekly-score h2 {
+  font: 600 15px/1.4 var(--atlas-font, system-ui, sans-serif);
+}
+
+/* Work and communication keep the same framing and control rhythm. */
+.collab-app .collab-main > :is(.collab-content, .domain-tasks, .world-page) {
+  width: 100%;
+  max-width: var(--workspace-reading-width);
+  padding-inline: var(--workspace-gutter);
+}
+
+.collab-app .domain-tasks .tasks-tabs {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0 8px;
+  height: auto;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--line);
+}
+
+.collab-app .domain-tasks .tasks-tabs button {
+  flex: 0 0 auto;
+  white-space: nowrap;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  background: transparent;
+}
+
+.collab-app .domain-tasks .tasks-tabs button[aria-selected="true"] {
+  color: var(--text);
+  border-bottom-color: var(--emerald);
+}
+
+.collab-app .domain-tasks .task-toolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+  margin-block: 12px;
+}
+
+.collab-app .domain-tasks .task-search {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  height: auto;
+  margin: 0;
+  border-color: var(--line);
+  background: var(--panel);
+}
+
+.collab-app .domain-tasks .task-search input {
+  position: static;
+  flex: 1 1 auto;
+  min-width: 0;
+  height: auto;
+  padding: 0 4px;
+  border: 0;
+  background: transparent;
+}
+
+.collab-app .domain-tasks .task-search > svg { flex: 0 0 16px; }
+.collab-app .domain-tasks .task-search kbd { display: none; }
+.collab-app .domain-tasks .toolbar-controls { gap: 6px; }
+.collab-app .domain-tasks .toolbar-controls .filter-select { display: flex; min-height: 44px; }
+.collab-app .domain-tasks .task-toolbar .sort-control { margin: 0; }
+.collab-app .domain-tasks .task-toolbar [data-slot="select-trigger"] { width: auto; max-width: none; }
+.collab-app .domain-tasks .empty-tasks :is(strong, span) { color: var(--muted); }
+
+.collab-app .task-filter-disclosure {
+  border-bottom: 1px solid var(--line);
+}
+.collab-app .task-filter-disclosure summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  width: fit-content;
+  max-width: 100%;
+  padding-inline: 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--soft);
+}
+.collab-app .task-filter-disclosure summary:hover { color: var(--text); background: var(--hover); }
+.collab-app .task-filter-disclosure summary::-webkit-details-marker { display: none; }
+.collab-app .task-filter-disclosure[open] summary > svg:last-child { transform: rotate(180deg); }
+.collab-app .task-filter-count {
+  min-width: 20px;
+  padding: 0 4px;
+  border-radius: 4px;
+  background: var(--emerald-wash);
+  color: var(--emerald);
+  text-align: center;
+  font-size: 12px;
+}
+.collab-app .task-filter-fields {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0 12px;
+}
+
+
+.collab-app .collab-main > .collab-chat { background: var(--bg); }
+.collab-app .collab-main > .collab-chat > header,
+.collab-app .collab-main > .collab-chat > .conversation-tools {
+  min-height: 0;
+  padding-inline: var(--workspace-gutter);
+  background: var(--bg);
+  border-color: var(--line);
+}
+
+.collab-app .collab-main > .collab-chat h1 {
+  font: 600 21px/1.25 var(--atlas-font, system-ui, sans-serif);
+}
+
+.collab-app .collab-main .collab-chat .collab-message {
+  padding-block: 10px;
+}
+
+.collab-app .collab-main .collab-chat .conversation-date {
+  font-weight: 500;
+}
+
+.collab-app .collab-main .collab-chat .collab-composer {
+  background: var(--panel);
+  border-color: var(--line);
+}
+
+@media (min-width: 1250px) {
+  .collab-app .domain-home .today-list { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+@media (max-width: 600px) {
+
+  .collab-app .domain-home .today-list, .collab-app .domain-home .home-bottom-grid { grid-template-columns: minmax(0, 1fr); }
+  .collab-app .domain-home .home-bottom-grid { grid-template-areas: "tasks" "activity" "team" "week"; }
+}
+
+/* Company context remains visible when the desktop sidebar is collapsed. */
+@media (max-width: 768px) {
+  .collab-app .collab-top:has(.world-mode-switch) { flex-wrap: wrap; }
+  .collab-app .collab-top:has(.world-mode-switch) > strong {
+    display: block;
+    flex: 1 0 100%;
+    order: -1;
+    padding: 2px 4px 4px;
+    font-size: 14px;
+    line-height: 1.4;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+  .collab-app .collab-top > .world-mode-switch { margin-inline-end: auto; }
+}
+
+/* Each real task exposes completion and its detail without clipped columns. */
+.collab-app .domain-home .my-day-list .day-task {
+  grid-template-columns: 44px minmax(0, 1fr) 44px;
+  min-height: 52px;
+  height: auto;
+  padding: 0;
+  border-color: var(--line);
+}
+.collab-app .domain-home .day-task.no-project .day-title {
+  grid-column: auto;
+  min-width: 0;
+  width: 100%;
+  padding: 10px 4px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--text);
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.collab-app .domain-home .day-task :is(.day-check, .day-more) {
+  width: 44px;
+  height: 44px;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--soft);
+}
+.collab-app .domain-home .day-task :is(.day-check, .day-more):hover:not(:disabled) { background: var(--hover); color: var(--text); }
+.collab-app .domain-home .day-task .day-check > svg { width: 20px; height: 20px; stroke-width: 1.5; }
+.collab-app .domain-home .day-task :is(.day-flex, .task-dot) { display: none; }
+
+/* Conversation and file directories share the active company framing. */
+.directory-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 24px; }
+.directory-heading h1 { margin: 0 0 8px; }
+.directory-heading p { margin: 0; color: var(--muted); line-height: 1.5; }
+.directory-heading > div:last-child:not(:first-child) { display: flex; gap: 8px; flex-wrap: wrap; }
+.directory-controls { display: grid; gap: 18px; margin-bottom: 28px; }
+.directory-controls [role="tablist"] { display: flex; gap: 12px; overflow-x: auto; border-bottom: 1px solid var(--line); }
+.directory-controls [role="tab"] { display: flex; gap: 8px; flex-shrink: 0; align-items: center; border: 0; border-bottom: 2px solid transparent; border-radius: 0; background: transparent; color: var(--soft); min-height: 44px; padding: 8px 10px; }
+.directory-controls [role="tab"][aria-selected="true"] { border-bottom-color: var(--emerald); color: var(--text); }
+.collab-app .directory-search { display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 12px; border: 1px solid var(--line); border-radius: var(--atlas-radius, 8px); background: var(--panel); color: var(--soft); }
+.directory-search > svg { flex: 0 0 auto; }
+.collab-app .directory-search > input { flex: 1 1 auto; min-width: 0; width: 100%; padding: 10px 0; border: 0; background: transparent; }
+.directory-search:focus-within { border-color: var(--emerald); }
+.directory-list-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+.directory-list-heading h2 { font-size: 18px; margin: 0; }
+.directory-list-heading > span { color: var(--muted); font-size: 12px; }
+.conversation-directory-list, .company-file-list { list-style: none; padding: 0; margin: 0; }
+.conversation-directory-list { border: 1px solid var(--line); border-radius: var(--atlas-radius, 12px); overflow: hidden; }
+.collab-app .conversation-directory-list li + li { border-top: 1px solid var(--line); }
+.collab-app .conversation-directory-list li > button { display: flex; width: 100%; min-height: 80px; justify-content: flex-start; gap: 14px; padding: 16px; border: 0; border-radius: 0; background: var(--panel); text-align: left; }
+.collab-app .conversation-directory-list li > button:hover { background: var(--hover); }
+.directory-channel-icon { display: grid; place-items: center; flex: 0 0 42px; height: 42px; border-radius: 8px; background: var(--raised); color: var(--soft); }
+.directory-channel-copy { flex: 1 1 auto; min-width: 0; }
+.directory-channel-copy :is(strong, small) { display: block; overflow-wrap: anywhere; }
+.directory-channel-copy strong { font-size: 15px; }
+.directory-channel-copy small { margin-top: 4px; color: var(--muted); line-height: 1.4; }
+.directory-unread { color: var(--emerald); font-size: 12px; }
+.directory-empty { padding: 28px 0; border-block: 1px solid var(--line); }
+.directory-empty h3 { margin: 0; font-size: 18px; }
+.directory-empty p { max-width: 65ch; color: var(--muted); line-height: 1.6; }
+.company-file-controls { display: grid; grid-template-columns: minmax(0, 1fr) minmax(160px, auto); align-items: end; gap: 16px; margin-bottom: 26px; }
+.company-file-controls > label:not(.directory-search) { display: grid; gap: 5px; font-size: 12px; color: var(--soft); }
+.company-file-upload { border-block: 1px solid var(--line); padding: 18px 0; margin-bottom: 24px; }
+.company-file-upload h2 { font-size: 18px; margin: 0; }
+.company-file-upload > p, .company-file-upload small { color: var(--muted); line-height: 1.5; }
+.company-file-upload > label { display: grid; gap: 6px; max-width: 480px; margin-bottom: 14px; }
+.company-file-list > li { display: flex; align-items: center; gap: 16px; min-height: 92px; padding: 16px 0; border-bottom: 1px solid var(--line); }
+.company-file-list > li > svg { flex: 0 0 auto; color: var(--muted); }
+.company-file-copy { flex: 1 1 auto; min-width: 0; }
+.company-file-copy > strong, .company-file-copy > small { display: block; overflow-wrap: anywhere; }
+.collab-app .company-file-copy > button { justify-content: flex-start; min-height: 32px; max-width: 100%; padding: 4px 0; border: 0; background: transparent; color: var(--soft); text-align: left; overflow-wrap: anywhere; }
+.company-file-copy > small { color: var(--muted); font-size: 12px; }
+.company-file-actions { display: flex; gap: 4px; flex-shrink: 0; }
+.company-file-actions > button { min-width: 44px; min-height: 44px; }
+@media (max-width: 600px) {
+ .directory-heading { flex-wrap: wrap; margin-bottom: 20px; }
+ .company-file-controls { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+ .directory-heading > div:last-child:not(:first-child) { width: 100%; }
+ .conversation-directory-list li > button { gap: 10px; padding: 12px; }
+ .company-file-list > li { gap: 10px; flex-wrap: wrap; }
+ .company-file-copy { flex-basis: calc(100% - 40px); }
+ .company-file-actions { margin-left: 32px; }
+ .directory-unread { max-width: 52px; }
+}

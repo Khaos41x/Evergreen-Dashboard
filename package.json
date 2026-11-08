@@ -1,7 +1,7 @@
 {
   "name": "evergreen-tasks",
   "private": true,
-  "version": "1.2.0",
+  "version": "1.3.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -55,6 +55,8 @@
     "@capacitor/ios": "8.6.0",
     "@capacitor/push-notifications": "8.1.3",
     "@capgo/capacitor-updater": "8.54.0",
+    "@fontsource-variable/geist": "5.3.0",
+    "@radix-ui/react-select": "2.4.1",
     "@react-three/fiber": "9.8.2",
     "@supabase/ssr": "0.12.7",
     "@supabase/supabase-js": "2.118.0",

@@ -3,7 +3,7 @@
   "appId": "com.evergreen.holdings",
   "platform": "android",
   "minBuild": 5,
-  "maxBuild": 7,
-  "nativeVersion": "1.2.3",
+  "maxBuild": 8,
+  "nativeVersion": "1.3.0",
   "displayVersion": "1.3"
 }

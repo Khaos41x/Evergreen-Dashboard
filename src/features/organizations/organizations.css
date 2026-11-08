@@ -4,3 +4,39 @@
 @media(max-width:600px){.os-page,.os-builder{padding:24px 16px}.os-form-grid{grid-template-columns:1fr}.os-page h1,.os-builder h1{font-size:32px}.os-page .os-tabs{gap:4px}.os-tabs button{font-size:12px;padding:8px 10px;flex:1;min-width:80px}.os-section-heading{align-items:flex-start;flex-wrap:wrap}.os-section-heading>div{flex-basis:100%}.os-group-entry{padding:18px!important;gap:12px!important}.os-group-entry h2{font-size:27px}.os-group-entry .evergreen-symbol{width:30px;height:40px}.os-group-entry p{font-size:12px}.os-group-entry>svg{display:none}.os-company-directory>article>div:nth-child(2){min-width:140px}.os-company-directory>article>button{margin-left:70px}.os-group-summary>div{min-width:110px;flex:1}.os-level-editor{grid-template-columns:40px 1fr;gap:12px}.os-proposal>header{flex-wrap:wrap}.os-review{grid-template-columns:1fr;gap:5px}.os-review dd{margin-bottom:14px}.os-steps{gap:8px 12px}.os-steps li{font-size:10px}.os-steps li>span{width:20px;height:20px}}
 
 .os-proposal-review{display:block;margin:20px 0;max-width:760px}.os-proposal-review>div{display:grid;grid-template-columns:150px minmax(0,1fr);gap:14px;padding:10px 0;border-bottom:1px solid #20372a}.os-proposal-review dd{margin:0;overflow-wrap:anywhere}@media(max-width:600px){.os-proposal-review>div{grid-template-columns:1fr;gap:5px}}
+
+.os-hub .os-page-heading > div:first-child {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 4px 16px;
+}
+
+.os-hub .os-page-heading .evergreen-symbol {
+  grid-row: 1 / span 2;
+  float: none;
+  margin: 0;
+}
+
+.os-hub .os-page-heading h1 { margin: 0; }
+.os-hub .os-page-heading p { grid-column: 2; max-width: 45ch; }
+.os-hub .os-group-list { margin-block: 24px 32px; }
+
+.os-hub .os-company-directory {
+  border-top: 1px solid var(--line);
+}
+
+.os-hub .os-company-directory > article {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 12px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--line);
+  background: transparent;
+}
+
+.os-hub .os-company-directory > article > div:nth-child(2) { overflow-wrap: anywhere; }
+
+@media (max-width: 480px) {
+  .os-hub .os-company-directory > article { grid-template-columns: auto minmax(0, 1fr); }
+  .os-hub .os-company-directory > article > button { grid-column: 2; justify-self: start; }
+}

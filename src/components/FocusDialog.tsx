@@ -1,3 +1,4 @@
+import { AppSelect } from '../features/appearance/AppSelect'
 import { useEffect, useState } from 'react'
 import { Clock3, Timer, X } from 'lucide-react'
 import type { FocusMode, FocusSessionDraft, Objective, Task } from '../types'
@@ -44,8 +45,8 @@ export function FocusDialog({ open, tasks, objectives, initialTaskId, defaultMin
     {error&&<p role="alert" className="collab-error">{error}</p>}
     <div className="focus-mode-switch" role="group" aria-label="Modo de foco"><button className={mode === 'timer' ? 'active' : ''} onClick={() => setMode('timer')}><Timer /> Temporizador</button><button className={mode === 'stopwatch' ? 'active' : ''} onClick={() => setMode('stopwatch')}><Clock3 /> Cronômetro</button></div>
     {mode === 'timer' && <div className="focus-duration"><span>Duração</span><div className="duration-grid">{[25, 50, 90].map(value => <button key={value} className={duration === value ? 'active' : ''} onClick={() => setDuration(value)}>{value}m</button>)}<button className={duration === 0 ? 'active' : ''} onClick={() => setDuration(0)}>Personalizado</button></div>{duration === 0 && <label>Minutos<input type="number" min="1" max="480" value={custom} onChange={event => setCustom(Math.max(1, Number(event.target.value)))} /></label>}</div>}
-    <label>Tarefa<select value={taskId} onChange={event => chooseTask(event.target.value)}><option value="">Sem tarefa</option>{tasks.filter(task => task.status !== 'done').map(task => <option key={task.id} value={task.id}>{task.title}</option>)}</select></label>
-    <label>Objetivo<select value={objectiveId} onChange={event => setObjectiveId(event.target.value)}><option value="">Sem objetivo</option>{objectives.map(objective => <option key={objective.id} value={objective.id}>{objective.title}</option>)}</select></label>
+    <label>Tarefa<AppSelect value={taskId} onChange={event => chooseTask(event.target.value)}><option value="">Sem tarefa</option>{tasks.filter(task => task.status !== 'done').map(task => <option key={task.id} value={task.id}>{task.title}</option>)}</AppSelect></label>
+    <label>Objetivo<AppSelect value={objectiveId} onChange={event => setObjectiveId(event.target.value)}><option value="">Sem objetivo</option>{objectives.map(objective => <option key={objective.id} value={objective.id}>{objective.title}</option>)}</AppSelect></label>
     <label>Título<input value={title} onChange={event => setTitle(event.target.value)} placeholder="Título opcional da sessão" /></label>
     <label>Descrição<textarea value={description} onChange={event => setDescription(event.target.value)} placeholder="O que você pretende realizar?" /></label>
     <div className="mini-actions"><button onClick={onClose} disabled={pending}>Cancelar</button><button className="create-button" disabled={pending} onClick={start}>{pending?"Iniciando…":"Iniciar"}</button></div>

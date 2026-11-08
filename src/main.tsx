@@ -9,9 +9,13 @@ import './styles-extra.css'
 import './home-reference.css'
 import './mobile/mobile.css'
 import './features/appearance/themes.css'
+import './features/appearance/atlas.css'
+import '@fontsource-variable/geist'
+import { initializeFocusModality } from './features/appearance/focus'
 import { initializeTheme } from './features/appearance/theme'
 
 initializeTheme()
+initializeFocusModality()
 
 void initializeLiveUpdates().catch(()=>{})
 void initializeMobile().catch(() => window.dispatchEvent(new CustomEvent('evergreen:native-error', {detail:'Não foi possível inicializar os recursos do aparelho.'})))

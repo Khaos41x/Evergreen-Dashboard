@@ -22,7 +22,7 @@
 .collab-sidebar .workspace-search{margin:0 16px 14px;min-height:38px;padding:8px;justify-content:flex-start;font-size:12px;background:transparent;border-color:#294437}
 .workspace-search span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .workspace-sidebar-scroll{min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:0 10px 16px;scrollbar-width:thin;flex:1}
-.collab-sidebar .domain-nav{display:grid;gap:2px;margin:0;padding-bottom:14px;border-bottom:1px solid #26382e}
+.collab-sidebar .domain-nav{display:grid;gap:2px;margin:0;padding-bottom:14px;border-bottom:1px solid var(--line)}
 .collab-sidebar .domain-nav>button,.collab-sidebar .workspace-sidebar-link{display:flex;justify-content:flex-start;text-align:left;gap:10px;width:100%;border:0;background:transparent;min-height:38px;padding:8px 10px;border-radius:6px;font-size:13px;color:#d0dfd5}
 .collab-sidebar .domain-nav>button svg,.workspace-sidebar-link>svg{color:#a4beaf}
 .collab-sidebar .domain-nav>button[aria-current=page],.collab-sidebar .workspace-sidebar-link[aria-current=page]{color:#d4ffea;background:var(--workspace-active)}
@@ -101,7 +101,10 @@
 .collab-app{font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}.collab-app .domain-member-avatar{display:inline-grid;place-items:center;background:#214a34;color:#e1f5e7;border-radius:50%;font-size:11px;font-weight:650;flex-shrink:0}.collab-app .professional-identity>.domain-member-avatar{font-size:30px}.collab-app .professional-identity>h2{font-size:36px;margin:18px 0 6px}.collab-app .professional-identity>.domain-member-avatar{margin-top:-44px;border:5px solid var(--bg);box-sizing:content-box}.collab-app .professional-identity>img{box-sizing:content-box}.collab-app .workspace-sidebar-scroll::-webkit-scrollbar{width:5px}.collab-app .workspace-sidebar-scroll::-webkit-scrollbar-thumb{background:#31573e;border-radius:4px}
 @media(min-width:1001px){.collab-app>.collab-sidebar>header{display:none}.collab-app .workspace-company-label{margin-top:20px}}
 
-.collab-app .workspace-more{margin-top:5px}.workspace-more summary{display:flex;align-items:center;gap:10px;cursor:pointer;min-height:38px;padding:8px 10px;color:#c4d8cb;font-size:12px;list-style:none}.workspace-more summary:focus-visible{outline:2px solid var(--emerald);outline-offset:2px}.workspace-more[open] summary>svg{transform:rotate(180deg)}.collab-sidebar .workspace-more button{width:100%;justify-content:flex-start;gap:10px;min-height:38px;padding:8px 10px;background:transparent;border:0;font-size:13px;color:#d0dfd5}.collab-sidebar .workspace-more button[aria-current=page]{background:var(--workspace-active);color:#d4ffea}.workspace-self>.domain-member-avatar{flex:0 0 34px;aspect-ratio:1}.workspace-sidebar-scroll>.domain-nav{margin-top:20px;padding-top:14px;border-top:1px solid #26382e}
+.collab-app .workspace-more{margin-top:5px}.workspace-more summary{display:flex;align-items:center;gap:10px;cursor:pointer;min-height:38px;padding:8px 10px;border-radius:6px;color:var(--soft);font-size:13px;list-style:none}.workspace-more summary:focus-visible{outline:2px solid var(--emerald);outline-offset:2px}.workspace-more[open] summary>svg{transform:rotate(180deg)}.collab-sidebar .workspace-more button{width:100%;justify-content:flex-start;gap:10px;min-height:38px;padding:8px 10px;background:transparent;border:0;font-size:13px;color:var(--text)}
+.workspace-more summary > svg,.collab-sidebar .workspace-more button > svg { color: var(--muted); }
+.workspace-more summary:hover { background: var(--hover); color: var(--text); }
+.collab-sidebar .workspace-more button:not([aria-current]):hover { background: var(--hover) !important; }.collab-sidebar .workspace-more button[aria-current=page]{background:var(--workspace-active);color:var(--text)}.workspace-self>.domain-member-avatar{flex:0 0 34px;aspect-ratio:1}.workspace-sidebar-scroll>.domain-nav{margin-top:20px;padding-top:14px;border-top:1px solid var(--line)}
 @media(max-width:600px){.workspace-more summary,.collab-sidebar .workspace-more button{min-height:44px}}
 
 .collab-app .workspace-rail>button{display:flex;align-items:center;justify-content:center;padding:0}.collab-app .workspace-rail>button>img:not(.evergreen-brand){width:28px;min-width:28px;max-width:28px;height:28px;min-height:28px;max-height:28px;flex:0 0 28px;object-fit:cover;aspect-ratio:1}
@@ -116,7 +119,7 @@
 .professional-page-heading>button:hover,.professional-profile button:not(.primary):hover{border-color:#3d7053;background:#10251a}
 .professional-page-heading>button:focus-visible,.professional-profile button:focus-visible,.professional-experience article[role=link]:focus-visible{outline:2px solid var(--emerald);outline-offset:3px}
 .professional-cover{position:relative;isolation:isolate}
-.professional-cover:after{content:"";position:absolute;inset:0;z-index:0;background:linear-gradient(90deg,#07110cdc,#09221955 60%,#07110dbb);pointer-events:none}
+.professional-cover:has(.professional-cover-photo)::after{content:"";position:absolute;inset:0;z-index:0;background:rgb(0 0 0 / .56);pointer-events:none}
 .professional-cover>.evergreen-brand-symbol,.professional-cover-copy{position:relative;z-index:1}
 .professional-cover-photo{position:absolute;inset:0;z-index:-1;width:100%;height:100%;object-fit:cover;object-position:center}
 .professional-cover-copy{text-align:right;display:grid;gap:5px;max-width:60%}
@@ -278,3 +281,12 @@
 .workspace-company-options .evergreen-brand.evergreen-symbol{width:26px;height:30px;margin:0}
 .workspace-company-initials{display:grid;place-items:center;flex:0 0 30px;height:30px;background:#19372b;border-radius:6px;font-size:11px;font-weight:650}
 @media(max-width:768px){.professional-cover .professional-brazil-watermark{display:none}}
+
+/* The official cover mark remains readable at phone widths. */
+@media (max-width: 600px) {
+ .professional-profile .professional-cover { min-height: 164px; height: auto; padding: 24px 18px; }
+ .professional-profile .professional-cover-brand { gap: 14px; max-width: calc(100% - 68px); min-height: 100px; }
+ .professional-profile .professional-cover-brand > .evergreen-brand.evergreen-symbol { width: 44px; height: 58px; flex: 0 0 44px; }
+ .professional-profile .professional-cover-brand .professional-cover-copy > span { display: block; font-size: clamp(26px, 6.5vw, 34px); line-height: 1.12; overflow-wrap: anywhere; }
+ .professional-profile .professional-cover-brand .professional-cover-copy small { display: block; font-size: 12px; line-height: 1.5; margin-top: 6px; }
+}

@@ -1,5 +1,6 @@
 import {libraryGeometry} from './libraryGeometry'
 import {libraryVault} from './model'
+import {subscribeTheme} from '../appearance/theme'
 import {ExecutiveTerminal} from './ExecutiveTerminal'
 import { FinancialVault } from './FinancialVault'
 import { Canvas, useFrame, useThree, type ThreeEvent } from '@react-three/fiber'
@@ -105,6 +106,15 @@ function CameraRig({ layout, selection, members, projects, command, labels, metr
 function Office(props: Props) {
   const { members, projects, tasks, selection, onSelect, layout, low, onFailure } = props
   const { gl, invalidate } = useThree()
+  useEffect(() => {
+    const apply = () => {
+      const color = getComputedStyle(gl.domElement).getPropertyValue('--panel').trim() || '#0b1510'
+      gl.setClearColor(color)
+      invalidate()
+    }
+    apply()
+    return subscribeTheme(apply)
+  }, [gl, invalidate])
   const failure = useRef(onFailure), shadowUpdates=useRef(0); failure.current = onFailure
   const resources = useMemo(() => ({ box: new BoxGeometry(1, 1, 1), sphere: new SphereGeometry(1, 8, 6), cylinder: new CylinderGeometry(1, 1, 1, 12), matte: new MeshStandardMaterial({ color: 'white', roughness: .76, metalness: .12 }), metal: new MeshStandardMaterial({ color: 'white', roughness: .4, metalness: .5 }), luminous: new MeshStandardMaterial({ color: 'white', emissive: '#b4d9c2', emissiveIntensity: .3, roughness: .5, metalness: .08 }) }), [])
   useEffect(() => {

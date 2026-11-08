@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { uploadAttachment } from './attachmentStorage'
 import { db, failure, checked } from '../../collaboration/client'
 export function Attachments({workspaceId,resourceId,userId,kind}:{workspaceId:string;resourceId:string;userId:string;kind:'record'|'channel'}){
  const prefix=`${kind}/${workspaceId}/${resourceId}`
@@ -10,10 +11,7 @@ export function Attachments({workspaceId,resourceId,userId,kind}:{workspaceId:st
  }catch(e){setError(failure(e))}},[prefix])
  useEffect(()=>{void load()},[load])
  async function upload(file:File){setBusy(true);setError('');try{
-  if(file.size>4194304)throw new Error('Máximo de 4 MB por arquivo.')
-  if(!['image/png','image/jpeg','image/webp','application/pdf','text/plain','application/zip'].includes(file.type))throw new Error('Formato não permitido. Use PNG, JPEG, WebP, PDF, TXT ou ZIP.')
-  const safe=file.name.replace(/[^\p{L}\p{N}._-]/gu,'_').slice(-100),path=`${prefix}/${userId}/${crypto.randomUUID()}-${safe}`
-  await checked(db().storage.from('eg-files').upload(path,file,{contentType:file.type,upsert:false}));await load()
+  await uploadAttachment(workspaceId,{kind,id:resourceId,name:''},userId,file);await load()
  }catch(e){setError(failure(e))}finally{setBusy(false)}}
  return <section><h3>Arquivos</h3>{error&&<p role="alert" className="collab-error">{error}</p>}<label>Anexar arquivo (até 4MiB)<input type="file" accept="image/png,image/jpeg,image/webp,application/pdf,text/plain,application/zip" disabled={busy} onChange={e=>{const f=e.target.files?.[0];if(f)void upload(f);e.target.value=''}}/></label>{items.map(item=><div className="collab-actions" key={item.path}><button disabled={busy} onClick={async()=>{try{const data=await checked(db().storage.from('eg-files').createSignedUrl(item.path,60,{download:true}));const a=document.createElement('a');a.href=data.signedUrl;a.rel='noopener';a.target='_blank';a.click()}catch(e){setError(failure(e))}}}>{item.name.replace(/^[0-9a-f-]{36}-/,'')}</button>{item.path.startsWith(`${prefix}/${userId}/`)&&<button disabled={busy} onClick={async()=>{if(!window.confirm('Excluir arquivo?'))return;try{await checked(db().storage.from('eg-files').remove([item.path]));await load()}catch(e){setError(failure(e))}}}>Remover arquivo</button>}</div>)}{!items.length&&!error&&<p>Nenhum arquivo ainda.</p>}<button onClick={()=>void load()}>Atualizar arquivos</button></section>
 }

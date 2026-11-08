@@ -3,9 +3,10 @@ import {chromium} from 'playwright-core'
 import {spawn} from 'node:child_process'
 import {mkdirSync,writeFileSync} from 'node:fs'
 import assert from 'node:assert/strict'
+const atlas=process.env.EG_LIBRARY_THEME==='atlas'
 mkdirSync('output/library',{recursive:true})
 writeFileSync('output/library/harness.html',`<!doctype html><html lang="pt-BR"><meta name="viewport" content="width=device-width,initial-scale=1"><div id="root"></div><script type="module">
-import React from'react';import{createRoot}from'react-dom/client';import HoldingOffice from'/src/features/holding/HoldingOffice.tsx';import{useFounderPresence}from'/src/features/holding/useFounderPresence.ts';import'/src/styles.css';import'/src/styles-extra.css';import'/src/collaboration/collaboration.css';function Harness(){useFounderPresence(['group-fixture']);return React.createElement('div',{style:{height:'100dvh',display:'flex'}},React.createElement(HoldingOffice,{group:'group-fixture',name:'Evergreen Group QA',userId:'founder-a',onBack:()=>{window.back=true},onEconomy:()=>{window.vault=true},onFounders:()=>{}}))}createRoot(document.getElementById('root')).render(React.createElement(Harness));</script></html>`)
+import React from'react';import{createRoot}from'react-dom/client';import HoldingOffice from'/src/features/holding/HoldingOffice.tsx';import{useFounderPresence}from'/src/features/holding/useFounderPresence.ts';import'/src/styles.css';import'/src/styles-extra.css';import'/src/collaboration/collaboration.css';import'/src/features/appearance/themes.css';import'/src/features/appearance/atlas.css';import'@fontsource-variable/geist';${atlas?"document.documentElement.dataset.theme='atlas';":""}function Harness(){useFounderPresence(['group-fixture']);return React.createElement('div',{style:{height:'100dvh',display:'flex'}},React.createElement(HoldingOffice,{group:'group-fixture',name:'Evergreen Group QA',userId:'founder-a',onBack:()=>{window.back=true},onEconomy:()=>{window.vault=true},onFounders:()=>{}}))}createRoot(document.getElementById('root')).render(React.createElement(Harness));</script></html>`)
 const server=spawn(process.execPath,['node_modules/vite/bin/vite.js','--config','scripts/vite-fixture.config.ts','--host','127.0.0.1','--port','5191','--strictPort'],{windowsHide:true,env:{...process.env,VITE_SUPABASE_URL:'https://fixture.supabase.invalid',VITE_SUPABASE_PUBLISHABLE_KEY:'sb_publishable_fixture_only'},stdio:['ignore','pipe','pipe']})
 let logs='';server.stderr.on('data',d=>logs+=d);await new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(Error(logs)),20000);server.stdout.on('data',d=>{if(String(d).includes('5191')){clearTimeout(timer);resolve()}});server.on('error',reject)})
 let browser;const results=[]
@@ -17,10 +18,15 @@ try{
   page.on('pageerror',e=>errors.push(e.message))
   await page.route('**/api/backend?**',async route=>{const req=route.request(),url=new URL(new URL(req.url()).searchParams.get('target')||new URL(req.url()).searchParams.get('path'),'https://fixture.invalid'),method=url.pathname.split('/').at(-1),body=req.headers()['content-type']?.includes('json')?req.postDataJSON():{};calls.push({method,body});if(method==='eg_library_heartbeat')return route.fulfill({contentType:'application/json',body:'null'});if(method==='eg_founder_library'){if(denied)return route.fulfill({status:403,contentType:'application/json',body:JSON.stringify({code:'42501',message:'A biblioteca é exclusiva dos titulares dos três assentos de fundadores.'})});return route.fulfill({contentType:'application/json',body:JSON.stringify({scene:'founders-library',members:people,tasks:[],projects:[],activity:[],channels:[]})})}return route.fulfill({contentType:'application/json',body:'[]'})})
   await page.goto('http://127.0.0.1:5191/output/library/harness.html');await page.getByRole('heading',{name:'Biblioteca dos fundadores',exact:true}).waitFor();await page.waitForFunction(()=>Number(document.querySelector('[data-testid=world-renderer]')?.dataset.frames)>0)
-  assert.equal(await page.locator('[data-world-node^="member:"]').count(),3);assert.ok(calls.some(c=>c.method==='eg_library_heartbeat'&&c.body.p_state==='online'));assert.equal(calls.some(c=>c.method==='eg_holding_office'),false)
+  assert.equal(await page.locator('[data-world-node^="member:"]').count(),3);assert.ok(calls.some(c=>c.method==='eg_library_heartbeat'&&c.body.p_state==='online'));assert.equal(calls.some(c=>c.method==='eg_holding_office'||c.method==='eg_office_seats'),false)
   const renderer=page.getByTestId('world-renderer');await page.getByRole('button',{name:'Recentralizar câmera',exact:true}).click();await page.waitForTimeout(400)
   // Camera-only movement reuses the static shadow map; opening the vault still invalidates it.
-  await page.getByRole('combobox',{name:'Qualidade gráfica',exact:true}).selectOption('high');await page.waitForTimeout(300)
+  const quality=page.getByRole('combobox',{name:'Qualidade gráfica',exact:true})
+  if(atlas){
+   await quality.click()
+   await page.getByRole('option',{name:'Detalhada',exact:true}).click()
+  }else await quality.selectOption('high')
+  await page.waitForTimeout(300)
   const shadowsBefore=Number(await renderer.getAttribute('data-shadow-updates'))
   await page.getByRole('button',{name:'Aproximar',exact:true}).click();await page.waitForTimeout(450)
   const shadowsAfter=Number(await renderer.getAttribute('data-shadow-updates'));assert.ok(shadowsBefore>0);assert.equal(shadowsAfter,shadowsBefore,'Camera zoom must reuse furniture shadows')

@@ -5,7 +5,7 @@ import {randomBytes,randomUUID} from 'node:crypto'
 import {createClient} from '@supabase/supabase-js'
 import {HttpError,bodyJSON,enforceOrigin,json,throttle} from './security.mjs'
 import {checked,validatedSession,requireRecent} from './identity.mjs'
-import {discoverResources,providerConfig,syncProvider,dateRange} from './integration-providers.mjs'
+import {discoverResources,providerConfig,syncProvider,dateRange,previewProvider} from './integration-providers.mjs'
 import {integrationReadiness,requireIntegrationReadiness} from './integration-status.mjs'
 export async function integrationActions(req,res,config,context,action){
  const user=await validatedSession(context)
@@ -21,10 +21,14 @@ export async function integrationActions(req,res,config,context,action){
  const workspace=String(body.workspace_id||'')
  const scope=checked(await context.client.rpc('eg_holding_context'))
  if(!scope.companies?.some(c=>c.id===workspace&&c.admin))throw new HttpError(403,'INTEGRATION_DENIED','Administrador da empresa necessário.')
- if(['discover','connect','sync'].includes(action))requireIntegrationReadiness(config)
+ if(['discover','preview','connect','sync'].includes(action))requireIntegrationReadiness(config)
  if(action==='discover'){
  const provider=body.provider,cfg=providerConfig(provider,body.config);if(typeof body.token!=='string'||body.token.length<12||body.token.length>16000)throw new HttpError(400,'CREDENTIAL_REQUIRED','Informe uma credencial de leitura válida.')
  const data=await discoverResources(provider,body.token,cfg);context.commit();return json(res,200,data)
+ }
+ if(action==='preview'){
+ const result=await previewProvider({provider:body.provider,resource_id:body.resource_id,config:body.config},body.token,body.from,body.to)
+ context.commit();return json(res,200,result)
  }
  if(action==='connect'){
  const provider=body.provider,cfg=providerConfig(provider,body.config)

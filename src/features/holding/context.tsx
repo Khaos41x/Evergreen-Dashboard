@@ -1,3 +1,4 @@
+import { AppSelect } from '../appearance/AppSelect'
 import {useEffect,useState} from 'react'
 import {checked,db,failure} from '../../collaboration/client'
 export type HoldingCompany={id:string;name:string;group_id:string|null;description:string;logo_url:string|null;responsible_id:string|null;admin:boolean;operational:boolean;information:boolean}
@@ -11,5 +12,5 @@ export function useHolding(userId:string){
 }
 export function CompanyContext({companies,groups,value,onChange}:{companies:HoldingCompany[];groups:HoldingGroup[];value:HoldingScope;onChange:(scope:HoldingScope)=>void}){
  const selection=value.workspace?'company:'+value.workspace:value.group?'group:'+value.group:''
- return <div className="holding-context"><label>Contexto da Evergreen<select aria-label="Contexto da Evergreen" value={selection} onChange={e=>{const [kind,id]=e.target.value.split(':');onChange(kind==='group'?{group:id,workspace:null}:{group:null,workspace:id})}}><option value="" disabled>Selecione uma empresa</option>{groups.map(g=><option key={g.id} value={'group:'+g.id}>Todas as empresas · {g.name}</option>)}{companies.map(c=><option key={c.id} value={'company:'+c.id}>{c.name}</option>)}</select></label><span>{value.group?'Consolidado dos dados autorizados':'Empresa selecionada'}</span></div>
+ return <div className="holding-context"><label>Contexto da Evergreen<AppSelect aria-label="Contexto da Evergreen" value={selection} onChange={e=>{const [kind,id]=e.target.value.split(':');onChange(kind==='group'?{group:id,workspace:null}:{group:null,workspace:id})}}><option value="" disabled>Selecione uma empresa</option>{groups.map(g=><option key={g.id} value={'group:'+g.id}>Todas as empresas · {g.name}</option>)}{companies.map(c=><option key={c.id} value={'company:'+c.id}>{c.name}</option>)}</AppSelect></label><span>{value.group?'Consolidado dos dados autorizados':'Empresa selecionada'}</span></div>
 }

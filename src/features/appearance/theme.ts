@@ -1,6 +1,7 @@
 export const themes = [
+  { id: 'atlas', label: 'Atlas', description: 'Preto puro e azul gelo' },
   { id: 'evergreen', label: 'Verde Evergreen', description: 'Original da marca' },
-  { id: 'black', label: 'Preto', description: 'Grafite e prata' },
+  { id: 'black', label: 'Preto', description: 'Preto puro e prata' },
   { id: 'electric', label: 'Azul Elétrico', description: 'Azul vivo sobre noite' },
   { id: 'light', label: 'Claro', description: 'Papel branco e linhas suaves' },
 ] as const
@@ -9,14 +10,14 @@ export type Theme = (typeof themes)[number]['id']
 const storageKey = 'evergreen.appearance.v1'
 
 function resolveTheme(value: string | null): Theme {
-  return themes.find(theme => theme.id === value)?.id ?? 'evergreen'
+  return themes.find(theme => theme.id === value)?.id ?? 'atlas'
 }
 
 export function initializeTheme() {
   try {
     document.documentElement.dataset.theme = resolveTheme(localStorage.getItem(storageKey))
   } catch {
-    document.documentElement.dataset.theme = 'evergreen'
+    document.documentElement.dataset.theme = 'atlas'
   }
 
   window.addEventListener('storage', event => {

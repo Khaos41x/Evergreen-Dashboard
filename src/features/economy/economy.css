@@ -7,3 +7,351 @@
 
 .founders-page .economy-wordmark>strong{font:400 clamp(26px,3vw,32px)/1.15 var(--heading-font,Georgia,serif);letter-spacing:-.018em;color:#e4ede8}
 .founders-person{padding:22px 0;border-bottom:1px solid #293a32}.founders-person>header{display:flex;align-items:center;gap:12px}.founders-person h3{margin:0;font-size:22px}.founders-person ul{display:grid;gap:12px;padding:0;list-style:none;margin:16px 0 0}.founders-person li{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center}.founders-person li>strong{min-width:140px}.founders-person li>span{color:#a7bbaf}
+
+/* Keep navigation, company identity and actions in distinct groups. */
+.economy-header.economy-toolbar {
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr) auto;
+  align-items:center;
+  gap:clamp(8px,2vw,24px);
+  min-height:72px;
+  padding:12px max(16px, calc((100% - 1120px) / 2));
+  border-color:var(--line);
+  background:var(--panel);
+}
+.economy-toolbar-brand, .economy-toolbar-actions { display:flex; align-items:center; gap:10px; min-width:0; }
+.economy-toolbar-brand .evergreen-symbol { width:32px; height:40px; }
+.economy-toolbar-brand strong { display:block; color:var(--text); font:400 26px/1.1 var(--heading-font,Georgia,serif); }
+.economy-toolbar-brand small { display:block; margin-top:2px; color:var(--soft); font-size:11px; overflow-wrap:anywhere; }
+[data-theme="light"] .economy-toolbar-brand .evergreen-symbol { filter:none; }
+.economy-toolbar-actions > button { text-align:center; }
+.economy-page:has(>.economy-toolbar) .economy-container { padding-top:26px; }
+.economy-page:has(>.economy-toolbar) .economy-intro { margin-bottom:18px; }
+.economy-page:has(>.economy-toolbar) .economy-intro h1 { margin:0 0 8px; }
+.economy-page:has(>.economy-toolbar) .economy-intro p { margin:0; }
+.economy-page .economy-tabs { gap:8px; border-color:var(--line); }
+.economy-page .economy-tabs button {
+  padding:9px 12px;
+  border:0;
+  border-bottom:2px solid transparent;
+  border-radius:6px 6px 0 0;
+  background:transparent;
+  color:var(--soft);
+}
+.economy-page .economy-tabs button:hover { background:var(--hover); color:var(--text); }
+.economy-page .economy-tabs button[aria-current="page"] {
+  background:var(--emerald-wash);
+  color:var(--text);
+  border-bottom-color:var(--emerald);
+}
+.economy-page input,.economy-page select { color-scheme:inherit; }
+@media (max-width:640px) {
+  .economy-header.economy-toolbar { padding:10px 12px; gap:8px; }
+  .economy-toolbar .economy-back { width:44px; padding:0; }
+  .economy-back > span { display:none; }
+  .economy-toolbar-brand .evergreen-symbol { width:25px; height:36px; }
+  .economy-toolbar-brand strong { font-size:21px; }
+  .economy-toolbar-actions { gap:4px; }
+  .economy-toolbar-actions > button { width:100px; max-width:29vw; padding:5px; font-size:11px; line-height:1.2; }
+  .economy-toolbar-actions .notification-center > button { min-width:40px; padding:0; }
+}
+
+.economy-overview {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+  gap: 0;
+  margin-block: 24px 32px;
+  border-block: 1px solid var(--line);
+}
+
+.economy-overview-panel {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: clamp(20px, 3vw, 32px);
+  color: var(--text);
+}
+
+.economy-overview-balance { border-right: 1px solid var(--line); }
+
+.economy-overview-panel header h2,
+.economy-container .economy-overview-companies h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -.025em;
+}
+
+.economy-overview-panel p,
+.economy-overview-companies header p {
+  margin: 6px 0 0;
+  color: var(--muted);
+}
+
+.economy-overview-balance header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.economy-overview-balance header > svg {
+  flex-shrink: 0;
+  color: var(--emerald);
+}
+
+.economy-overview-balance ul {
+  display: grid;
+  gap: 8px;
+  margin: 24px 0;
+  padding: 0;
+  list-style: none;
+}
+
+.economy-overview-balance li strong {
+  font-size: clamp(28px, 5vw, 52px);
+  font-weight: 600;
+  line-height: 1.08;
+  letter-spacing: -.04em;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.economy-overview-balance .economy-balance-note {
+  margin-top: auto;
+  font-size: 12px;
+}
+
+.economy-overview-empty { margin-top: 24px; }
+.economy-overview-empty h3 { margin: 0; }
+
+.economy-flow dl {
+  display: grid;
+  gap: 16px;
+  margin: 20px 0;
+}
+
+.economy-flow dl + dl {
+  margin-top: 0;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+
+.economy-flow-row {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  padding-bottom: 10px;
+}
+
+.economy-flow-row dt { display: inline-flex; align-items: center; gap: 6px; color: var(--soft); }
+.economy-flow-row dd { margin: 0; font-weight: 600; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+
+.economy-flow-track {
+  position: absolute;
+  inset: auto 0 0;
+  height: 4px;
+  border-radius: 4px;
+  background: var(--line);
+}
+.economy-flow-track > span { display: block; height: 100%; border-radius: inherit; background: var(--emerald); }
+.economy-flow-row[data-kind="expense"] .economy-flow-track > span { background: var(--muted); }
+
+.economy-flow .economy-flow-empty { margin-block: 24px; }
+.economy-overview-panel .economy-overview-link { align-self: flex-start; margin-top: auto; }
+
+.economy-page .economy-container .economy-overview-companies {
+  padding: 0;
+  background: transparent;
+}
+
+.economy-overview-companies > header { gap: 12px; margin-bottom: 12px; }
+.economy-overview-companies > header > div:first-child { display: block; }
+.economy-overview-company {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) minmax(0, max-content) 44px;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-top: 1px solid var(--line);
+  overflow-wrap: anywhere;
+}
+
+.economy-overview-company small { display: block; color: var(--muted); }
+.economy-overview-company b { font-variant-numeric: tabular-nums; text-align: right; }
+.economy-company-icon {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--atlas-radius, 10px);
+  background: var(--raised);
+  color: var(--soft);
+}
+
+@media (max-width: 680px) {
+  .economy-overview { grid-template-columns: minmax(0, 1fr); }
+  .economy-overview-panel { padding-inline: 0; }
+  .economy-overview-balance { border-right: 0; }
+  .economy-flow { border-top: 1px solid var(--line); }
+}
+
+@media (max-width: 600px) {
+  .economy-page .economy-container .economy-tabs {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .economy-page .economy-container .economy-tabs button {
+    width: 100%;
+    padding-inline: 4px;
+    font-size: 12px;
+    white-space: normal;
+  }
+  .economy-overview-company { grid-template-columns: auto minmax(0, 1fr) 44px; gap: 4px 10px; }
+  .economy-overview-company b { grid-column: 2; grid-row: 2; text-align: left; }
+  .economy-overview-company button { grid-column: 3; grid-row: 1 / span 2; }
+}
+
+@media (max-width: 360px) {
+  .economy-toolbar-actions { display: contents; }
+  .economy-toolbar-actions > button {
+    grid-column: 1 / -1;
+    justify-self: end;
+    width: auto;
+    max-width: 100%;
+    padding-inline: 12px;
+  }
+  .economy-page .economy-filters > label {
+    flex: 1 1 100%;
+    max-width: 100%;
+  }
+  .economy-page .economy-filters input[type="date"] {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+.economy-filter-bar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 12px;
+  margin: -8px 0 16px;
+}
+
+.economy-filter-disclosure > summary {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  width: fit-content;
+  max-width: 100%;
+  min-height: 48px;
+  padding: 6px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--atlas-radius, 8px);
+  background: var(--panel);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.economy-filter-disclosure > summary:hover { background: var(--hover); }
+.economy-filter-disclosure > summary::-webkit-details-marker { display: none; }
+.economy-filter-disclosure[open] > summary > svg:last-child { transform: rotate(180deg); }
+
+.economy-filter-disclosure summary strong,
+.economy-filter-disclosure summary small { display: block; }
+.economy-filter-disclosure summary strong { font-size: 13px; }
+.economy-filter-disclosure summary small {
+  margin-top: 1px;
+  color: var(--muted);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.economy-filter-disclosure form.economy-filters {
+  margin: 8px 0 0;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--atlas-radius, 8px);
+  background: var(--panel);
+}
+
+.economy-filter-disclosure form > p[role="alert"] {
+  flex-basis: 100%;
+  margin: 0;
+  color: var(--atlas-danger, #fca5a5);
+}
+.economy-filter-disclosure form input { width: 100%; min-width: 0; }
+
+.economy-access {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding-block: 14px;
+  color: var(--muted);
+}
+
+.economy-page:has(>.economy-toolbar) .economy-overview {
+  margin-top: 16px;
+}
+.economy-page:has(>.economy-toolbar) .economy-overview-balance {
+  background: var(--panel);
+}
+
+@media (max-width: 600px) {
+  .economy-filter-bar { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+  .economy-filter-disclosure > summary { width: 100%; }
+  .economy-access { padding: 0; }
+  .economy-page:has(>.economy-toolbar) .economy-overview-balance {
+    padding-inline: 16px;
+  }
+}
+
+/* The approved financial overview lives inside the work app, with its context. */
+.collab-app .economy-embedded { min-height: 0; flex: 1 1 auto; overflow: visible; background: var(--bg); color: var(--text); font-family: inherit; }
+.collab-app .economy-embedded .economy-container { width: 100%; max-width: var(--workspace-reading-width, 1160px); margin: 0; padding: 28px var(--workspace-gutter, 24px) 48px; }
+.economy-embedded .economy-intro { margin-bottom: 20px; }
+.economy-embedded .economy-intro h1 { margin: 0 0 8px; font-size: 34px; }
+.economy-embedded .economy-intro p { margin: 0; color: var(--muted); }
+.economy-prototype-context { display: flex; flex-wrap: wrap; gap: 10px 24px; margin: 0 0 20px; padding: 14px 0; border-block: 1px solid var(--line); font-size: 13px; }
+.economy-prototype-context > div { display: flex; flex-wrap: wrap; gap: 4px 8px; min-width: 0; }
+.economy-prototype-context dt { color: var(--muted); }
+.economy-prototype-context dd { margin: 0; color: var(--text); font-weight: 550; overflow-wrap: anywhere; }
+.economy-quick-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0; }
+.economy-page .economy-overview { border: 1px solid var(--line); border-radius: var(--atlas-radius, 12px); background: var(--panel); }
+.economy-recent-ledger { margin-bottom: 24px; padding-top: 0; }
+.economy-recent-ledger > header { align-items: baseline; }
+.economy-recent-ledger > header h2 { margin: 0; }
+.economy-recent-ledger > header p { margin: 5px 0 0; color: var(--muted); font-size: 12px; }
+.economy-recent-list { list-style: none; padding: 0; margin: 0; }
+.economy-recent-list > li { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; min-height: 72px; gap: 10px 20px; padding: 14px 0; border-bottom: 1px solid var(--line); }
+.economy-recent-list strong { display: block; font-size: 14px; overflow-wrap: anywhere; }
+.economy-recent-list small { display: block; color: var(--muted); margin-top: 5px; font-size: 12px; line-height: 1.5; overflow-wrap: anywhere; }
+.economy-recent-list b { white-space: nowrap; font-size: 15px; font-variant-numeric: tabular-nums; color: var(--text); }
+.economy-transfer-review { display: grid; gap: 14px; }
+.economy-transfer-review dt { color: var(--muted); font-size: 12px; }
+.economy-transfer-review dd { margin: 4px 0 0; overflow-wrap: anywhere; font-weight: 550; }
+.economy-group-heading { padding: 28px var(--workspace-gutter, 24px) 10px; }
+@media (max-width: 600px) {
+ .economy-prototype-context { display: grid; gap: 8px; }
+ .economy-prototype-context > div { display: grid; grid-template-columns: 62px minmax(0, 1fr); }
+ .economy-recent-list > li { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+ .economy-recent-list b { justify-self: start; }
+ .economy-recent-ledger > header { gap: 12px; }
+ .collab-app .economy-embedded .economy-container { padding-top: 22px; }
+}
+
+.economy-recent-ledger > header > div { display: block; }
+@media (max-width: 600px) {
+ .economy-embedded .economy-prototype-context { padding-block: 10px; margin-bottom: 14px; gap: 5px; }
+ .economy-page .economy-container .economy-tabs { display: flex; flex-wrap: nowrap; overflow-x: auto; gap: 4px; }
+ .economy-page .economy-container .economy-tabs > button { flex: 0 0 auto; width: auto; padding-inline: 10px; white-space: nowrap; }
+ .economy-embedded .economy-access { display: none; }
+ .economy-embedded .economy-quick-actions > button { flex: 1 1 0; min-width: 0; padding-inline: 8px; white-space: normal; font-size: 12px; line-height: 1.3; }
+ .economy-embedded .economy-overview-panel { padding: 18px 16px; }
+}

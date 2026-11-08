@@ -37,8 +37,23 @@ export async function discoverResources(provider,token,config={},fetcher=fetch){
  return{resources:rows,limited}
 }
 const number=v=>{if(v===null||v===undefined||!/^\d+(\.\d+)?$/.test(String(v)))return null;const n=Number(v);return Number.isFinite(n)&&n>=0?n:null}
+// A preview reads only the selected authorized provider resource. It never persists credentials or metrics.
+export async function previewProvider(integration,token,from,to,fetcher=fetch){
+ const cfg=providerConfig(integration.provider,integration.config)
+ if(integration.provider==='asaas')throw new HttpError(400,'PREVIEW_UNSUPPORTED','Use a conciliação explícita de cobranças após conectar o Asaas.')
+ if(typeof token!=='string'||token.length<12||token.length>16000)throw new HttpError(400,'CREDENTIAL_REQUIRED','Informe uma credencial de leitura válida.')
+ dateRange(from,to)
+ const discovery=await discoverResources(integration.provider,token,cfg,fetcher)
+ const resource=discovery.resources.find(r=>r.id===integration.resource_id)
+ if(!resource)throw new HttpError(403,'RESOURCE_DENIED','Selecione um recurso retornado pela credencial autorizada.')
+ const payload=await syncProvider({...integration,config:cfg},token,from,to,fetcher)
+ return{resource,payload,checked_at:new Date().toISOString()}
+}
+function requiredNumber(value){const n=number(value);if(n===null)throw new HttpError(502,'PROVIDER_DATA_INVALID','A fonte retornou indicadores incompletos. Não substituímos dados ausentes por zero.');return n}
+function day(value,range){const date=String(value||'').slice(0,10);if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||!Number.isFinite(Date.parse(date))||new Date(date+'T00:00:00Z').toISOString().slice(0,10)!==date||date<range.from||date>range.to)throw new HttpError(502,'PROVIDER_DATA_INVALID','A fonte retornou uma data fora do período solicitado.');return date}
 export async function syncProvider(integration,token,from,to,fetcher=fetch){
  const range=dateRange(from,to),provider=integration.provider,id=String(integration.resource_id)
+ providerConfig(provider,integration.config)
  if(!/^[A-Za-z0-9_-]{1,100}$/.test(id))throw new HttpError(400,'RESOURCE_INVALID','Recurso inválido.')
  const payload={provider,resource_id:id,from,to,timezone:'UTC',metrics:[],series:[],breakdowns:{},unavailable:[],definition:'Métricas restritas à fonte e ao período. Não representam pessoas únicas da holding.'}
  const metric=(key,label,value,unit,aggregation)=>{const n=number(value);if(n!==null)payload.metrics.push({key,label,value:n,unit,aggregation})}
@@ -46,7 +61,7 @@ export async function syncProvider(integration,token,from,to,fetcher=fetch){
  const query='query($zone: string, $from: Date, $to: Date) { viewer { zones(filter: {zoneTag: $zone}) { httpRequests1dGroups(limit: 367, filter: {date_geq: $from, date_leq: $to}, orderBy: [date_ASC]) { dimensions {date} sum {requests bytes threats countryMap {clientCountryName requests}} uniq {uniques} } } } }'
  const data=await providerJSON('https://api.cloudflare.com/client/v4/graphql',token,{method:'POST',body:JSON.stringify({query,variables:{zone:id,from,to}})},fetcher)
  const rows=data.data?.viewer?.zones?.[0]?.httpRequests1dGroups;if(!Array.isArray(rows))throw new HttpError(400,'METRICS_UNAVAILABLE','Analytics da zona não disponível para esta credencial.')
- payload.series=rows.map(x=>({date:x.dimensions.date,requests:number(x.sum.requests),bytes:number(x.sum.bytes),threats:number(x.sum.threats),unique_ips:number(x.uniq.uniques)}))
+ payload.series=rows.map(x=>({date:day(x?.dimensions?.date,range),requests:requiredNumber(x?.sum?.requests),bytes:requiredNumber(x?.sum?.bytes),threats:requiredNumber(x?.sum?.threats),unique_ips:number(x?.uniq?.uniques)}))
  for(const[key,label,unit]of[['requests','Requisições HTTP','requests'],['bytes','Tráfego','bytes'],['threats','Ameaças identificadas pela fonte','events']])metric(key,label,payload.series.reduce((n,x)=>n+(x[key]||0),0),unit,'sum')
  const countries=new Map();for(const row of rows)for(const c of row.sum.countryMap||[])countries.set(c.clientCountryName,(countries.get(c.clientCountryName)||0)+(number(c.requests)||0));payload.breakdowns.countries=[...countries].map(([name,value])=>({name,value})).sort((a,b)=>b.value-a.value).slice(0,20)
  payload.unavailable.push('IPs distintos são mostrados por dia; não são visitantes únicos nem podem ser somados entre dias ou sites.','Visitas e páginas vistas não são inferidas de requisições HTTP.')
@@ -54,7 +69,7 @@ export async function syncProvider(integration,token,from,to,fetcher=fetch){
  if(provider==='vercel'){
  const config=providerConfig(provider,integration.config);const get=async(by)=>{const url=new URL('https://api.vercel.com/v1/query/web-analytics/visits/aggregate');for(const[k,v]of Object.entries({projectId:id,since:from,until:to+'T23:59:59.999Z',by,limit:'367',...(config.teamId?{teamId:config.teamId}:{})}))url.searchParams.set(k,v);return providerJSON(url,token,{},fetcher)}
  const d=await get('day');if(!Array.isArray(d.data))throw new HttpError(400,'METRICS_UNAVAILABLE','Web Analytics não retornou uma série válida. Ative a instrumentação e verifique o plano.')
- payload.series=d.data.map(x=>({date:String(x.timestamp).slice(0,10),pageviews:number(x.pageviews),visitors:number(x.visitors)}))
+ payload.series=d.data.map(x=>({date:day(x?.timestamp,range),pageviews:requiredNumber(x?.pageviews),visitors:number(x?.visitors)}))
  metric('pageviews','Páginas vistas',payload.series.reduce((n,x)=>n+(x.pageviews||0),0),'pageviews','sum')
  const top=await Promise.allSettled(['country','requestPath','referrerHostname'].map(get));top.forEach((r,i)=>{const key=['country','requestPath','referrerHostname'][i];if(r.status==='fulfilled')payload.breakdowns[key]=(r.value.data||[]).slice(0,20).map(x=>({name:x[key]||'Não informado',value:number(x.pageviews)}));else payload.unavailable.push('Detalhamento '+key+' indisponível na fonte.')})
  payload.unavailable.push('Visitantes são distintos apenas dentro de cada dia/projeto da fonte; não somamos como audiência única.','Eventos personalizados e conversão exigem instrumentação compatível; não são inferidos de páginas vistas.')
@@ -65,10 +80,10 @@ export async function syncProvider(integration,token,from,to,fetcher=fetch){
  const query=async(sql)=>{const d=await providerJSON('https://api.supabase.com/v1/projects/'+id+'/database/query/read-only',token,{method:'POST',body:JSON.stringify({query:sql})},fetcher);return Array.isArray(d)?d:Array.isArray(d.result)?d.result:Array.isArray(d.data)?d.data:[]}
  const [summary,daily]=await Promise.all([query(totals),query(series)]),rows=[...summary,...daily]
  const total=rows.find(x=>x.users_total!==undefined);if(!total)throw new HttpError(400,'METRICS_UNAVAILABLE','O perfil somente leitura não disponibilizou as contagens do Auth. Conceda apenas leitura autorizada; não use service_role do produto.')
- metric('users_total','Contas cadastradas · fotografia atual',total.users_total,'accounts','snapshot')
- metric('signups','Novos cadastros no período',total.signups,'accounts','sum')
- metric('accounts_last_login','Contas com último login no período',total.accounts_last_login,'accounts','snapshot')
- payload.series=rows.filter(x=>x.day).map(x=>({date:x.day,signups:number(x.signups)}))
+ metric('users_total','Contas cadastradas · fotografia atual',requiredNumber(total.users_total),'accounts','snapshot')
+ metric('signups','Novos cadastros no período',requiredNumber(total.signups),'accounts','sum')
+ metric('accounts_last_login','Contas com último login no período',requiredNumber(total.accounts_last_login),'accounts','snapshot')
+ payload.series=rows.filter(x=>x.day).map(x=>({date:day(x.day,range),signups:requiredNumber(x.signups)}))
  payload.unavailable.push('Contas com último login não equivalem a eventos de login nem usuários ativos do produto.','Atividade, eventos de login e conversão exigem logs ou instrumentação autorizada; não são estimados.')
  }
  return payload

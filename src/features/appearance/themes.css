@@ -3,14 +3,14 @@
   --theme-accent-hover: #36e7ac;
 }
 
-/* Alternate palettes use the existing app tokens. The original palette is the default. */
+/* Optional palettes use the shared app tokens. */
 :root[data-theme="black"] {
   color-scheme: dark;
-  --bg: #080808;
-  --sidebar: #101010;
-  --panel: #111111;
-  --raised: #191919;
-  --hover: #252525;
+  --bg: #000;
+  --sidebar: #000;
+  --panel: #000;
+  --raised: #000;
+  --hover: #181818;
   --line: #303030;
   --line-soft: #222;
   --text: #f5f5f5;
@@ -103,7 +103,7 @@ html[data-theme]:not([data-theme="evergreen"]) :where(*:focus-visible) {
 
 [data-theme]:not([data-theme="evergreen"]) :is(.today-list > button, .today-progress, .today-static-row, .add-day-task, .hero-buttons > button,
   .collab-composer, .workspace-company-options, .workspace-company-trigger, .world-camera-controls, .world-mode-switch,
-  .world-view-switch button, .economy-page button, .holding-tabs button, .domain-view button) {
+  .world-view-switch button, .economy-page button:not(:where(.economy-tabs button)), .holding-tabs button, .domain-view button) {
   background: var(--raised);
   border-color: var(--line);
   color: var(--text);
@@ -171,23 +171,54 @@ html[data-theme]:not([data-theme="evergreen"]) :where(*:focus-visible) {
 [data-theme]:not([data-theme="evergreen"]) :is(.today-progress i, .objective-row > i) { background: var(--line); }
 [data-theme]:not([data-theme="evergreen"]) :is(.today-progress i em, .objective-row > i em) { background: var(--emerald); }
 [data-theme]:not([data-theme="evergreen"]) :is(.today-progress small b, .today-list .today-accent, .today-list .check-accent) { color: var(--emerald); }
-[data-theme]:not([data-theme="evergreen"]) :is(.world-view-switch button[aria-pressed="true"], .economy-tabs button[aria-current], .holding-tabs button[aria-current="page"]) {
+[data-theme]:not([data-theme="evergreen"]) :is(.world-view-switch button[aria-pressed="true"], .holding-tabs button[aria-current="page"]) {
   background: var(--workspace-active);
   color: var(--text);
   border-color: var(--emerald);
 }
 
-[data-theme="light"] .reference-hero > .hero-art:has(.hero-tree-geometry) { opacity: .26; }
+[data-theme="light"] .reference-hero > .hero-art:has(.hero-tree-geometry) { opacity: .72; }
 [data-theme]:not([data-theme="evergreen"]) .reference-home :is(.today-panel > header strong, .home-bottom-grid header strong, .home-empty-state strong) { color: var(--text); }
 [data-theme]:not([data-theme="evergreen"]) .reference-home .home-bottom-grid header > svg { color: var(--soft); }
 [data-theme]:not([data-theme="evergreen"]) .reference-home .today-list > button > svg { color: var(--soft); }
 [data-theme]:not([data-theme="evergreen"]) .reference-home .today-list > button > svg.today-accent { color: var(--emerald); }
-[data-theme="light"] .hero-tree-geometry { filter: brightness(.25) saturate(1.3); }
+[data-theme="light"] .hero-tree-geometry { filter: brightness(0) saturate(0); }
 /* The original dark artwork is legible on light surfaces. */
-[data-theme="light"] :is(.workspace-evergreen, .collab-sidebar > header, .world-heading > div:first-child, .os-hub .os-page-heading > div:first-child, .economy-wordmark, .identity-auth > header, .brand) > .evergreen-brand {
+[data-theme="light"] :is(.workspace-evergreen, .collab-sidebar > header, .world-heading > div:first-child, .os-hub .os-page-heading > div:first-child, .os-hub .os-group-entry, .economy-wordmark, .identity-auth > header, .brand) > .evergreen-brand {
   filter: none;
 }
-[data-theme]:not([data-theme="evergreen"]) .professional-cover-copy small { color: #dce8e0; }
+/* Profile surfaces and initials use the active palette. User photos keep their own colors. */
+[data-theme]:not([data-theme="evergreen"]) .professional-cover {
+  background: var(--raised);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+[data-theme]:not([data-theme="evergreen"]) .professional-cover:not(:has(.professional-cover-photo)) .professional-cover-copy > span { color: var(--text); }
+[data-theme]:not([data-theme="evergreen"]) .professional-cover:not(:has(.professional-cover-photo)) .professional-cover-copy small { color: var(--soft); }
+[data-theme="light"] .professional-cover:not(:has(.professional-cover-photo)) .professional-cover-brand > .evergreen-symbol { filter: none; }
+
+[data-theme]:not([data-theme="evergreen"]) .collab-app .domain-member-avatar {
+  background: var(--workspace-active);
+  color: var(--text);
+}
+[data-theme="black"] .collab-app .professional-identity > .domain-member-avatar {
+  background: var(--bg);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+[data-theme]:not([data-theme="evergreen"]) .collab-top > .workspace-top-profile {
+  background: var(--raised);
+  border-color: var(--line);
+}
+[data-theme]:not([data-theme="evergreen"]) .collab-top > .workspace-top-profile:hover,
+[data-theme]:not([data-theme="evergreen"]) .collab-top > .workspace-top-profile[aria-current="page"] {
+  background: var(--hover);
+  border-color: var(--emerald);
+}
+[data-theme]:not([data-theme="evergreen"]) .professional-profile :is(.professional-founder-badge, .professional-medal, .professional-medal-emblem) {
+  background: var(--raised);
+  border-color: var(--line);
+  color: var(--text);
+}
+[data-theme]:not([data-theme="evergreen"]) .professional-profile .professional-medal small { color: var(--soft); }
 
 [data-theme]:not([data-theme="evergreen"]) :is(.os-group-entry, .os-seat-grid > article, .os-notice, .economy-notice, .financial-chart,
   .holding-center button, .financial-analysis button, .os-page button, .os-builder button, .world-stage-footer select) {
@@ -270,7 +301,7 @@ html[data-theme]:not([data-theme="evergreen"]) :where(*:focus-visible) {
   opacity: 0;
 }
 .appearance-option[data-preview="evergreen"] { --swatch-bg: #0c1b14; --swatch-line: #618374; --swatch-accent: #10d994; }
-.appearance-option[data-preview="black"] { --swatch-bg: #111; --swatch-line: #8e8e8e; --swatch-accent: #eee; }
+.appearance-option[data-preview="black"] { --swatch-bg: #000; --swatch-line: #8e8e8e; --swatch-accent: #eee; }
 .appearance-option[data-preview="electric"] { --swatch-bg: #10192e; --swatch-line: #5578b0; --swatch-accent: #74a6ff; }
 .appearance-option[data-preview="light"] { --swatch-bg: #fbfbf8; --swatch-line: #b3bfb5; --swatch-accent: #186447; }
 .appearance-preview {

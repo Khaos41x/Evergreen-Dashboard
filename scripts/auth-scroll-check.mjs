@@ -20,6 +20,14 @@ try{
    await route.fulfill({status:action==='session'?401:mailFailure&&action!=='config'?503:200,contentType:'application/json',body:JSON.stringify(body)})
   })
   await page.goto(origin+'/login');await page.getByRole('heading',{name:'Entrar na Evergreen'}).waitFor()
+  if(!record){
+   assert.equal(await page.evaluate(()=>document.documentElement.dataset.theme),'atlas')
+   await page.keyboard.press('Tab')
+   const skip=page.getByRole('link',{name:'Pular para o conteúdo',exact:true})
+   assert.ok(await skip.evaluate(el=>document.activeElement===el))
+   await page.keyboard.press('Enter')
+   assert.ok(await page.locator('main.identity-auth').evaluate(el=>document.activeElement===el))
+  }
   if(native)await page.evaluate(()=>{document.documentElement.dataset.native='true';document.documentElement.style.setProperty('--safe-area-inset-top','24px');document.documentElement.style.setProperty('--safe-area-inset-bottom','20px')})
   async function scrollCheck(mode){
    await page.locator('.identity-auth').evaluate(el=>el.scrollTop=0)

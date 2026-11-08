@@ -1,8 +1,9 @@
+import {integrationActions} from '../server/integrations.mjs'
 import {integrationReadiness,requireIntegrationReadiness} from '../server/integration-status.mjs'
 import assert from 'node:assert/strict'
 import {randomBytes} from 'node:crypto'
 import {mkdirSync,writeFileSync} from 'node:fs'
-import {providerJSON,dateRange,discoverResources,syncProvider} from '../server/integration-providers.mjs'
+import {providerJSON,dateRange,discoverResources,syncProvider,previewProvider} from '../server/integration-providers.mjs'
 import {encryptCredential,decryptCredential} from '../server/credentials.mjs'
 import {asaasJSON,decimalCents,normalizePayment,validWebhookToken,reconcileAsaas} from '../server/asaas.mjs'
 const checks=[],env={INTEGRATIONS_ENCRYPTION_KEY:randomBytes(32).toString('base64')},aad='integration:workspace:provider',credential='fixture-secret-never-persisted',encrypted=encryptCredential(credential,aad,env)
@@ -27,6 +28,65 @@ checks.push('malformed discovery lists and null payloads rejected; credential de
 const cf=await syncProvider({provider:'cloudflare',resource_id:'zone_fixture'},credential,'2026-10-01','2026-10-30',fixture({data:{viewer:{zones:[{httpRequests1dGroups:[{dimensions:{date:'2026-10-10'},sum:{requests:120,bytes:2048,threats:1,countryMap:[{clientCountryName:'BR',requests:80}]},uniq:{uniques:10}}]}]}}}));assert.equal(cf.metrics.find(m=>m.key==='requests').value,120);assert.ok(!cf.metrics.some(m=>m.key==='visitors'));assert.equal(cf.series[0].unique_ips,10)
 const vercel=await syncProvider({provider:'vercel',resource_id:'prj_fixture',config:{}},credential,'2026-10-01','2026-10-30',async url=>fixture({data:url.searchParams.get('by')==='day'?[{timestamp:'2026-10-10',pageviews:100,visitors:30}]:[{country:'BR',pageviews:60}]})());assert.equal(vercel.metrics[0].value,100);assert.ok(!vercel.metrics.some(m=>m.key==='visitors'))
 const sb=await syncProvider({provider:'supabase',resource_id:'project_fixture'},credential,'2026-10-01','2026-10-30',async(_url,init)=>{const q=JSON.parse(init.body).query;assert.ok(q.includes('auth.users'));assert.ok(!/insert|update|delete/i.test(q));return fixture(q.includes('users_total')?[{users_total:'50',signups:'5',accounts_last_login:'9'}]:[{day:'2026-10-10',signups:'5'}])()});assert.equal(sb.metrics.find(m=>m.key==='signups').value,5);assert.ok(sb.metrics.some(m=>m.key==='accounts_last_login'&&m.aggregation==='snapshot'));checks.push('Cloudflare requests not visitors; Vercel uniques non-additive; Supabase read-only aggregate counts and distinct login semantics')
+let reads=[]
+const preview=await previewProvider({provider:'vercel',resource_id:'prj_fixture',config:{teamId:'team_fixture'}},credential,'2026-10-01','2026-10-30',async(url,init)=>{
+ reads.push({path:url.pathname,method:init.method||'GET'})
+ assert.equal(url.searchParams.get('teamId'),'team_fixture')
+ return fixture(url.pathname==='/v10/projects'?{projects:[{id:'prj_fixture',name:'Site autorizado'}]}:{data:url.searchParams.get('by')==='day'?[{timestamp:'2026-10-10',pageviews:100,visitors:30}]:[]})()
+})
+assert.equal(preview.resource.name,'Site autorizado')
+assert.equal(preview.payload.metrics[0].value,100)
+assert.ok(Number.isFinite(Date.parse(preview.checked_at)))
+assert.ok(reads.every(r=>r.method==='GET'),'preview cannot write to the provider')
+reads=[]
+await assert.rejects(()=>previewProvider({provider:'vercel',resource_id:'other',config:{}},credential,'2026-10-01','2026-10-30',async(url)=>{reads.push(url.pathname);return fixture({projects:[{id:'prj_fixture',name:'Authorized'}]})()}),e=>e.code==='RESOURCE_DENIED')
+assert.deepEqual(reads,['/v10/projects'],'ungranted resources must not reach analytics')
+await assert.rejects(()=>previewProvider({provider:'asaas',resource_id:'wallet',config:{environment:'sandbox',companyId:'00000000-0000-4000-8000-000000000001'}},credential,'2026-10-01','2026-10-30'),e=>e.code==='PREVIEW_UNSUPPORTED')
+for(const row of [{timestamp:'2026-10-10',visitors:3},{timestamp:'2026-10-10',pageviews:null},{timestamp:'2026-11-10',pageviews:3},{timestamp:'broken',pageviews:3}]){
+ await assert.rejects(()=>syncProvider({provider:'vercel',resource_id:'prj_fixture',config:{}},credential,'2026-10-01','2026-10-30',fixture({data:[row]})),e=>e.code==='PROVIDER_DATA_INVALID')
+}
+await assert.rejects(()=>syncProvider({provider:'cloudflare',resource_id:'zone_fixture'},credential,'2026-10-01','2026-10-30',fixture({data:{viewer:{zones:[{httpRequests1dGroups:[{dimensions:{date:'2026-10-10'},sum:{requests:null,bytes:0,threats:0}}]}]}}})),e=>e.code==='PROVIDER_DATA_INVALID')
+await assert.rejects(()=>syncProvider({provider:'supabase',resource_id:'project_fixture'},credential,'2026-10-01','2026-10-30',fixture([{users_total:'50',accounts_last_login:'0'}])),e=>e.code==='PROVIDER_DATA_INVALID')
+const empty=await syncProvider({provider:'vercel',resource_id:'prj_fixture',config:{}},credential,'2026-10-01','2026-10-30',fixture({data:[]}))
+assert.equal(empty.metrics[0].value,0,'a valid empty series differs from missing fields')
+checks.push('read-only preview binds token, team, resource and date; forbidden resource blocked before metrics; Asaas remains explicit; malformed or missing required metrics never become zero')
+// Execute the actual preview handler against an isolated session/RPC/provider double.
+const originalFetch=globalThis.fetch,network=[]
+let writes=0
+function fixtureContext({authenticated=true,recent=true,admin=true,id=randomBytes(8).toString('hex')}={}){
+ const user={id,email:'fixture@example.invalid'}
+ return{commit(){},clear(){},client:{auth:{getUser:async()=>({data:{user:authenticated?user:null},error:null}),getSession:async()=>({data:{session:{user}},error:null})},rpc:async(name)=>{
+  if(name==='eg_identity_context')return{data:{active:true,recent_auth:recent},error:null}
+  if(name==='eg_holding_context')return{data:{companies:[{id:'company-a',admin}]},error:null}
+  writes++;throw Error('Preview must never call a write RPC')
+ }}}
+}
+const routeConfig={origin:'http://localhost:5173',url:'https://fixture.supabase.invalid',key:'fixture-key',production:false,env:{...env,INTEGRATIONS_STORAGE_SERVICE_KEY:'fixture-server-key'}}
+const previewBody={workspace_id:'company-a',provider:'vercel',resource_id:'prj_fixture',config:{},token:credential,from:'2026-10-01',to:'2026-10-30'}
+async function invokePreview(context,options={}){
+ let output
+ const req={method:'POST',url:'/api/integrations/preview',headers:{origin:routeConfig.origin,'content-type':'application/json',...options.headers},body:{...previewBody,...options.body},socket:{remoteAddress:'route-preview-fixture'}}
+ const res={setHeader(){},end(body){output=JSON.parse(body)}}
+ await integrationActions(req,res,options.config||routeConfig,context,'preview')
+ return output
+}
+try{
+ globalThis.fetch=async(url,init)=>{network.push(String(url));assert.equal(new URL(url).hostname,'api.vercel.com');assert.equal(init.method||'GET','GET');return fixture(new URL(url).pathname==='/v10/projects'?{projects:[{id:'prj_fixture',name:'Autorizado'}]}:{data:[]})()}
+ await assert.rejects(()=>invokePreview(fixtureContext({authenticated:false})),e=>e.code==='SESSION_REQUIRED')
+ await assert.rejects(()=>invokePreview(fixtureContext(),{headers:{origin:'https://untrusted.invalid'}}),e=>e.code==='ORIGIN_DENIED')
+ await assert.rejects(()=>invokePreview(fixtureContext({recent:false})),e=>e.code==='REAUTH_REQUIRED')
+ await assert.rejects(()=>invokePreview(fixtureContext({admin:false})),e=>e.code==='INTEGRATION_DENIED')
+ await assert.rejects(()=>invokePreview(fixtureContext(),{body:{workspace_id:'other-company'}}),e=>e.code==='INTEGRATION_DENIED')
+ await assert.rejects(()=>invokePreview(fixtureContext(),{config:{...routeConfig,env:{}}}),e=>e.code==='INTEGRATION_CONFIGURATION')
+ assert.equal(network.length,0,'denied requests must not reach the provider')
+ const result=await invokePreview(fixtureContext());assert.equal(result.resource.id,'prj_fixture');assert.equal(result.payload.metrics[0].value,0);assert.equal(writes,0)
+ const limitedContext=fixtureContext({id:'preview-throttle-fixture'})
+ for(let i=0;i<12;i++)await invokePreview(limitedContext)
+ const requestsBeforeLimit=network.length
+ await assert.rejects(()=>invokePreview(limitedContext),e=>e.code==='RATE_LIMITED')
+ assert.equal(network.length,requestsBeforeLimit)
+ checks.push('actual preview route enforces session, origin, recent auth, company admin, readiness and rate limit before contacting provider; no write RPC used')
+}finally{globalThis.fetch=originalFetch}
 const hook=randomBytes(32).toString('base64url');assert.equal(validWebhookToken(hook,hook),true);assert.equal(validWebhookToken(hook+'x',hook),false);assert.equal(validWebhookToken('',hook),false);assert.equal(decimalCents('100.01'),'10001');assert.throws(()=>decimalCents('100.001'))
 const exact=await asaasJSON('/payments/pay_fixture',credential,'sandbox',async(url,init)=>{assert.ok(url.startsWith('https://api-sandbox.asaas.com/'));assert.equal(init.headers.access_token,credential);assert.equal(init.redirect,'error');return new Response('{"id":"pay_fixture","status":"RECEIVED","value":89999999999999.99,"netValue":89999999999999.98}')});assert.equal(normalizePayment(exact).gross_cents,'8999999999999999')
 const normalized=normalizePayment({id:'pay_fixture',status:'CONFIRMED',value:'100.01',netValue:'99.50',confirmedDate:'2026-10-20',refunds:[{status:'PENDING',value:'90.00'},{status:'DONE',value:'10.00',dateCreated:'2026-10-21 12:00:00'}]});assert.equal(normalized.refund_cents,'1000');assert.equal(normalized.status,'CONFIRMED');assert.equal(normalized.customer,undefined);await assert.rejects(()=>asaasJSON('/payments/../../webhooks',credential,'production',fixture({})));checks.push('Asaas fixed read-only endpoints, native webhook token check, exact decimal parsing before Number conversion, DONE-only refunds, no customer/card data')

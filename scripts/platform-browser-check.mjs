@@ -5,9 +5,10 @@ import {mkdirSync,writeFileSync} from 'node:fs'
 import {randomBytes} from 'node:crypto'
 import assert from 'node:assert/strict'
 mkdirSync('output/platform',{recursive:true})
+const atlas=process.env.EG_PLATFORM_THEME==='atlas'
 const html=(script)=>'<!doctype html><html lang="pt-BR"><meta name="viewport" content="width=device-width,initial-scale=1"><div id="root"></div><script type="module">import React from "react";import{createRoot}from"react-dom/client";import"/src/styles.css";import"/src/styles-extra.css";import"/src/collaboration/collaboration.css";import"/src/features/identity/identity.css";'+script+'</script></html>'
 writeFileSync('output/platform/auth.html',html('import{Auth}from"/src/features/identity/AuthScreen.tsx";import{SecuritySettings}from"/src/features/identity/SecuritySettings.tsx";import{identity}from"/src/features/identity/client.ts";createRoot(document.getElementById("root")).render(React.createElement(Auth,{onLocal:()=>{}},s=>React.createElement("main",{className:"collab-content"},React.createElement("h1",null,"Olá, "+s.user.user_metadata.display_name),React.createElement("p",null,s.user.user_metadata.job_title),React.createElement(SecuritySettings,{email:s.user.email}),React.createElement("button",{onClick:()=>identity.signOut()},"Sair QA"))));'))
-writeFileSync('output/platform/economy.html',html('import Economy from"/src/features/economy/Economy.tsx";createRoot(document.getElementById("root")).render(React.createElement(Economy,{workspaceId:"workspace-qa",name:"Holding QA · dados sintéticos",email:"qa@example.invalid",onBack:()=>history.pushState(null,"","/vision")}));'))
+writeFileSync('output/platform/economy.html',html('import Economy from"/src/features/economy/Economy.tsx";import"/src/features/appearance/themes.css";import"/src/features/appearance/atlas.css";import"@fontsource-variable/geist";import{initializeFocusModality}from"/src/features/appearance/focus.ts";initializeFocusModality();document.documentElement.dataset.theme="'+(atlas?'atlas':'electric')+'";createRoot(document.getElementById("root")).render(React.createElement(Economy,{workspaceId:"workspace-qa",name:"Holding QA · dados sintéticos",email:"qa@example.invalid",onOperations:()=>{},onBack:()=>history.pushState(null,"","/vision")}));'))
 writeFileSync('output/platform/founders.html',html('import Founders from"/src/features/founders/Founders.tsx";createRoot(document.getElementById("root")).render(React.createElement(Founders,{userId:"qa-user",email:"qa@example.invalid",onBack:()=>history.pushState(null,"","/vision"),onWorkspace:()=>{},onEconomy:()=>{},onChat:()=>{}}));'))
 writeFileSync('output/platform/vault.html',html('import{useState}from"react";import WorldPane from"/src/features/world/WorldPane.tsx";import{useSurface}from"/src/features/navigation.ts";const data={scope:"workspace-qa",name:"Holding QA",source:"workspace",userId:"qa-user",members:[],projects:[],tasks:[],activity:[],channels:[]};function Harness(){const[surface,navigate]=useSurface();return surface==="economy"?React.createElement("main",null,React.createElement("h1",null,"Economy QA"),React.createElement("p",null,"workspace-qa / qa-user"),React.createElement("button",{onClick:()=>navigate("vision")},"Voltar ao Vision QA")):React.createElement(WorldPane,{data,actions:{onOpenTask:()=>{},onOpenProject:()=>{},onOpenEconomy:()=>navigate("economy"),onOpenFounders:()=>navigate("founders")}})}createRoot(document.getElementById("root")).render(React.createElement(Harness));'))
 writeFileSync('output/platform/personal.html',html('import{App}from"/src/App.tsx";import"/src/home-reference.css";createRoot(document.getElementById("root")).render(React.createElement(App));'))
@@ -19,13 +20,14 @@ const server=spawn(process.execPath,['node_modules/vite/bin/vite.js','--config',
 let logs='';server.stdout.on('data',d=>logs+=d);server.stderr.on('data',d=>logs+=d)
 await new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(Error(logs)),20000);server.stdout.on('data',d=>{if(String(d).includes('5196')){clearTimeout(timer);resolve()}});server.on('error',reject)})
 const origin='http://localhost:5196',results=[]
+const financeOnly=process.env.EG_PLATFORM_FOCUS==='finance'
 let browser
 try{
  browser=await chromium.launch({executablePath:process.env.BROWSER_PATH||'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',headless:true,args:['--use-angle=swiftshader','--enable-unsafe-swiftshader']})
- for(const width of[390,478,1440]){
+ for(const width of (financeOnly&&atlas?[320,390,478,1440]:[390,478,1440])){
  const context=await browser.newContext({viewport:{width,height:1000},hasTouch:width<700,reducedMotion:'reduce'})
  const page=await context.newPage(),errors=[],requests=[],actions=[];page.on('pageerror',e=>errors.push(e.message));page.on('request',r=>requests.push(r.url()))
- let hasWorkspace=false,signed=false,profile={display_name:'Ana QA',job_title:'Diretora'},keys=[],registered=false,credential=null
+ let hasWorkspace=financeOnly,signed=financeOnly,profile={display_name:'Ana QA',job_title:'Diretora'},keys=[],registered=false,credential=null
  const session=()=>({user:{id:'qa-user',email:'qa@example.invalid',user_metadata:profile},context:{active:true,recent_auth:true,session_id:'fixture-session',workspaces:hasWorkspace?[{id:'workspace-qa',name:'Holding QA',role:'owner'}]:[],profile}})
  await page.route('**/api/identity/**',async route=>{const action=new URL(route.request().url()).pathname.split('/api/identity/')[1],body=route.request().method()==='POST'?route.request().postDataJSON():{}
  const fulfill=(data,status=200)=>route.fulfill({status,contentType:'application/json',body:JSON.stringify(data)})
@@ -49,6 +51,7 @@ try{
  if(action==='logout'){signed=false;return fulfill({signedOut:true})}
  return fulfill({error:{message:'Unexpected fixture action '+action}},500)
  })
+ if (!financeOnly) {
  await page.goto(origin+'/output/platform/auth.html');await page.getByRole('heading',{name:'Entrar na Evergreen',exact:true}).waitFor()
  assert.equal(requests.some(x=>/WorldScene|@react-three|\/three\./.test(x)),false)
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false)
@@ -82,6 +85,7 @@ try{
  await page.getByRole('button',{name:"Usar chave de acesso",exact:true}).click();await page.getByRole('heading',{name:'Olá, Ana QA',exact:true}).waitFor()
  assert.equal(await page.evaluate(()=>Object.keys(localStorage).some(k=>/^sb-.*auth-token/.test(k))),false)
  results.push({width,normalSignupWithoutInvite:true,firstWorkspaceOnboarding:true,passwordReset:true,profileNameJob:true,otpErrorRecovery:true,nativeWebAuthnVirtualCeremony:true,nativeWebAuthnErrorsPortuguese:true,noLocalAuthTokens:true,no3DDuringAuth:true})
+ }
  await page.route('**/api/backend?**',async route=>{const path=new URL(new URL(route.request().url()).searchParams.get('target')??new URL(route.request().url()).searchParams.get('path'),'https://fixture.invalid').pathname;const body=route.request().method()==='POST'?route.request().postDataJSON():{};let data
  if(path.endsWith('/eg_members'))data=[{user_id:'qa-user',display_name:'Ana QA'}]
  else if(path.endsWith('/eg_economy_targets'))data=snapshot.accounts.map(a=>({...a,company_name:a.company_id==='ca'?'Operações QA':'Produtos QA',workspace_name:'Holding QA'}))
@@ -96,26 +100,93 @@ try{
  else return route.fulfill({status:500,contentType:'application/json',body:JSON.stringify({message:'Unexpected fixture endpoint '+path})})
  return route.fulfill({contentType:'application/json',body:JSON.stringify(data)})
  })
- await page.goto(origin+'/output/platform/economy.html');await page.getByText('BRL 100,01',{exact:true}).waitFor()
+ const economyRequestStart=requests.length
+ await page.goto(origin+'/output/platform/economy.html');await page.getByRole('region',{name:'Saldo consolidado'}).getByText('BRL 100,01',{exact:true}).waitFor()
+ const initialBookRequests=requests.slice(economyRequestStart).flatMap(url=>url.match(/eg_economy_(?:snapshot|history|targets)|eg_financial_report|eg_members/)??[])
+ assert.deepEqual([...initialBookRequests].sort(),['eg_economy_history','eg_economy_snapshot'],'Overview requests only its authorized balance and recent entries')
+ const toolbar=page.locator('.economy-toolbar')
+ await toolbar.getByRole('button',{name:'Voltar à Visão',exact:true}).waitFor()
+ await toolbar.getByRole('button',{name:'Compromissos e aprovações',exact:true}).waitFor()
+ assert.ok(await toolbar.evaluate(el=>el.scrollWidth<=el.clientWidth))
+ assert.ok(await toolbar.evaluate(el=>{
+  const brand=el.querySelector('.economy-toolbar-brand').getBoundingClientRect()
+  const notice=el.querySelector('.notification-center').getBoundingClientRect()
+  return brand.right<=notice.left
+ }))
+ if(atlas) assert.ok(await page.getByRole('navigation',{name:'Evergreen Finanças'}).getByRole('button').evaluateAll(buttons=>
+  buttons.every((button,i)=>button.clientWidth>=44&&button.scrollWidth<=button.clientWidth&&
+    (i===0||buttons[i-1].offsetTop<button.offsetTop||buttons[i-1].getBoundingClientRect().right<=button.getBoundingClientRect().left))
+ ))
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false)
- await page.screenshot({path:'output/platform/economy-'+width+'.png',fullPage:true})
+ await page.screenshot({path:'output/platform/economy-'+(atlas?'atlas-':'')+width+'.png',fullPage:true})
+ const filters=page.locator('.economy-filter-disclosure')
+ const period=filters.locator('summary')
+ assert.equal(await filters.getByLabel('De',{exact:true}).isVisible(),false)
+ if(width<=478) assert.ok(await page.getByRole('region',{name:'Saldo consolidado'}).getByText('BRL 100,01',{exact:true}).evaluate(el=>el.getBoundingClientRect().bottom<=innerHeight))
+ await period.focus()
+ await page.keyboard.press('Enter')
+ assert.ok(await page.locator('.economy-filters input[type="date"]').evaluateAll(inputs=>{
+  const [first,second]=inputs.map(input=>input.getBoundingClientRect())
+  return second.right<=innerWidth&&(first.right<=second.left||first.bottom<=second.top)
+ }))
+
+ const beforeApply=requests.filter(url=>url.includes('eg_economy_snapshot')).length
+ await filters.getByLabel('De',{exact:true}).fill('2026-02-01')
+ await filters.getByLabel('Até',{exact:true}).fill('2026-01-31')
+ await filters.getByRole('button',{name:'Aplicar filtros',exact:true}).click()
+ await filters.getByRole('alert').waitFor()
+ assert.equal(requests.filter(url=>url.includes('eg_economy_snapshot')).length,beforeApply)
+ await filters.getByLabel('Até',{exact:true}).fill('2026-02-28')
+ if(atlas){
+  await filters.getByRole('combobox',{name:'Moeda',exact:true}).click()
+  await page.getByRole('option',{name:'BRL',exact:true}).click()
+ }
+ await filters.getByRole('button',{name:'Aplicar filtros',exact:true}).click()
+ assert.equal(await filters.evaluate(el=>el.open),false)
+ assert.ok(await period.evaluate(el=>el===document.activeElement))
+ await page.getByRole('region',{name:'Saldo consolidado'}).getByText('BRL 100,01',{exact:true}).waitFor()
+ await page.getByRole('button',{name:'Ver Produtos QA',exact:true}).click()
+ await page.waitForFunction(()=>document.activeElement?.id==='economy-company-cb')
+ await page.getByRole('button',{name:'Visão Geral',exact:true}).click()
+
+ const flow=page.getByRole('region',{name:'Receitas e despesas',exact:true})
+ await flow.getByText('BRL 100,01',{exact:true}).waitFor()
+ await flow.getByText('BRL 0,00',{exact:true}).waitFor()
+ assert.equal(await flow.locator('[data-kind="income"]').getByText('BRL 100,01',{exact:true}).count(),1)
+ await flow.getByRole('button',{name:'Ver movimentações',exact:true}).click()
+ const financeNav=page.getByRole('navigation',{name:'Evergreen Finanças'})
+ assert.equal(await financeNav.getByRole('button',{name:'Movimentações',exact:true}).getAttribute('aria-current'),'page')
+ assert.ok(await financeNav.getByRole('button',{name:'Movimentações',exact:true}).evaluate(button=>button===document.activeElement))
+ await financeNav.getByRole('button',{name:'Visão Geral',exact:true}).click()
+
  for(const tab of ['Empresas','Cofres','Movimentações','Relatórios','Planejamento']){await page.getByRole('navigation',{name:"Evergreen Finanças"}).getByRole('button',{name:tab,exact:true}).click();assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false)}
  await page.getByRole('button',{name:'Empresas',exact:true}).click()
  const newAccount=page.getByRole('button',{name:'Nova conta',exact:true});await newAccount.click()
  await page.waitForFunction(()=>document.activeElement?.id==='economy-form-title')
  assert.ok(await page.locator('#economy-form-title').evaluate(el=>{const r=el.getBoundingClientRect();return r.top>=0&&r.bottom<=innerHeight}))
- await page.screenshot({path:'output/platform/economy-editor-'+width+'.png',fullPage:true})
+ await page.screenshot({path:'output/platform/economy-editor-'+(atlas?'atlas-':'')+width+'.png',fullPage:true})
  await page.getByRole('button',{name:'Fechar',exact:true}).click();assert.ok(await newAccount.evaluate(el=>document.activeElement===el))
  await page.getByRole('button',{name:'Movimentações',exact:true}).click();await page.getByRole('button',{name:'Transferência',exact:true}).click()
- await page.getByLabel('Conta de origem',{exact:true}).selectOption('ac');await page.getByLabel('Conta de destino',{exact:true}).selectOption('bc')
+ if(atlas){
+  await page.getByRole('combobox',{name:'Conta de origem',exact:true}).click()
+  await page.getByRole('option',{name:/Principal QA/}).click()
+  await page.getByRole('combobox',{name:'Conta de destino',exact:true}).click()
+  await page.getByRole('option',{name:/Operação QA/}).click()
+ }else{
+  await page.getByLabel('Conta de origem',{exact:true}).selectOption('ac')
+  await page.getByLabel('Conta de destino',{exact:true}).selectOption('bc')
+ }
+ assert.ok(requests.slice(economyRequestStart).some(url=>url.includes('eg_economy_targets')))
  await page.getByLabel('Valor',{exact:true}).fill('25,01');await page.getByLabel('Descrição',{exact:true}).fill('Transferir QA')
  await page.getByRole('button',{name:'Salvar registro',exact:true}).click()
+ const review=page.getByRole('dialog',{name:'Confirmar transferência',exact:true});await review.waitFor();assert.equal(actions.length,0);await review.getByText('BRL 25,01',{exact:true}).waitFor();await review.getByRole('button',{name:'Confirmar transferência',exact:true}).click()
  const stepup=page.getByRole('dialog',{name:'Proteja esta operação.',exact:true});await stepup.waitFor();await stepup.getByRole('button',{name:'Receber código',exact:true}).click();await stepup.getByLabel('Código do e-mail',{exact:true}).fill('123456');await stepup.getByRole('button',{name:'Confirmar identidade',exact:true}).click()
  await page.getByText('Registro salvo no livro interno da empresa.',{exact:true}).waitFor()
  assert.equal(actions.length,2);assert.equal(actions[0].p_data.request_id,actions[1].p_data.request_id)
  const transfer=actions.find(a=>a.p_action==='transfer');assert.equal(transfer.p_data.cents,'2501');assert.match(transfer.p_data.request_id,/^[a-f0-9-]{36}$/)
  await page.getByRole('button',{name:'Voltar à Visão',exact:true}).click();assert.equal(new URL(page.url()).pathname,'/vision')
- results.push({width,economySixTabs:true,financialStepUpRetrySameId:true,noOverflow:true,exactTransferInput:true,returnVision:true})
+ results.push({width,initialBookRequests,economySixTabs:true,financialStepUpRetrySameId:true,noOverflow:true,exactTransferInput:true,returnVision:true})
+ if (financeOnly) {assert.deepEqual(errors,[]);await context.close();continue}
  await page.goto(origin+'/output/platform/founders.html');await page.getByText('O grupo, em perspectiva.',{exact:true}).waitFor();await page.getByRole('heading',{name:'Prioridades para sua atenção',exact:true}).waitFor()
  await page.screenshot({path:'output/platform/founders-'+width+'.png',fullPage:true})
  for(const tab of Object.values({companies:'Empresas',finance:"Finanças",people:'Pessoas',projects:'Projetos',intelligence:'Inteligência',decisions:'Decisões',communication:'Comunicação',governance:'Governança'})){await page.getByRole('navigation',{name:"Evergreen Fundadores"}).getByRole('button',{name:tab,exact:true}).click();assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false)}
@@ -132,7 +203,8 @@ try{
  assert.deepEqual(errors,[]);results.push({editorFocusAndReturn:true,documentCompanyFilter:true,width,foundersNineTabs:true,scopedIndicators:true,noOverflow:true,errors})
  await context.close()
  }
- for(const width of[390,478,1440]){
+ if (!financeOnly) {
+ for(const width of (financeOnly&&atlas?[320,390,478,1440]:[390,478,1440])){
  const context=await browser.newContext({viewport:{width,height:1000},hasTouch:width<700,reducedMotion:'no-preference'})
  const page=await context.newPage(),errors=[],requested=[];page.on('pageerror',e=>errors.push(e.message));page.on('request',r=>requested.push(r.url()))
  await page.goto(origin+'/output/platform/vault.html');await page.waitForFunction(()=>Number(document.querySelector('[data-testid=world-renderer]')?.dataset.frames)>0)
@@ -163,5 +235,6 @@ try{
  await personal.getByRole('heading',{name:/Marina\./}).waitFor();await personal.getByText("Diretora de operações · Disponível",{exact:true}).waitFor()
  await personal.reload();await personal.getByRole('heading',{name:/Marina\./}).waitFor();assert.equal(await personal.evaluate(()=>JSON.parse(localStorage.getItem('evergreen.personal-profile.v1')).name),'Marina Silva')
  assert.equal(await personal.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);results.push({personalProfileNameJobPersisted:true,noFakeJoao:true});await personal.close()
- writeFileSync('output/platform/browser-results.json',JSON.stringify({environment:'Local API fixtures + virtual authenticator; not Supabase/provider E2E; mobile emulation, not physical devices',results},null,2));console.log(JSON.stringify(results,null,2))
+ }
+ writeFileSync(financeOnly?'output/platform/finance-results.json':'output/platform/browser-results.json',JSON.stringify({environment:'Local API fixtures + virtual authenticator; not Supabase/provider E2E; mobile emulation, not physical devices',results},null,2));console.log(JSON.stringify(results,null,2))
 }catch(e){console.log(logs.slice(-500));for(const c of browser?.contexts()||[])for(const p of c.pages()){await p.screenshot({path:'output/platform/browser-failure.png',fullPage:true}).catch(()=>{});console.log((await p.locator('body').innerText()).slice(-1500))}throw e}finally{await browser?.close();server.kill()}

@@ -23,7 +23,7 @@ function relativeTime(timestamp: number) {
   return `${Math.floor(hours / 24)} dias atrás`
 }
 
-export function HomePage({ tasks, objectives, activities, teamMembers, currentUser, focusSession, openTasks, addTask, createObjective, openFocus, pauseFocus, resumeFocus, requestEndFocus, completeFocus, timezone, connected, focusedTodayMs, dailyGoalMinutes, onInvite, organizationName, savedFocus = activities }: {
+export function HomePage({ tasks, objectives, activities, teamMembers, currentUser, focusSession, openTasks, openTask, completeTask, taskBusy = false, focusBusy = false, addTask, createObjective, openFocus, pauseFocus, resumeFocus, requestEndFocus, completeFocus, timezone, connected, focusedTodayMs, dailyGoalMinutes, onInvite, organizationName, savedFocus = activities }: {
   savedFocus?: SavedFocus[]
   organizationName?:string
   onInvite?:()=>void
@@ -37,6 +37,10 @@ export function HomePage({ tasks, objectives, activities, teamMembers, currentUs
   teamMembers: TeamMember[]
   currentUser: Person
   focusSession: FocusSession
+  openTask?: (id: string) => void
+  completeTask?: (id: string) => void
+  taskBusy?: boolean
+  focusBusy?: boolean
   openTasks: () => void
   addTask: () => void
   createObjective: () => void
@@ -65,11 +69,14 @@ export function HomePage({ tasks, objectives, activities, teamMembers, currentUs
   const activeTasks = tasks.filter(task => task.status !== 'done')
   const currentPriority = activeTasks.find(task => task.priority === 'urgent' || task.priority === 'high') ?? activeTasks[0]
   const nextAction = activeTasks.find(task => task.status === 'in-progress') ?? activeTasks.find(task => task.status === 'todo')
+  const showTask = (task?: Task) => task && openTask ? openTask(task.id) : openTasks()
   const firstName = currentUser.name.trim().split(/\s+/)[0] || 'Você'
   const greeting = getGreeting(timezone?Number(new Intl.DateTimeFormat('pt-BR',{timeZone:timezone,hour:'numeric',hourCycle:'h23'}).format(new Date())):new Date().getHours())
   const todayLabel = new Intl.DateTimeFormat('pt-BR', { weekday: 'short', month: 'short', day: 'numeric',timeZone:timezone }).format(new Date())
 
 
+
+  const weeklyProgress = <WeeklyProgress tasks={tasks} sessions={savedFocus} timezone={timezone} />
 
   return <main className="reference-home">
     <div className="home-top-grid">
@@ -82,17 +89,17 @@ export function HomePage({ tasks, objectives, activities, teamMembers, currentUs
           <p>Veja o que importa hoje{organizationName?`${organizationName.trim().toLowerCase()==='orkto'?' na':' no'} ${organizationName}`:''}.</p>
         </div>
         <div className="hero-buttons">
-            {focusSession.status === 'idle' ? <button onClick={openFocus}><Play /> Iniciar foco</button> : <>
-              <button onClick={focusSession.status === 'paused' ? resumeFocus : pauseFocus}>{focusSession.status === 'paused' ? <Play /> : <Pause />}{focusSession.status === 'paused' ? "Retomar" : "Pausar"}</button>
-              <button onClick={requestEndFocus}><Square /> Encerrar sessão</button>
+            {focusSession.status === 'idle' ? <button disabled={focusBusy} onClick={openFocus}><Play /> Iniciar foco</button> : <>
+              <button disabled={focusBusy} aria-busy={focusBusy} onClick={focusSession.status === 'paused' ? resumeFocus : pauseFocus}>{focusSession.status === 'paused' ? <Play /> : <Pause />}{focusSession.status === 'paused' ? "Retomar" : "Pausar"}</button>
+              <button disabled={focusBusy} onClick={requestEndFocus}><Square /> Encerrar sessão</button>
             </>}
         </div>
       </section>
 
       <section className="today-panel">
-        <header><CalendarDays /><strong>Hoje</strong><time>{todayLabel}</time></header>
+        <header><CalendarDays /><strong>Resumo de hoje</strong><time>{todayLabel}</time></header>
         <div className="today-list">
-          <button onClick={openTasks}><Target className={currentPriority ? 'today-accent' : ''} /><span><small>Prioridade atual</small><strong>{currentPriority?.title ?? "Nenhuma prioridade definida"}</strong></span><ChevronRight /></button>
+          <button onClick={() => showTask(currentPriority)}><Target className={currentPriority ? 'today-accent' : ''} /><span><small>Prioridade atual</small><strong>{currentPriority?.title ?? "Nenhuma prioridade definida"}</strong></span><ChevronRight /></button>
           <div className="today-progress">
             <CircleGauge className="today-focus-icon" aria-hidden="true" />
             <div>
@@ -102,17 +109,15 @@ export function HomePage({ tasks, objectives, activities, teamMembers, currentUs
             </div>
           </div>
           <button onClick={openTasks}><SquareCheckBig /><span><strong>Tarefas restantes</strong></span><b>{activeTasks.length}</b><ChevronRight /></button>
-          <button onClick={openTasks}><CirclePlay /><span><small>Próxima ação</small><strong>{nextAction?.title ?? "Nenhuma próxima ação"}</strong></span><ChevronRight /></button>
+          <button onClick={() => showTask(nextAction)}><CirclePlay /><span><small>Próxima ação</small><strong>{nextAction?.title ?? "Nenhuma próxima ação"}</strong></span><ChevronRight /></button>
         </div>
       </section>
     </div>
 
-    <WeeklyProgress tasks={tasks} sessions={savedFocus} timezone={timezone} />
-
     <div className="home-bottom-grid">
       <section className="my-day-panel">
         <header><ListTodo /><strong>Meu dia</strong><span>{activeTasks.length} {activeTasks.length === 1 ? 'tarefa' : 'tarefas'} · {focusedTodayMinutes} min em foco</span></header>
-        {activeTasks.length > 0 ? <div className="my-day-list">{activeTasks.slice(0, 5).map(task => <div className="day-task no-project" key={task.id}><span className="day-check" /><button className="day-title" onClick={openTasks}>{task.title}</button><span className="day-flex" /><span className="task-dot" /><button className="day-more" onClick={openTasks} aria-label={`Abrir ${task.title}`}><Ellipsis /></button></div>)}</div> : <div className="home-empty-state my-day-empty"><strong>Nenhuma tarefa para hoje.</strong><span>Adicione sua primeira tarefa quando quiser.</span></div>}
+        {activeTasks.length > 0 ? <div className="my-day-list">{activeTasks.slice(0, 5).map(task => <div className="day-task no-project" key={task.id}><button className="day-check" disabled={!completeTask || taskBusy} onClick={() => completeTask?.(task.id)} aria-label={'Concluir '+task.title}><Square /></button><button className="day-title" onClick={() => showTask(task)}>{task.title}</button><span className="day-flex" /><span className="task-dot" /><button className="day-more" onClick={() => showTask(task)} aria-label={`Abrir ${task.title}`}><Ellipsis /></button></div>)}</div> : <div className="home-empty-state my-day-empty"><strong>Nenhuma tarefa para hoje.</strong><span>Adicione sua primeira tarefa quando quiser.</span></div>}
         <button className="add-day-task" onClick={addTask}><Plus /> Adicionar tarefa</button>
       </section>
 
@@ -134,6 +139,8 @@ export function HomePage({ tasks, objectives, activities, teamMembers, currentUs
         {teamMembers.filter(member => member.id !== currentUser.id).length === 0 && <div className="team-empty">Ainda não há outras pessoas aqui.</div>}
         <button className="join-room" disabled={!onInvite} onClick={onInvite} title={onInvite?"Convidar alguém da equipe":'Abra colaboração para criar convites reais'}><UserRoundPlus /> {onInvite?"Convidar membro":"Convites disponíveis no espaço compartilhado"}</button>
       </section>
+      {connected !== undefined && weeklyProgress}
     </div>
+    {connected === undefined && weeklyProgress}
   </main>
 }

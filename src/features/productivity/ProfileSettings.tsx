@@ -1,3 +1,4 @@
+import { AppSelect } from '../appearance/AppSelect'
 import {useEffect,useState} from 'react'
 import type {Member} from '../../collaboration/models'
 import {checked,db,failure} from '../../collaboration/client'
@@ -82,15 +83,15 @@ export function ProfileSettings({userId,workspaceId,members,onName}:{userId:stri
     </div>
     <label>Apresentação profissional<textarea name="bio" defaultValue={profile.bio} maxLength={280} rows={4} placeholder="Conte brevemente sobre sua atuação."/><small>Até 280 caracteres.</small></label>
     <label>Especializações <span>(separadas por vírgula)</span><input name="specialties" defaultValue={professionalPreferences(profile).specialties.join(', ')} maxLength={1100} placeholder="Estratégia, tecnologia, operações"/><small>Até 20 áreas, 50 caracteres cada.</small></label>
-    <label>Fuso horário<select name="timezone" defaultValue={profile.timezone}>{[...new Set(['UTC',profile.timezone,...Intl.supportedValuesOf('timeZone')])].map(timezone=><option key={timezone} value={timezone}>{timezone}</option>)}</select></label>
+    <label>Fuso horário<AppSelect name="timezone" defaultValue={profile.timezone}>{[...new Set(['UTC',profile.timezone,...Intl.supportedValuesOf('timeZone')])].map(timezone=><option key={timezone} value={timezone}>{timezone}</option>)}</AppSelect></label>
     <label>Status personalizado<input name="custom_status" defaultValue={profile.custom_status} maxLength={80} placeholder="Ex.: Em reunião até 15h"/></label>
     <label className="profile-check-row"><input type="checkbox" checked={showStatus} onChange={event=>setShowStatus(event.target.checked)}/>Exibir meu status personalizado no perfil</label>
 
     <fieldset className="profile-privacy-fieldset">
      <legend>Privacidade do perfil</legend>
-     <label>Quem pode ver suas informações?<select value={visibility} onChange={event=>setVisibility(event.target.value as Visibility)}>
+     <label>Quem pode ver suas informações?<AppSelect value={visibility} onChange={event=>setVisibility(event.target.value as Visibility)}>
       <option value="workspace">Membros das mesmas organizações</option><option value="selected">Pessoas escolhidas</option><option value="private">Somente eu</option>
-     </select></label>
+     </AppSelect></label>
      <p>O acesso exige que a pessoa também pertença à organização em questão. Dados de outras empresas independentes não são compartilhados automaticamente.</p>
      {visibility==='selected'&&<div className="profile-reader-list"><h3>Pessoas autorizadas neste espaço</h3>{members.filter(member=>member.user_id!==userId).map(member=><label key={member.user_id} className="profile-check-row"><input type="checkbox" checked={allowedUsers.includes(member.user_id)} onChange={event=>setAllowedUsers(current=>event.target.checked?[...new Set([...current,member.user_id])]:current.filter(id=>id!==member.user_id))}/>{member.display_name}</label>)}{members.filter(member=>member.user_id!==userId).length===0&&<p>Nenhum outro membro disponível neste espaço.</p>}<small>{selectedCount} pessoa(s) selecionada(s) neste espaço.</small></div>}
      {visibility==='private'&&<p>Somente você verá a apresentação, os vínculos e as imagens do perfil.</p>}
