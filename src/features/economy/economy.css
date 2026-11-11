@@ -313,8 +313,8 @@
 }
 
 /* The approved financial overview lives inside the work app, with its context. */
-.collab-app .economy-embedded { min-height: 0; flex: 1 1 auto; overflow: visible; background: var(--bg); color: var(--text); font-family: inherit; }
-.collab-app .economy-embedded .economy-container { width: 100%; max-width: var(--workspace-reading-width, 1160px); margin: 0; padding: 28px var(--workspace-gutter, 24px) 48px; }
+.collab-app .economy-embedded { min-height: 0; flex: 1 1 auto; overflow: auto; background: var(--bg); color: var(--text); font-family: inherit; }
+.collab-app .economy-embedded .economy-container { width: 100%; max-width: var(--workspace-reading-width, 1160px); margin: 0; padding: 28px var(--workspace-gutter, 24px) 64px; }
 .economy-embedded .economy-intro { margin-bottom: 20px; }
 .economy-embedded .economy-intro h1 { margin: 0 0 8px; font-size: 34px; }
 .economy-embedded .economy-intro p { margin: 0; color: var(--muted); }
@@ -355,3 +355,19 @@
  .economy-embedded .economy-quick-actions > button { flex: 1 1 0; min-width: 0; padding-inline: 8px; white-space: normal; font-size: 12px; line-height: 1.3; }
  .economy-embedded .economy-overview-panel { padding: 18px 16px; }
 }
+
+/* Standalone governance owns its scrollport, including after returning to the hub. */
+.founders-page {
+  height: 100dvh;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior-y: contain;
+  font-family: inherit;
+  scroll-padding-block: 24px 64px;
+}
+.founders-page > .economy-container { padding-bottom: 64px; }
+.founders-page .economy-header > button { flex-shrink: 0; }
+.founders-page .economy-wordmark { min-width: 0; flex: 0 1 auto; }
+.founders-page .economy-wordmark > strong { white-space: nowrap; }
+.founders-page .economy-header > .notification-center { flex: 0 0 auto; margin-left: auto; }
+.founders-page :is(input, textarea, [data-slot="select-trigger"]) { min-width: 0; max-width: 100%; }

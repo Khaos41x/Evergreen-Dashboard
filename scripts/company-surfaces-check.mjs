@@ -9,6 +9,17 @@ export async function checkCompanySurfaces({page,width,fixture,userId,workspaceI
   await page.getByRole('group',{name:'Escolher empresa'}).getByRole('button',{name:name+' Empresa',exact:true}).click()
   await page.waitForFunction(name=>document.querySelector('.collab-top > strong')?.textContent===name,name)
  }
+ const innerHeightFromViewport=()=>page.viewportSize().height+1
+ const viewportState=()=>page.evaluate(()=>{
+  const root=document.scrollingElement
+  const frame=document.querySelector('.collab-app, .founders-page').getBoundingClientRect()
+  return {windowHeight:innerHeight,rootHeight:root.scrollHeight,rootTop:root.scrollTop,frameTop:frame.top,frameBottom:frame.bottom}
+ })
+ await page.locator('.os-company-directory article').first().waitFor()
+ assert.ok((await viewportState()).rootHeight<=innerHeightFromViewport(),'Hub stays within the document viewport')
+ await page.evaluate(()=>window.scrollTo(0,document.scrollingElement.scrollHeight))
+ assert.equal((await viewportState()).rootTop,0,'The outer document cannot scroll into an empty canvas')
+ await page.evaluate(()=>window.scrollTo(0,0))
  await page.locator('.os-company-directory article').first().getByRole('button',{name:'Entrar',exact:true}).click()
  await page.locator('.domain-home').waitFor()
  await go('Conversas')
@@ -117,6 +128,31 @@ export async function checkCompanySurfaces({page,width,fixture,userId,workspaceI
  assert.equal(await page.locator('.collab-top > strong').innerText(),'UI fixture workspace')
  if(width>600)assert.equal(await page.getByRole('navigation',{name:'Empresas da holding'}).isVisible(),true)
  await checkLayout()
+ const scrolling=await finance.evaluate(element=>({
+  overflow:getComputedStyle(element).overflowY,
+  viewport:element.clientHeight,
+  content:element.scrollHeight,
+ }))
+ assert.equal(scrolling.overflow,'auto','Finance must own vertical scrolling inside the fixed workspace')
+ assert.ok(scrolling.content>scrolling.viewport,'Fixture must exercise content below the viewport')
+ const headerBefore=await page.locator('.collab-top').boundingBox()
+ await finance.hover()
+ await page.mouse.wheel(0,700)
+ await page.waitForFunction(()=>document.querySelector('.economy-embedded').scrollTop>0)
+ const headerAfter=await page.locator('.collab-top').boundingBox()
+ assert.equal(headerAfter.y,headerBefore.y,'Workspace header stays in place while Finance scrolls')
+ const recent=finance.getByRole('region',{name:'Movimentações recentes',exact:true})
+ await recent.scrollIntoViewIfNeeded()
+ assert.ok(await recent.isVisible())
+ const financeBottom=await finance.evaluate(element=>{
+  element.scrollTop=element.scrollHeight
+  const container=element.querySelector('.economy-container')
+  const last=container.lastElementChild.getBoundingClientRect()
+  return {bottom:element.getBoundingClientRect().bottom,lastBottom:last.bottom,padding:parseFloat(getComputedStyle(container).paddingBottom)}
+ })
+ assert.ok(financeBottom.padding>=64,'Finance leaves reading space below the last section')
+ assert.ok(financeBottom.bottom-financeBottom.lastBottom>=60,'The final section clears the lower viewport edge')
+ await finance.evaluate(element=>{element.scrollTop=0})
  await page.screenshot({path:'output/playwright/finance-integrated-'+width+'.png'})
  await finance.getByRole('button',{name:'Preparar transferência',exact:true}).click()
  await finance.getByRole('heading',{name:'Transferir entre contas',exact:true}).waitFor()
@@ -137,6 +173,37 @@ export async function checkCompanySurfaces({page,width,fixture,userId,workspaceI
  assert.equal(fixture.financialActions[0].p_workspace,workspaceId)
  assert.equal(fixture.financialActions[0].p_data.cents,'12540')
 
+ if(width>=600){
+  await page.locator('.collab-top').getByRole('button',{name:'Fundadores',exact:true}).click()
+  const founders=page.locator('.founders-page')
+  await founders.getByRole('heading',{name:'O grupo, em perspectiva.',exact:true}).waitFor()
+  await founders.getByRole('button',{name:'Governança',exact:true}).click()
+  await founders.getByRole('heading',{name:'Níveis da Evergreen',exact:true}).waitFor()
+  const governanceViewport=await viewportState()
+  assert.ok(governanceViewport.rootHeight<=innerHeightFromViewport(),'Governance does not enlarge the outer document')
+  const colors=await founders.locator('.professional-level-order li').first().evaluate(element=>({
+   background:getComputedStyle(element).backgroundColor,
+   text:getComputedStyle(element.querySelector('strong')).color,
+  }))
+  assert.equal(colors.background,'rgb(10, 10, 10)','Authority levels use the active neutral theme')
+  assert.equal(colors.text,'rgb(237, 237, 237)')
+  await founders.hover()
+  await page.mouse.wheel(0,700)
+  await page.waitForFunction(()=>document.querySelector('.founders-page').scrollTop>0)
+  await founders.getByRole('heading',{name:'Níveis da Evergreen',exact:true}).scrollIntoViewIfNeeded()
+  await page.screenshot({path:'output/playwright/founders-neutral-'+width+'.png'})
+  await page.goBack()
+  await finance.getByRole('heading',{name:'Finanças',exact:true}).waitFor()
+  await page.getByRole('navigation',{name:'Empresas da holding'}).getByRole('button',{name:'Todas as organizações',exact:true}).click()
+  await page.locator('.os-company-directory').waitFor()
+  await page.evaluate(()=>window.scrollTo(0,document.scrollingElement.scrollHeight))
+  const returned=await viewportState()
+  assert.equal(returned.rootTop,0,'Returning from governance keeps the hub at the top of the viewport')
+  assert.equal(returned.frameTop,0)
+  await page.screenshot({path:'output/playwright/hub-no-empty-canvas-'+width+'.png'})
+  await page.locator('.os-company-directory article').first().getByRole('button',{name:'Entrar',exact:true}).click()
+  await go('Finanças')
+ }
  await chooseCompany('Outra empresa QA')
  await finance.getByRole('region',{name:'Saldo consolidado',exact:true}).getByText('BRL 500,00',{exact:true}).waitFor()
  assert.equal(new URL(page.url()).pathname,'/economy','Changing company keeps Finance open')
@@ -155,5 +222,5 @@ export async function checkCompanySurfaces({page,width,fixture,userId,workspaceI
  await finance.getByRole('alert').filter({hasText:'Acesso financeiro restrito'}).waitFor()
  assert.equal(await finance.getByText('BRL 500,00',{exact:true}).count(),0,'Revoked access clears the previous balance')
  await checkLayout()
- return {width,conversationDirectory:true,conversationNavigationAndCreateInsideChannel:true,directMessageCreationWithRealMemberIds:true,consumedRequestDoesNotReopen:true,channelSearchAndEmpty:true,privateChannelCreated:true,realChatComponent:true,companyFilesListUploadDownloadDelete:true,invalidFileBlocked:true,storageErrorRetry:true,companyFileIsolation:true,financeInsideWorkspace:true,prototypeBalanceAndRecentEntries:true,transferReviewBeforeWrite:true,transferExactCents:true,financeContextSwitch:true,accessRevocationClearsBalance:true,noOverflow:true,evidence:'HTTP fixtures only; no hosted Storage/RLS or two-account verification'}
+ return {width,conversationDirectory:true,conversationNavigationAndCreateInsideChannel:true,directMessageCreationWithRealMemberIds:true,consumedRequestDoesNotReopen:true,channelSearchAndEmpty:true,privateChannelCreated:true,realChatComponent:true,companyFilesListUploadDownloadDelete:true,invalidFileBlocked:true,storageErrorRetry:true,companyFileIsolation:true,financeInsideWorkspace:true,financeWheelScroll:true,financeBottomSpace:true,hubDocumentBounded:true,foundersNeutralTheme:width>=600?true:"covered at 734/1440",prototypeBalanceAndRecentEntries:true,transferReviewBeforeWrite:true,transferExactCents:true,financeContextSwitch:true,accessRevocationClearsBalance:true,noOverflow:true,evidence:'HTTP fixtures only; no hosted Storage/RLS or two-account verification'}
 }

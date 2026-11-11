@@ -25,7 +25,7 @@ import React from 'react';
 import {createRoot} from 'react-dom/client';
 import {Collaboration} from '/src/collaboration/Collaboration.tsx';
 ${process.env.EG_NATIVE_CSS?"import '/src/mobile/mobile.css';document.documentElement.dataset.native='true';document.documentElement.style.setProperty('--safe-area-inset-top','28px');document.documentElement.style.setProperty('--safe-area-inset-bottom','24px');":''}
-import '/src/styles.css'; import '/src/styles-extra.css'; import '/src/home-reference.css'; import '/src/collaboration/collaboration.css';
+import '/src/mobile/mobile.css'; import '/src/styles.css'; import '/src/styles-extra.css'; import '/src/home-reference.css'; import '/src/collaboration/collaboration.css';
 import '/src/features/appearance/themes.css'; import { initializeTheme } from '/src/features/appearance/theme.ts';
 import '/src/features/appearance/atlas.css'; import '@fontsource-variable/geist'; import { initializeFocusModality } from '/src/features/appearance/focus.ts';
 ${atlas ? '' : "localStorage.setItem('evergreen.appearance.v1',localStorage.getItem('evergreen.appearance.v1')||'evergreen');"}
@@ -43,12 +43,23 @@ try {
  for(const width of (process.env.COLLAB_WIDTHS?process.env.COLLAB_WIDTHS.split(',').map(Number):[320,375,390,430,768,790,1440])) {
   if(surfaces){fixture.channels=fixture.channels.filter(channel=>[c,c2].includes(channel.id));fixture.channel_members=fixture.channel_members.filter(member=>[c,c2].includes(member.channel_id))}
   fixture.messages=[];fixture.records=[];fixture.focus=[];fixture.failRecordOnce=false;fixture.storedFiles=[];fixture.fileRequests=[];fixture.fileFailure=false;fixture.financeDenied=false;fixture.financialActions=[];fixture.officeRename=null;fixture.roleUpdates=[];fixture.profileRelationship='founder';fixture.profileHonors=false
-  const context=await browser.newContext({viewport:{width,height:width===763?451:900},hasTouch:width<=768})
+  const context=await browser.newContext({viewport:{width,height:width===734?715:width===740?622:width===763?451:900},hasTouch:width<=768})
   await context.route('**/api/backend?**',async route=>{
    const req=route.request(),url=new URL(new URL(req.url()).searchParams.get('target')??new URL(route.request().url()).searchParams.get('path'),'https://fixture.supabase.invalid'),table=url.pathname.split('/').at(-1).replace('eg_',''),method=req.method()
    const headers={'content-type':'application/json','access-control-allow-origin':'*','access-control-allow-headers':'*','access-control-allow-methods':'*'}
    if(method==='OPTIONS') return route.fulfill({status:200,headers,body:''})
    let rows=fixture[table]??[],payload=req.headers()['content-type']?.includes('json')?req.postDataJSON():null
+   if(surfaces && table==='founders_access')return route.fulfill({status:200,headers,body:'true'})
+   if(surfaces && table==='founders_groups')return route.fulfill({status:200,headers,body:JSON.stringify([
+    {id:'organization-fixture',name:'Holding fixture',role:'founder',owner:true,capabilities:['overview','companies','finance','people','projects','intelligence','decisions','communication','governance','documents']},
+   ])})
+   if(surfaces && table==='founders_snapshot')return route.fulfill({status:200,headers,body:JSON.stringify({
+    group:{id:'organization-fixture',name:'Holding fixture'},companies:[],people:[],records:[],finance:[],decisions:[],documents:[],members:[],communication:null,audit:[],
+    link_options:[],scope_options:[],grant_candidates:[],
+   })})
+   if(surfaces && table==='professional_levels')return route.fulfill({status:200,headers,body:JSON.stringify({
+    members:[{id:a,name:'Fixture Alice',role:'founder',original:true}],pending:[{id:'pending-fixture',name:'Pessoa pendente QA'}],
+   })})
    if(url.pathname.includes('/rpc/')) {
     if(table==='os_context'&&fixture.osAvailable===false)return route.fulfill({status:404,headers,body:JSON.stringify({code:'PGRST202',message:'Could not find the function eg_os_context in the schema cache'})});if(table==='os_context')return route.fulfill({status:200,headers,body:JSON.stringify({groups:[{id:'organization-fixture',name:'Holding fixture',workspace_id:w,admin:true,chairman:false,council_active:false,library_access:true}],companies:fixture.workspaces.map(workspace=>({...workspace,description:'Fixture',group_id:'organization-fixture',admin:true,level:'A0',level_name:'APEX',unread:0}))})})
     if(table==='os_snapshot'&&payload?.p_group)return route.fulfill({status:200,headers,body:JSON.stringify({

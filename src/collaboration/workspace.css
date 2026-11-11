@@ -290,3 +290,11 @@
  .professional-profile .professional-cover-brand .professional-cover-copy > span { display: block; font-size: clamp(26px, 6.5vw, 34px); line-height: 1.12; overflow-wrap: anywhere; }
  .professional-profile .professional-cover-brand .professional-cover-copy small { display: block; font-size: 12px; line-height: 1.5; margin-top: 6px; }
 }
+
+/* App panels scroll inside the viewport. The document must not expose an empty canvas. */
+html:has(.collab-app, .founders-page),
+body:has(.collab-app, .founders-page) {
+  height: 100%;
+  overflow: hidden;
+}
+.collab-app { grid-template-rows: minmax(0, 1fr); }
