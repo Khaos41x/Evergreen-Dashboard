@@ -26,3 +26,13 @@ Saídas finais desta etapa:
 ## Decisão P1-2
 
 Em 11/11/2026 o usuário confirmou: manter Chairman = fundador original; APEX = fundador de empresa; NÍVELO = CEO. Referências: ProfessionalLevels.tsx, organizations/model.ts, people/model.ts, migrações 20261030200108_professional_profiles.sql e 20261030211959_evergreen_os_v2.sql e PRODUCT.md. Cargo, participação e permissão são independentes. Nenhuma alteração de significado no banco foi autorizada.
+
+## P0-2 — contexto e alcance
+
+Causa: o cabeçalho exibia apenas texto; não havia leitura contextual dos dados independentes de cargo, participação e permissão. A troca no trilho alterava o workspace mesmo com um formulário financeiro aberto. Revisões de governança e de votos executavam a operação diretamente.
+
+Correção: AccessChip.tsx:8 consulta eg_os_snapshot e eg_professional_profile; aceita apenas o snapshot da empresa ativa e apresenta separadamente os três campos, com estados ausente/carregando/erro. Não deduz autoridade de cargo ou equity. O chip inclui breadcrumb e troca de empresa no topo, também em Fundadores. sensitiveScope.tsx:3 introduz pedido cancelável de troca: cancelar preserva contexto/rascunho; aceitar descarta e requer nova revisão. Economy.tsx registra workspace e papel financeiro da origem na revisão; o botão nomeia valor e destino. Founders.tsx revisa concessão/escopo/votos/revogação. Boardroom e FinanceOperations usam useScopedReview.tsx:7 com leitura contextual e confirmação antes da RPC existente. Nenhuma regra do servidor foi substituída.
+
+Prova vermelha: output/ux-context-before.log, exit 1, chip ausente. Prova verde: UX_ITEM=P0-2 COLLAB_SURFACES=1 COLLAB_ATLAS=1 COLLAB_WIDTHS=390,734,1440 node scripts/collaboration-ui-check.mjs, exit 0, nove verificações por largura: chip nas rotas após carregarem, três campos, resposta A5 independente de cargo/25%, confirmação financeira, cancelar/aceitar troca, descarte de revisão, resposta A6 e revisão de acesso em Governança. Capturas: output/playwright/ux/after/context-{390,734,1440}.png. Antes visual: economy-734x715.png da reprodução P0-1.
+
+Saídas: typecheck exit 0; lint exit 0 com avisos existentes; build exit 0; check:build 242187 bytes gzip contra 244603 da base, matchedSecrets=0; oito inspeções de rolagem no menor viewport/teclado passaram. Modelos unitários já passavam e não houve mudança de regras de domínio. Perfil passou a carregar sob demanda para manter orçamento. Estes testes usam HTTP de teste em Chromium; persistência, RLS e decisões com duas contas hospedadas não foram validadas.

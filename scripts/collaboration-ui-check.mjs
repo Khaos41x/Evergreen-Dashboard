@@ -56,13 +56,14 @@ try {
    ])})
    if(surfaces && table==='founders_snapshot')return route.fulfill({status:200,headers,body:JSON.stringify({
     group:{id:'organization-fixture',name:'Holding fixture'},companies:[],people:[],records:[],finance:[],decisions:[],documents:[],members:[],communication:null,audit:[],
-    link_options:[],scope_options:[],grant_candidates:[],
+    link_options:[],scope_options:[],grant_candidates:process.env.UX_ITEM==='P0-2'?[{id:'candidate-qa',name:'Pessoa de governança QA'}]:[],
    })})
    if(surfaces && table==='professional_levels')return route.fulfill({status:200,headers,body:JSON.stringify({
     members:[{id:a,name:'Fixture Alice',role:'founder',original:true}],pending:[{id:'pending-fixture',name:'Pessoa pendente QA'}],
    })})
    if(url.pathname.includes('/rpc/')) {
     if(table==='os_context'&&fixture.osAvailable===false)return route.fulfill({status:404,headers,body:JSON.stringify({code:'PGRST202',message:'Could not find the function eg_os_context in the schema cache'})});if(table==='os_context')return route.fulfill({status:200,headers,body:JSON.stringify({groups:[{id:'organization-fixture',name:'Holding fixture',workspace_id:w,admin:true,chairman:false,council_active:false,library_access:true}],companies:fixture.workspaces.map(workspace=>({...workspace,description:'Fixture',group_id:'organization-fixture',admin:true,level:'A0',level_name:'APEX',unread:0}))})})
+    if(process.env.UX_ITEM==='P0-2'&&table==='os_snapshot'&&payload?.p_workspace)return route.fulfill({status:200,headers,body:JSON.stringify({workspace_id:payload.p_workspace,people:[{id:a,name:'Fixture Alice',job_title:'Diretora QA',role:'member',level:payload.p_workspace===w?'A5':'A6',level_name:payload.p_workspace===w?'Integrante QA':'Convidado QA'}],levels:[]})})
     if(table==='os_snapshot'&&payload?.p_group)return route.fulfill({status:200,headers,body:JSON.stringify({
      name:'Holding fixture',workspace_id:w,group_id:'organization-fixture',admin:true,
      companies:[{id:w,name:workspaceName,description:'',operational:true,finance:true}],
@@ -177,6 +178,10 @@ try {
    if(label==='Mensagens')await page.locator('.conversation-directory-list').getByRole('button').first().click()
   }
   await page.locator('.collab-top').waitFor()
+  if(process.env.UX_ITEM==='P0-2'){
+   const {checkContext}=await import('./ux-context-check.mjs')
+   results.push(await checkContext({page,width,fixture,workspaceId:w}));await context.close();continue
+  }
   if(ux){
    const {checkUx}=await import('./ux-browser-check.mjs')
    results.push(await checkUx({page,width,fixture,workspaceId:w,channelId:c,go}))

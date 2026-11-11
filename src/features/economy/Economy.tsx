@@ -1,3 +1,4 @@
+import {ActionScope,useSensitiveDraft} from '../layout/sensitiveScope'
 import { AppSelect } from '../appearance/AppSelect'
 import { Dialog } from '../productivity/Dialog'
 import {NotificationCenter} from '../people/NotificationCenter'
@@ -104,7 +105,9 @@ function PeriodFlow({ companies, flows, onHistory }: {
 export default function Economy({onBoard,onOperations,workspaceId,name,email,onBack,context,embedded=false}:{workspaceId:string;name:string;email:string;onBoard?:()=>void;onOperations?:()=>void;onBack:()=>void;context?:ReactNode;embedded?:boolean}){
  const [tab,setTab]=useState<typeof tabs[number]>('Visão Geral'),[data,setData]=useState<Snapshot|null>(null),[error,setError]=useState(''),[busy,setBusy]=useState(false),[notice,setNotice]=useState(''),[form,setFormState]=useState('')
  const Container=embedded?'section':'main'
- const [transferReview,setTransferReview]=useState<{body:Record<string,unknown>;origin:string;destination:string;currency:string}|null>(null)
+ const [transferReview,setTransferReview]=useState<{body:Record<string,unknown>;origin:string;destination:string;currency:string;workspace:string;permission:string}|null>(null)
+ const [accessReview,setAccessReview]=useState<Record<string,unknown>|null>(null)
+ useSensitiveDraft(['transfer','grant'].includes(form)||!!transferReview||!!accessReview,name,()=>{setForm('');setTransferReview(null);setAccessReview(null);setApprovalNeeded(null)},busy)
  const editor=useRef<HTMLElement>(null),editorTrigger=useRef<HTMLElement|null>(null)
  const historyTab=useRef<HTMLButtonElement>(null)
  const companyToFocus=useRef<string|null>(null)
@@ -212,8 +215,8 @@ export default function Economy({onBoard,onOperations,workspaceId,name,email,onB
     if(!origin||!destination)throw new Error('Selecione uma origem e um destino autorizados.')
     if(origin.id===destination.id)throw new Error('Escolha contas diferentes para origem e destino.')
     if(origin.currency!==destination.currency)throw new Error('Escolha contas na mesma moeda. Este lançamento não faz câmbio.')
-    setTransferReview({body,origin:companyLabel(origin.company_id)+' · '+origin.name,destination:destination.company_name+' · '+destination.name,currency:origin.currency})
-   }else await action(form,body)
+    setTransferReview({body,origin:companyLabel(origin.company_id)+' · '+origin.name,destination:destination.company_name+' · '+destination.name,currency:origin.currency,workspace:workspaceId,permission:companies.find(company=>company.id===origin.company_id)?.role||'Não informada'})
+   }else if(form==='grant')setAccessReview(body);else await action(form,body)
   })
  }
  const companies=data?.companies||[],accounts=data?.accounts||[],filtered=accounts.filter(a=>currency==='all'||a.currency===currency),totals=totalByCurrency(filtered),admins=companies.filter(c=>c.role==='admin'),editable=accounts.filter(a=>companies.find(c=>c.id===a.company_id)?.role!=='viewer')
@@ -285,9 +288,9 @@ export default function Economy({onBoard,onOperations,workspaceId,name,email,onB
  {context&&['income','expense'].includes(form)&&<><label>Classificação<AppSelect name="classification">{(form==='income'?[['revenue','Receita manual'],['investment','Aporte ou investimento interno']]:[['expense','Despesa'],['operating_cost','Custo operacional'],['refund','Reembolso']]).map(([id,label])=><option key={id} value={id}>{label}</option>)}</AppSelect></label><label>Categoria<input name="category" maxLength={100}/></label><label>Comprovante · opcional<input name="receipt" type="file" accept="application/pdf,image/png,image/jpeg,image/webp"/><small>PDF ou imagem de até 3 MB. Acesso restrito ao livro financeiro.</small></label>{form==='expense'&&<label>Evento da receita original · necessário para reembolso<input name="original_event" placeholder="Identificador da receita no histórico"/></label>}</>}{['income','expense','transfer'].includes(form)&&<><label>Valor<input name="cents" inputMode="decimal" placeholder="0,00" required/></label><label>Descrição<input name="description" maxLength={500} required/></label><label>Data<input name="happened_on" type="date" required defaultValue={today}/></label></>}
  <button className="primary" disabled={busy || form==='transfer'&&!transfer.data?.length || form==='grant'&&!people.rows.length}>Salvar registro</button></form></section>}
  </>}<footer className="economy-footnote">Livro financeiro interno · sem integração bancária · moedas consolidadas separadamente</footer></div>{transferReview&&<Dialog title="Confirmar transferência" onClose={()=>{if(!busy)setTransferReview(null)}}>
- <p>Confira o lançamento em <strong>{name}</strong> antes de confirmar.</p>
+ <ActionScope name={name} permission={transferReview.permission}/>
  <dl className="economy-transfer-review"><div><dt>Origem</dt><dd>{transferReview.origin}</dd></div><div><dt>Destino</dt><dd>{transferReview.destination}</dd></div><div><dt>Valor</dt><dd>{money(String(transferReview.body.cents),transferReview.currency)}</dd></div><div><dt>Descrição</dt><dd>{String(transferReview.body.description)}</dd></div><div><dt>Data</dt><dd>{String(transferReview.body.happened_on)}</dd></div></dl>
  <p>Este lançamento atualiza o livro interno. Não executa uma transferência bancária.</p>
- <div className="collab-actions"><button disabled={busy} onClick={()=>setTransferReview(null)}>Voltar ao formulário</button><button className="primary" disabled={busy} onClick={()=>{const body=transferReview.body;setTransferReview(null);void run(()=>action('transfer',body))}}>Confirmar transferência</button></div>
- </Dialog>}{reauth&&<Reauthenticate email={email} onClose={()=>{retry.current=null;setReauth(false)}} onDone={()=>{const fn=retry.current;retry.current=null;setReauth(false);if(fn)void run(fn)}}/>}</Container>
+ <div className="collab-actions"><button disabled={busy} onClick={()=>setTransferReview(null)}>Voltar ao formulário</button><button className="primary" disabled={busy} onClick={()=>{if(transferReview.workspace!==workspaceId){setTransferReview(null);return}const body=transferReview.body;setTransferReview(null);void run(()=>action('transfer',body))}}>Transferir {money(String(transferReview.body.cents),transferReview.currency)} para {transferReview.destination}</button></div>
+ </Dialog>}{accessReview&&<Dialog title="Confirmar acesso financeiro" onClose={()=>setAccessReview(null)}><ActionScope name={name} permission={companies.find(row=>row.id===accessReview.company_id)?.role||'Não informada'} reversible/><p>Pessoa: {people.rows.find(row=>row.user_id===accessReview.user_id)?.display_name||String(accessReview.user_id)}</p><p>Acesso solicitado: {String(accessReview.role)}</p><button disabled={busy} onClick={()=>{const body=accessReview;setAccessReview(null);void run(()=>action('grant',body))}}>Conceder acesso financeiro</button></Dialog>}{reauth&&<Reauthenticate email={email} onClose={()=>{retry.current=null;setReauth(false)}} onDone={()=>{const fn=retry.current;retry.current=null;setReauth(false);if(fn)void run(fn)}}/>}</Container>
 }
