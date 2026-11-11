@@ -4,9 +4,8 @@ import { readFileSync } from 'node:fs'
 export async function checkCompanySurfaces({page,width,fixture,userId,workspaceId,otherWorkspaceId,channelId,otherChannelId,go}) {
  const checkLayout=async()=>assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false)
  async function chooseCompany(name){
-  if(width<=1000)await page.getByRole('button',{name:'Abrir menu',exact:true}).click()
-  await page.getByRole('button',{name:/^Trocar empresa:/}).click()
-  await page.getByRole('group',{name:'Escolher empresa'}).getByRole('button',{name:name+' Empresa',exact:true}).click()
+  await page.locator('[data-current-company]').getByRole('button',{name:/Seu acesso aqui/}).click()
+  await page.getByRole('region',{name:'Seu acesso aqui'}).getByRole('button',{name:'Abrir empresa '+name,exact:true}).click()
   await page.waitForFunction(name=>document.querySelector('.access-trigger strong')?.textContent===name,name)
  }
  const innerHeightFromViewport=()=>page.viewportSize().height+1
@@ -174,16 +173,16 @@ export async function checkCompanySurfaces({page,width,fixture,userId,workspaceI
  assert.equal(fixture.financialActions[0].p_data.cents,'12540')
 
  if(width>=600){
-  await page.locator('.collab-top').getByRole('button',{name:'Fundadores',exact:true}).click()
+  await page.getByRole('navigation',{name:'Empresas da holding'}).getByRole('button',{name:'Fundadores',exact:true}).click()
   const founders=page.locator('.founders-page')
   await founders.getByRole('heading',{name:'O grupo, em perspectiva.',exact:true}).waitFor()
   await founders.getByRole('button',{name:'Governança',exact:true}).click()
   await founders.getByRole('heading',{name:'Níveis da Evergreen',exact:true}).waitFor()
   const governanceViewport=await viewportState()
   assert.ok(governanceViewport.rootHeight<=innerHeightFromViewport(),'Governance does not enlarge the outer document')
-  const colors=await founders.locator('.professional-level-order li').first().evaluate(element=>({
+  const colors=await founders.locator('.professional-level-table thead').evaluate(element=>({
    background:getComputedStyle(element).backgroundColor,
-   text:getComputedStyle(element.querySelector('strong')).color,
+   text:getComputedStyle(document.querySelector('.professional-level-table tbody th')).color,
   }))
   assert.equal(colors.background,'rgb(10, 10, 10)','Authority levels use the active neutral theme')
   assert.equal(colors.text,'rgb(237, 237, 237)')

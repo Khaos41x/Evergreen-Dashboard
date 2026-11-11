@@ -10,11 +10,10 @@ export async function checkWorkspaceWorkflow({page, width, fixture, userId, work
  const noOverflow=async()=>assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false)
  const home=page.locator('.domain-home')
  async function chooseCompany(name) {
-  if(width<=1000) await page.getByRole('button',{name:'Abrir menu',exact:true}).click()
-  await page.getByRole('button',{name:/^Trocar empresa:/}).click()
-  await page.getByRole('group',{name:'Escolher empresa'}).getByRole('button',{name:name+' Empresa',exact:true}).click()
-  await home.waitFor()
+  await page.locator('[data-current-company]').getByRole('button',{name:/Seu acesso aqui/}).click()
+  await page.getByRole('region',{name:'Seu acesso aqui'}).getByRole('button',{name:'Abrir empresa '+name,exact:true}).click()
   await page.waitForFunction(expected=>document.querySelector('.access-trigger strong')?.textContent===expected,name)
+  if(!await home.isVisible())await go('Hoje')
  }
  async function saveTask(name) {
   const editor=page.getByRole('dialog',{name:'Nova tarefa',exact:true})
