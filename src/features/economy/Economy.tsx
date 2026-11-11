@@ -221,7 +221,7 @@ export default function Economy({onBoard,onOperations,workspaceId,name,email,onB
  const companyLabel=(id:string)=>companies.find(c=>c.id===id)?.name||'Empresa'
  const selectCompany=<label>Empresa<AppSelect name="company_id" required>{admins.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}</AppSelect></label>
  const selectAccount=(name:string,label:string)=><label>{label}<AppSelect aria-label={label} name={name} required>{(name==='to_account_id'?transfer.data??[]:editable).map(a=><option key={a.id} value={a.id}>{'company_name'in a?String(a.company_name):companyLabel(a.company_id)} · {a.name} ({a.currency})</option>)}</AppSelect></label>
- return <Container className={embedded?"economy-page economy-embedded":"economy-page"}>{!embedded&&<header className="economy-header economy-toolbar">
+ return <Container tabIndex={0} aria-label="Finanças" className={embedded?"economy-page economy-embedded":"economy-page"}>{!embedded&&<header className="economy-header economy-toolbar">
    <button className="economy-back" aria-label="Voltar à Visão" title="Voltar à Visão" onClick={onBack}><ArrowLeft size={17}/><span>Voltar à Visão</span></button>
    <div className="economy-toolbar-brand"><EvergreenBrand compact symbol/><div><strong>Finanças</strong><small>{name}</small></div></div>
    <div className="economy-toolbar-actions"><NotificationCenter/>{onOperations&&<button onClick={onOperations}>Compromissos e aprovações</button>}</div>

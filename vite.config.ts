@@ -13,5 +13,5 @@ export default defineConfig(({mode})=>{
    if((req.url||'').startsWith('/api/'))void handler(req,res);else next()
   })
  }}
- return{plugins:[react(),identity]}
+ return{plugins:[react(),identity],build:{manifest:'build-manifest.json'}}
 })

@@ -45,7 +45,7 @@ import { WorkModule } from '../features/productivity/WorkModule'
 import { usePresence } from '../features/productivity/usePresence'
 import '../features/productivity/productivity.css'
 import { ProfilesProvider, MemberAvatar } from '../features/productivity/Avatars'
-import { GlobalSearch } from '../features/productivity/GlobalSearch'
+const GlobalSearch=lazy(()=>import('../features/productivity/GlobalSearch').then(m=>({default:m.GlobalSearch})))
 import { TaskEditor } from '../features/productivity/TaskEditor'
 import { ProfileSettings } from '../features/productivity/ProfileSettings'
 import { ObjectivesModule } from '../features/productivity/ObjectivesModule'
@@ -284,7 +284,7 @@ export function Collaboration({ session, onLocal }: { session: Session; onLocal:
       </section>}
     </main>
     <nav className="collab-bottom" aria-label="Navegação mobile" inert={menu || creating}>{([{ id: 'home', label: 'Hoje', Icon: House }, { id: 'conversations', label: 'Conversas', Icon: Hash }, { id: 'tasks', label: 'Tarefas', Icon: LayoutList }, { id: 'members', label: 'Membros', Icon: Users }, { id: 'settings', label: 'Ajustes', Icon: Settings }] as const).map(({ id, label, Icon }) => <button key={id} aria-current={surface==='hub' && (screen === id || id==='conversations'&&screen==='chat') ? 'page' : undefined} onClick={() => {if(id==='home'&&allGroup)openGroup(allGroup);else navigate(id==='home'&&!workspace?'organizations':id)}}><Icon size={20} />{label}</button>)}</nav>
-    {palette&&<GlobalSearch records={data.records} members={data.members} goals={domain.goals} onAction={command} onRecord={id=>{const r=data.records.find(r=>r.id===id);if(r)openEditor(r)}} onChannel={id=>{setChannelId(id);navigate('chat')}} onClose={()=>setPalette(false)}/>}
+    {palette&&<Suspense fallback={null}><GlobalSearch records={data.records} members={data.members} goals={domain.goals} onAction={command} onRecord={id=>{const r=data.records.find(r=>r.id===id);if(r)openEditor(r)}} onChannel={id=>{setChannelId(id);navigate('chat')}} onClose={()=>setPalette(false)}/></Suspense>}
     {creating&&record&&(record.kind==='task'||record.kind==='issue')?<TaskEditor key={workspaceId+record.id} record={record} kind={record.kind} workspaceId={workspaceId} userId={session.user.id} members={data.members} records={data.records} checklist={domain.checklist} comments={domain.comments} handoffs={domain.handoffs} onClose={()=>setCreating(false)} onFocus={id=>{setCreating(false);setFocusTask(id);setFocusRequest(v=>v+1);navigate('home')}} refresh={refreshAll}/>:creating && <div className="collab-modal"><section role="dialog" aria-modal="true" aria-labelledby="record-title"><header><h2 id="record-title">{record ? 'Editar item' : 'Criar item'}</h2><button aria-label="Fechar editor" onClick={() => setCreating(false)}><X /></button></header><form onSubmit={e => form(e, saveRecord)}>
       {!record && <label>Tipo<AppSelect aria-label="Tipo" name="kind" defaultValue={createKind}><option value="task">Tarefa</option><option value="project">Projeto</option><option value="objective">Objetivo</option></AppSelect></label>}
       <label>Título<input autoFocus name="title" defaultValue={record?.title} required maxLength={200} /></label><label>Descrição<textarea name="description" defaultValue={record?.description} maxLength={10000} /></label>

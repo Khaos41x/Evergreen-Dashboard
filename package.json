@@ -45,7 +45,12 @@
     "test:mobile:ota": "node scripts/mobile-ota-check.mjs",
     "test:auth:scroll": "node scripts/auth-scroll-check.mjs",
     "test:profiles:refresh": "node scripts/avatar-refresh-check.mjs",
-    "test:holding:connection-ui": "node scripts/integration-flow-browser-check.mjs"
+    "test:holding:connection-ui": "node scripts/integration-flow-browser-check.mjs",
+    "lint": "oxlint src server scripts vite.config.ts",
+    "typecheck": "tsc -b",
+    "test": "npm run test:holding:model && npm run test:world:model",
+    "check:build": "node scripts/check-build.mjs",
+    "test:ux": "node scripts/test-ux.mjs"
   },
   "dependencies": {
     "@capacitor/android": "8.6.0",
@@ -69,6 +74,7 @@
     "vite": "latest"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.14.0",
     "@capacitor/assets": "4.0.0",
     "@capacitor/cli": "8.6.0",
     "@electric-sql/pglite": "0.5.12",
@@ -78,6 +84,7 @@
     "@types/three": "0.186.0",
     "autoprefixer": "latest",
     "fflate": "0.8.3",
+    "oxlint": "1.93.0",
     "playwright-core": "^1.64.0",
     "postcss": "latest",
     "tailwindcss": "^3.4.17",

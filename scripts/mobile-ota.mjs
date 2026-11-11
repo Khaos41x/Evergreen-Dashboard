@@ -21,7 +21,7 @@ export function prepareLiveUpdate({directory='dist',outputDirectory=join(directo
  }
  const files={}
  function walk(dir){for(const entry of readdirSync(dir,{withFileTypes:true})){
-  if(entry.name==='mobile-updates')continue
+  if(entry.name==='mobile-updates'||(dir===directory&&entry.name==='build-manifest.json'))continue
   const path=join(dir,entry.name)
   if(entry.isSymbolicLink())throw Error('Symlinks cannot enter a live bundle.')
   if(entry.isDirectory())walk(path)

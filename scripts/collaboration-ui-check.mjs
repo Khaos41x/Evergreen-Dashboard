@@ -3,6 +3,7 @@ import { chromium } from 'playwright-core'
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { spawn } from 'node:child_process'
 import assert from 'node:assert/strict'
+const ux=process.env.COLLAB_UX==='1'
 const atlas=process.env.COLLAB_ATLAS==='1'
 const presentation=process.env.COLLAB_PRESENTATION==='1'
 const workflow=process.env.COLLAB_WORKFLOW==='1'
@@ -24,14 +25,14 @@ writeFileSync('output/playwright/fixture.html',`<!doctype html><meta name="viewp
 import React from 'react';
 import {createRoot} from 'react-dom/client';
 import {Collaboration} from '/src/collaboration/Collaboration.tsx';
-${process.env.EG_NATIVE_CSS?"import '/src/mobile/mobile.css';document.documentElement.dataset.native='true';document.documentElement.style.setProperty('--safe-area-inset-top','28px');document.documentElement.style.setProperty('--safe-area-inset-bottom','24px');":''}
-import '/src/mobile/mobile.css'; import '/src/styles.css'; import '/src/styles-extra.css'; import '/src/home-reference.css'; import '/src/collaboration/collaboration.css';
+${process.env.EG_NATIVE_CSS?"import '/src/features/layout/viewport.css'; import {AppViewport} from '/src/features/layout/AppViewport.tsx'; import '/src/mobile/mobile.css';document.documentElement.dataset.native='true';document.documentElement.style.setProperty('--safe-area-inset-top','28px');document.documentElement.style.setProperty('--safe-area-inset-bottom','24px');":''}
+import '/src/features/layout/viewport.css'; import {AppViewport} from '/src/features/layout/AppViewport.tsx'; import '/src/mobile/mobile.css'; import '/src/styles.css'; import '/src/styles-extra.css'; import '/src/home-reference.css'; import '/src/collaboration/collaboration.css';
 import '/src/features/appearance/themes.css'; import { initializeTheme } from '/src/features/appearance/theme.ts';
 import '/src/features/appearance/atlas.css'; import '@fontsource-variable/geist'; import { initializeFocusModality } from '/src/features/appearance/focus.ts';
 ${atlas ? '' : "localStorage.setItem('evergreen.appearance.v1',localStorage.getItem('evergreen.appearance.v1')||'evergreen');"}
 ${presentation?"localStorage.setItem('evergreen.appearance.v1','light');":''}
 initializeTheme();initializeFocusModality();
-createRoot(document.getElementById('root')).render(React.createElement(Collaboration,{session:{user:{id:'${a}',email:'alice@fixture.invalid',user_metadata:{}}},onLocal:()=>{}}));
+createRoot(document.getElementById('root')).render(React.createElement(React.Fragment,null,React.createElement(AppViewport),React.createElement(Collaboration,{session:{user:{id:'${a}',email:'alice@fixture.invalid',user_metadata:{}}},onLocal:()=>{}})));
 </script>`)
 // A second server with fixture-only public environment; no .env or user server modifications.
 const server=spawn(process.execPath,['node_modules/vite/bin/vite.js','--config','scripts/vite-fixture.config.ts','--host','127.0.0.1','--port','5187','--strictPort'],{env:{...process.env,VITE_SUPABASE_URL:'https://fixture.supabase.invalid',VITE_SUPABASE_PUBLISHABLE_KEY:'sb_publishable_fixture_only'},windowsHide:true,stdio:['ignore','pipe','pipe']})
@@ -43,7 +44,7 @@ try {
  for(const width of (process.env.COLLAB_WIDTHS?process.env.COLLAB_WIDTHS.split(',').map(Number):[320,375,390,430,768,790,1440])) {
   if(surfaces){fixture.channels=fixture.channels.filter(channel=>[c,c2].includes(channel.id));fixture.channel_members=fixture.channel_members.filter(member=>[c,c2].includes(member.channel_id))}
   fixture.messages=[];fixture.records=[];fixture.focus=[];fixture.failRecordOnce=false;fixture.storedFiles=[];fixture.fileRequests=[];fixture.fileFailure=false;fixture.financeDenied=false;fixture.financialActions=[];fixture.officeRename=null;fixture.roleUpdates=[];fixture.profileRelationship='founder';fixture.profileHonors=false
-  const context=await browser.newContext({viewport:{width,height:width===734?715:width===740?622:width===763?451:900},hasTouch:width<=768})
+  const context=await browser.newContext({viewport:{width,height:Number(process.env.COLLAB_HEIGHT)||(width===734?715:width===740?622:width===763?451:900)},hasTouch:width<=768})
   await context.route('**/api/backend?**',async route=>{
    const req=route.request(),url=new URL(new URL(req.url()).searchParams.get('target')??new URL(route.request().url()).searchParams.get('path'),'https://fixture.supabase.invalid'),table=url.pathname.split('/').at(-1).replace('eg_',''),method=req.method()
    const headers={'content-type':'application/json','access-control-allow-origin':'*','access-control-allow-headers':'*','access-control-allow-methods':'*'}
@@ -176,6 +177,11 @@ try {
    if(label==='Mensagens')await page.locator('.conversation-directory-list').getByRole('button').first().click()
   }
   await page.locator('.collab-top').waitFor()
+  if(ux){
+   const {checkUx}=await import('./ux-browser-check.mjs')
+   results.push(await checkUx({page,width,fixture,workspaceId:w,channelId:c,go}))
+   await context.close();continue
+  }
   if(presentation){
    await page.locator('.os-company-directory article').first().getByRole('button',{name:'Entrar',exact:true}).click()
    await page.locator('.reference-hero').waitFor()

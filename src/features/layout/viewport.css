@@ -1,0 +1,58 @@
+
+:root {
+  --app-height: 100vh;
+  --content-gap: 24px;
+  --bottom-nav-height: 0px;
+  --safe-bottom: max(env(safe-area-inset-bottom, 0px), var(--safe-area-inset-bottom, 0px));
+  --bottom-inset: calc(var(--bottom-nav-height) + var(--safe-bottom) + var(--content-gap));
+}
+@supports (height: 100dvh) { :root { --app-height: 100dvh; } }
+html:has(.collab-app, .founders-page),
+body:has(.collab-app, .founders-page) {
+  height: var(--app-height);
+  min-height: 0;
+  overflow: clip;
+  background: var(--bg);
+}
+:root .collab-app { height: var(--app-height); min-height: 0; min-width: 0; grid-template-rows: minmax(0, 1fr); }
+:root .collab-app > .collab-main { min-height: 0; min-width: 0; }
+:root .collab-app :is(.os-page, .collab-content, .domain-home, .company-files, .conversation-directory),
+:root .collab-app .economy-embedded,
+:root .founders-page,
+:root .collab-app .collab-chat .collab-history {
+  min-height: 0;
+  min-width: 0;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  scroll-padding-block: var(--content-gap) var(--bottom-inset);
+  padding-bottom: var(--bottom-inset);
+}
+:root .collab-app .economy-embedded { padding-bottom: 0; }
+:root .collab-app .economy-embedded .economy-container,
+:root .founders-page > .economy-container { padding-bottom: var(--bottom-inset); }
+:root .founders-page { height: var(--app-height); }
+:root .collab-app :is(button, input, textarea, summary, [tabindex]) { scroll-margin-block: var(--content-gap) var(--bottom-inset); }
+:root .collab-chat { min-height: 0; }
+:root .collab-app .collab-chat .collab-history > div:last-child { margin-bottom: 0; }
+:root .collab-bottom { bottom: var(--keyboard-inset, 0px); }
+@media (max-width: 600px) {
+  :root { --bottom-nav-height: 66px; }
+  :root .collab-app:has(> .workspace-rail) { display: grid; grid-template-columns: minmax(0, 1fr); padding-bottom: 0; }
+  :root .collab-chat { padding-bottom: calc(var(--bottom-nav-height) + var(--safe-bottom)); }
+}
+
+:root .collab-app,
+:root .founders-page { position: relative; }
+:root .collab-chat > header,
+:root .collab-composer { flex-shrink: 0; }
+.conversation-search-toggle { display: none; }
+@media (max-height: 600px) {
+  :root .collab-app .collab-top { min-height: 44px; padding-block: 4px; }
+  :root .collab-app .conversation-navigation { display: none; }
+  :root .collab-app .collab-chat > header { padding-block: 6px; }
+  :root .collab-app .conversation-title > p { display: none; }
+  :root .collab-app .domain-chat-search:not([data-open="true"]) { display: none; }
+  :root .collab-app .conversation-search-toggle { display: inline-flex; }
+  :root .collab-app .collab-composer textarea { min-height: 44px; height: 44px; max-height: 88px; }
+  :root .collab-app .collab-composer { padding-block: 4px; }
+}
