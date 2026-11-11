@@ -1,3 +1,4 @@
+import {professionalLevels} from '../founders/levelVocabulary'
 import {useState} from 'react'
 import {Building2,ChevronDown} from 'lucide-react'
 import type {HoldingCompany,HoldingGroup,HoldingScope} from '../holding/context'
@@ -30,6 +31,7 @@ export function AccessChip({workspaceId,userId,companies,groups,scope,onChange}:
     <div><dt>Permissão operacional</dt><dd>{person?.level?person.level+' · '+(level?.name||person.level_name||'Nível sem descrição'):'Não informada neste contexto'}</dd></div></dl>
    {level&&<p>{level.permissions.length?level.permissions.join(' · '):'Sem capacidades adicionais informadas.'}</p>}
    <p>Cargo e participação não concedem permissões. Cada operação é validada pelo servidor.</p>
+   <details className="access-vocabulary"><summary>Entender os níveis</summary><dl>{professionalLevels.map(level=><div key={level.name}><dt>{level.name}</dt><dd>{level.who}</dd></div>)}</dl></details>
    <h3>Trocar empresa</h3>
    <div className="access-companies">{companies.map(row=><button key={row.id} aria-label={'Abrir empresa '+row.name} aria-current={!scope.group&&company?.id===row.id?'page':undefined} onClick={()=>{onChange({group:null,workspace:row.id});setOpen(false)}}>{row.name}</button>)}{groups.map(row=><button key={row.id} onClick={()=>{onChange({group:row.id,workspace:null});setOpen(false)}}>{row.name} · Todas as empresas</button>)}</div>
   </section>}

@@ -48,3 +48,13 @@ Prova vermelha: output/ux-finance-before.log, exit 1 (Finanças duplicado); capt
 Prova verde: UX_ITEM=P1-1 COLLAB_SURFACES=1 COLLAB_ATLAS=1 COLLAB_WIDTHS=390,734,1440 node scripts/collaboration-ui-check.mjs, exit 0, 14 verificações por largura. Em 734×715: dataHeight=401.921875, panelHeight=642.921875, ratio=0.6251488565387513. Primeira linha inteira e ação primária visíveis; livro acessível em uma interação. Ctrl+K e Cmd+K abriram a mesma paleta. Carregamento, vazio, erro 403 deliberado e recuperação foram exercitados. Capturas after/finance-decision-{390,734,1440}.png.
 
 typecheck/lint/build/check:build passaram; JS inicial=242160, base=244603, matchedSecrets=0. Os logs de 403 são da resposta de falha controlada para testar a recuperação. Registros são fixtures explícitas e não dados operacionais.
+
+## P1-2 — níveis e confirmação
+
+Decisão resolvida pelo usuário: manter significados atuais. As definições UI/código/banco/docs foram apresentadas na pergunta, e a resposta foi "Sim, manter os significados atuais". Não há pergunta pendente e não houve mudança no banco.
+
+Causa: cartões de marca separados não esclareciam limites nem distinguiam a confirmação por um estado explícito em cada pessoa. As definições não eram compartilhadas com o contexto de acesso.
+
+Correção: levelVocabulary.ts:2 centraliza os quatro termos. ProfessionalLevels.tsx:14 apresenta tabela Nível / Quem é / O que pode fazer / Onde vale. APEX como título de vínculo e A0 como código operacional são descritos sem derivar um do outro. A tabela explicita concessões por servidor e a condição independente de assento aceito. Confirmado tem marcador textual/ícone; Convite pendente tem relógio e borda tracejada. AccessChip compartilha as descrições no disclosure Entender os níveis. professional-levels.css:1 substitui cores fixas por tokens de tema.
+
+Prova vermelha: output/ux-levels-before.log exit 1, tabela ausente; before/levels-734.png. Prova verde: UX_ITEM=P1-2 COLLAB_SURFACES=1 COLLAB_ATLAS=1 COLLAB_WIDTHS=390,734,1440 node scripts/collaboration-ui-check.mjs, exit 0; oito verificações por largura. Pendentes nunca têm Confirmado. Capturas after/levels-{390,734,1440}.png e levels-access-*.png. typecheck, lint, build e check:build passaram. JS inicial=242559 (base244603), matchedSecrets=0.

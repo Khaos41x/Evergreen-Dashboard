@@ -181,6 +181,10 @@ try {
    if(label==='Mensagens')await page.locator('.conversation-directory-list').getByRole('button').first().click()
   }
   await page.locator('.collab-top').waitFor()
+  if(process.env.UX_ITEM==='P1-2'){
+   const {checkLevels}=await import('./ux-levels-check.mjs')
+   results.push(await checkLevels({page,width}));await context.close();continue
+  }
   if(process.env.UX_ITEM==='P1-1'){
    const {checkFinance}=await import('./ux-finance-check.mjs')
    results.push(await checkFinance({page,width,fixture,workspaceId:w}));await context.close();continue

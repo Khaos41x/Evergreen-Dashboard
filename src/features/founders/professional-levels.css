@@ -1,17 +1,22 @@
-.professional-levels{padding:26px 0;margin:24px 0;border-block:1px solid #263c2e}.professional-levels h3{font:28px var(--heading-font,Georgia,serif);margin:0 0 20px}.professional-levels h4{font:23px var(--heading-font,Georgia,serif);margin:26px 0 10px}.professional-level-order{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;border:1px solid #2c4836;border-radius:10px;overflow:hidden}.professional-level-order li{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:18px;border-right:1px solid #2c4836;background:#10251a}.professional-level-order li:nth-child(3){border:0}.professional-level-order li:last-child{grid-column:1/-1;border:0;border-top:1px solid #2c4836;background:transparent}.professional-level-order strong{font-size:15px;color:#e0f2e5}.professional-level-order span{flex-basis:100%;font-size:12px;color:#b4cdba}.professional-level-order svg{color:#a7d3b5}.professional-level-person{display:flex;align-items:center;gap:10px;border-bottom:1px solid #263c2e;padding:12px 0}.professional-level-person>strong{flex:1}.professional-level-person>span{font-size:12px;color:#b5d9bf}.professional-levels>p{max-width:72ch}.professional-levels form{max-width:480px}.professional-levels form button{display:inline-flex;align-items:center;gap:8px}@media(max-width:600px){.professional-level-order{grid-template-columns:1fr}.professional-level-order li{border:0;border-bottom:1px solid #2c4836}.professional-level-order li:nth-child(3){border-bottom:1px solid #2c4836}.professional-level-order li:last-child{border-top:0}.professional-level-person{flex-wrap:wrap}}
-
-[data-theme="atlas"] .professional-levels,
-[data-theme="atlas"] .professional-level-order,
-[data-theme="atlas"] .professional-level-order li,
-[data-theme="atlas"] .professional-level-person {
-  border-color: var(--line);
-}
-[data-theme="atlas"] .professional-level-order li {
-  background: var(--panel);
-  border-radius: 0;
-}
-[data-theme="atlas"] .professional-level-order li:last-child { background: transparent; }
-[data-theme="atlas"] .professional-level-order strong { color: var(--text); }
-[data-theme="atlas"] .professional-level-order span,
-[data-theme="atlas"] .professional-level-person > span { color: var(--soft); }
-[data-theme="atlas"] .professional-level-order svg { color: var(--emerald); }
+.professional-levels{padding:24px 0;margin:24px 0;border-block:1px solid var(--line)}
+.professional-levels h3{font-size:20px;margin:0 0 16px}
+.professional-levels h4{font-size:18px;margin:24px 0 10px}
+.professional-level-table-wrap{max-width:100%;overflow-x:auto;overscroll-behavior-x:contain}
+.professional-level-table{width:100%;min-width:560px;border-collapse:collapse;text-align:left;font-size:13px}
+.professional-level-table th,.professional-level-table td{padding:14px 12px;border-bottom:1px solid var(--line);vertical-align:top;line-height:1.55}
+.professional-level-table thead{background:var(--panel);color:var(--soft)}
+.professional-level-table tbody th{color:var(--text);font-weight:600;white-space:nowrap}
+.professional-level-table td{color:var(--soft)}
+.professional-level-table th:first-child,.professional-level-table td:first-child{padding-left:0}
+.professional-level-person{display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--line);padding:14px 0}
+.professional-level-person>strong{flex:1}
+.professional-level-person>span{font-size:12px;color:var(--soft)}
+.professional-level-status{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:6px;padding:4px 8px}
+.professional-level-status[data-status="confirmed"]{font-weight:600}
+.professional-level-status[data-status="pending"]{border-style:dashed}
+.professional-levels>p{max-width:72ch}
+.professional-levels form{max-width:480px}
+.professional-levels form button{display:inline-flex;align-items:center;gap:8px}
+.access-vocabulary dt{font-weight:600;color:var(--text)}
+.access-vocabulary dd{font-weight:400;font-size:12px}
+@media(max-width:600px){.professional-level-person{flex-wrap:wrap}.professional-level-person>strong{min-width:60%}}
