@@ -102,7 +102,10 @@ try {
      const id=crypto.randomUUID();fixture.channels.push({id,workspace_id:payload.p_workspace,name:payload.p_name,is_private:payload.p_private,description:'',archived:false,dm_key:null});fixture.channel_members.push({channel_id:id,user_id:a})
      return route.fulfill({status:200,headers,body:JSON.stringify(id)})
     }
+    if(process.env.UX_ITEM==='P1-1'&&table==='os_operations')return route.fulfill({status:200,headers,body:JSON.stringify({can_finance:true,commitments:[],approvals:[]})})
     if(surfaces&&table.startsWith('economy_')){
+     if(fixture.financeDelay)await new Promise(resolve=>setTimeout(resolve,fixture.financeDelay))
+     if(fixture.financeEmpty&&table==='economy_snapshot')return route.fulfill({status:200,headers,body:JSON.stringify({companies:[],accounts:[],goals:[],budgets:[],flows:[],can_create:true})})
      const id=payload.p_workspace
      if(fixture.financeDenied)return route.fulfill({status:403,headers,body:JSON.stringify({code:'42501',message:'Acesso financeiro restrito nesta empresa.'})})
      const company={id:'co-'+id,name:id===w?'Empresa financeira QA':'Empresa financeira B',currency:'BRL',role:'admin'}
@@ -178,6 +181,10 @@ try {
    if(label==='Mensagens')await page.locator('.conversation-directory-list').getByRole('button').first().click()
   }
   await page.locator('.collab-top').waitFor()
+  if(process.env.UX_ITEM==='P1-1'){
+   const {checkFinance}=await import('./ux-finance-check.mjs')
+   results.push(await checkFinance({page,width,fixture,workspaceId:w}));await context.close();continue
+  }
   if(process.env.UX_ITEM==='P0-2'){
    const {checkContext}=await import('./ux-context-check.mjs')
    results.push(await checkContext({page,width,fixture,workspaceId:w}));await context.close();continue
@@ -520,7 +527,7 @@ try {
   }
   if(process.env.PROFILE_ONLY){
    let imageCropAndSave='covered at 390',founderOffice='not exercised at this width'
-   if(width===390){await page.getByRole('group',{name:'Modo do Evergreen'}).getByRole('button',{name:'Visão',exact:true}).click();await page.getByRole('heading',{name:'Biblioteca dos fundadores',exact:true}).waitFor();await page.getByRole('button',{name:'Diretório 2D',exact:true}).click();await page.getByRole('button',{name:'Ver estação de Fixture Alice',exact:true}).click();await page.getByLabel('Nome do seu escritório',{exact:true}).fill('Sala da Alice');await page.getByRole('button',{name:'Salvar nome',exact:true}).click();await page.getByText('Nome do seu escritório atualizado.',{exact:true}).waitFor();assert.equal(fixture.officeRename,'Sala da Alice');await page.screenshot({path:'output/playwright/founder-office-390.png',fullPage:true});founderOffice='seat holder renamed only own office using local RPC fixture'}
+   if(width===390){await page.getByRole('group',{name:'Modo do Evergreen'}).getByRole('button',{name:'Mapa',exact:true}).click();await page.getByRole('heading',{name:'Biblioteca dos fundadores',exact:true}).waitFor();await page.getByRole('button',{name:'Diretório 2D',exact:true}).click();await page.getByRole('button',{name:'Ver estação de Fixture Alice',exact:true}).click();await page.getByLabel('Nome do seu escritório',{exact:true}).fill('Sala da Alice');await page.getByRole('button',{name:'Salvar nome',exact:true}).click();await page.getByText('Nome do seu escritório atualizado.',{exact:true}).waitFor();assert.equal(fixture.officeRename,'Sala da Alice');await page.screenshot({path:'output/playwright/founder-office-390.png',fullPage:true});founderOffice='seat holder renamed only own office using local RPC fixture'}
    if(width===1440){await go('Configurações');const buffer=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5+AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAASSURBVBhXY1DJ8/iPjBlIFwAA2jkdkdPy0oAAAAAASUVORK5CYII=','base64');const avatarInput=page.locator('.profile-image-editor').first().locator('input[type=file]');await avatarInput.setInputFiles({name:'avatar-fixture.png',mimeType:'image/png',buffer});await page.getByRole('button',{name:'Salvar foto',exact:true}).click();await page.getByText('Foto de perfil salva.',{exact:true}).waitFor().catch(async error=>{console.log('PROFILE IMAGE FIXTURE:',await page.locator('.profile-image-editor').first().innerText(),errors);await page.screenshot({path:'output/playwright/profile-image-failure.png',fullPage:true});throw error});const coverInput=page.locator('.profile-image-editor').nth(1).locator('input[type=file]');await coverInput.setInputFiles({name:'cover-fixture.png',mimeType:'image/png',buffer});await page.getByRole('button',{name:'Salvar capa',exact:true}).click();await page.getByText('Capa pessoal salva.',{exact:true}).waitFor();assert.ok(fixture.profiles[0].avatar_path?.startsWith(`${a}/`));assert.ok(fixture.profiles[0].cover_path?.startsWith(`${a}/covers/`));assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);await page.screenshot({path:'output/playwright/profile-settings-images-1440.png',fullPage:true});imageCropAndSave='avatar and cover crop/upload with fixture storage and profile-row updates'}
    assert.deepEqual(errors,[]);results.push({width,profileV2:true,companyRowsPreserved:true,apexFounderBadge:profileApex,apexFirstPartner:width===790?profileFirstPartner:'covered in local SQL checks',experienceSection:profileExperience,founderOffice,composerEnterAndShiftEnter:true,mobileComposerCompact:width<=600,keyboardOrTouchNavigation:width===390?'touch tap':'keyboard Enter',privacyAudienceControls:true,imageCropAndSave,noHorizontalOverflow:true,pageErrors:errors});await context.close();continue
   }
@@ -544,7 +551,7 @@ try {
    page.once('dialog',dialog=>dialog.dismiss());await focus.click();assert.equal(await editor.getByLabel("Título",{exact:true}).inputValue(),'Unsaved fixture title')
    await focus.focus();page.once('dialog',dialog=>dialog.accept());await page.keyboard.press('Enter')
    await page.getByRole('dialog',{name:"Iniciar foco",exact:true}).waitFor();await page.keyboard.press('Escape')
-   await page.getByRole('group',{name:'Modo do Evergreen'}).getByRole('button',{name:"Visão",exact:true}).click()
+   await page.getByRole('group',{name:'Modo do Evergreen'}).getByRole('button',{name:"Mapa",exact:true}).click()
    await page.getByRole('heading',{name:'Biblioteca dos fundadores',exact:true}).waitFor();await page.getByRole('button',{name:'Diretório 2D',exact:true}).click()
    await page.getByRole('button',{name:'Ver estação de Fixture Alice',exact:true}).click()
    await page.getByLabel('Nome do seu escritório',{exact:true}).fill('Sala da Alice');await page.getByRole('button',{name:'Salvar nome',exact:true}).click();await page.getByText('Nome do seu escritório atualizado.',{exact:true}).waitFor();assert.equal(fixture.officeRename,'Sala da Alice');assert.equal(fixture.founderMembers[0].officeName,'Sala da Alice');await page.screenshot({path:'output/playwright/founder-office-390.png',fullPage:true})

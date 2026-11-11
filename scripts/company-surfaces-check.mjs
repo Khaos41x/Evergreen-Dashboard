@@ -7,7 +7,7 @@ export async function checkCompanySurfaces({page,width,fixture,userId,workspaceI
   if(width<=1000)await page.getByRole('button',{name:'Abrir menu',exact:true}).click()
   await page.getByRole('button',{name:/^Trocar empresa:/}).click()
   await page.getByRole('group',{name:'Escolher empresa'}).getByRole('button',{name:name+' Empresa',exact:true}).click()
-  await page.waitForFunction(name=>document.querySelector('.collab-top > strong')?.textContent===name,name)
+  await page.waitForFunction(name=>document.querySelector('.access-trigger strong')?.textContent===name,name)
  }
  const innerHeightFromViewport=()=>page.viewportSize().height+1
  const viewportState=()=>page.evaluate(()=>{
@@ -122,10 +122,10 @@ export async function checkCompanySurfaces({page,width,fixture,userId,workspaceI
  await go('Finanças')
  const finance=page.locator('.economy-embedded')
  await finance.getByRole('heading',{name:'Finanças',exact:true}).waitFor()
- await finance.getByRole('region',{name:'Saldo consolidado',exact:true}).getByText('BRL 8.750,99',{exact:true}).waitFor()
+ await finance.getByRole('region',{name:'Saldo disponível',exact:true}).getByText('BRL 8.750,99',{exact:true}).waitFor()
  await finance.getByRole('region',{name:'Movimentações recentes',exact:true}).getByText('Receita autorizada QA',{exact:true}).waitFor()
  assert.equal(new URL(page.url()).pathname,'/economy')
- assert.equal(await page.locator('.collab-top > strong').innerText(),'UI fixture workspace')
+ assert.equal(await page.locator('.access-trigger strong').innerText(),'UI fixture workspace')
  if(width>600)assert.equal(await page.getByRole('navigation',{name:'Empresas da holding'}).isVisible(),true)
  await checkLayout()
  const scrolling=await finance.evaluate(element=>({
@@ -167,7 +167,7 @@ export async function checkCompanySurfaces({page,width,fixture,userId,workspaceI
  await review.getByText(/Empresa financeira QA · Conta operacional/).waitFor()
  await review.getByText(/Empresa financeira QA · Reserva/).waitFor()
  assert.equal(fixture.financialActions.length,0)
- await review.getByRole('button',{name:'Confirmar transferência',exact:true}).click()
+ await review.getByRole('button',{name:/Transferir.*125,40/,exact:false}).click()
  await finance.getByText('Registro salvo no livro interno da empresa.',{exact:true}).waitFor()
  assert.equal(fixture.financialActions.length,1)
  assert.equal(fixture.financialActions[0].p_workspace,workspaceId)
@@ -205,7 +205,7 @@ export async function checkCompanySurfaces({page,width,fixture,userId,workspaceI
   await go('Finanças')
  }
  await chooseCompany('Outra empresa QA')
- await finance.getByRole('region',{name:'Saldo consolidado',exact:true}).getByText('BRL 500,00',{exact:true}).waitFor()
+ await finance.getByRole('region',{name:'Saldo disponível',exact:true}).getByText('BRL 500,00',{exact:true}).waitFor()
  assert.equal(new URL(page.url()).pathname,'/economy','Changing company keeps Finance open')
  assert.equal(await finance.getByText('Receita autorizada QA',{exact:true}).count(),0)
  await finance.getByText('Receita da segunda empresa',{exact:true}).waitFor()

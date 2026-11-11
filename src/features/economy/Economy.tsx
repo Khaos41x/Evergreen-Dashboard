@@ -1,3 +1,5 @@
+import {DecisionKpis,type Due} from './DecisionKpis'
+import './decision-kpis.css'
 import {ActionScope,useSensitiveDraft} from '../layout/sensitiveScope'
 import { AppSelect } from '../appearance/AppSelect'
 import { Dialog } from '../productivity/Dialog'
@@ -9,7 +11,7 @@ import {useOSResource} from '../organizations/model'
 import {codeLabel} from '../../i18n/pt-BR'
 import {EvergreenBrand} from '../../components/EvergreenBrand'
 import {useEffect,useRef,useState,type FormEvent} from 'react'
-import {ArrowDownLeft,ArrowLeft,ArrowUpRight,Building2,CalendarDays,ChevronDown,Landmark,Plus,RefreshCw,ShieldCheck,Wallet} from 'lucide-react'
+import {ArrowDownLeft,ArrowLeft,ArrowUpRight,Building2,CalendarDays,ChevronDown,Landmark,Plus,RefreshCw,ShieldCheck} from 'lucide-react'
 import {checked,db,failure} from '../../collaboration/client'
 import {Reauthenticate} from '../identity/Reauthenticate'
 import {cents,money,totalByCurrency} from './money'
@@ -70,38 +72,6 @@ function EconomyFilters({ period, currencies, onApply }: {
 }
 
 
-function PeriodFlow({ companies, flows, onHistory }: {
- companies: Company[]
- flows: Snapshot['flows']
- onHistory: () => void
-}) {
- const byCurrency = new Map<string, { income: bigint; expense: bigint }>()
- const currencyByCompany = new Map(companies.map(company => [company.id, company.currency]))
- for (const flow of flows) {
-  const currency = currencyByCompany.get(flow.company_id)
-  if (!currency) continue
-  const amount = byCurrency.get(currency) ?? { income: 0n, expense: 0n }
-  amount.income += BigInt(flow.income)
-  amount.expense += BigInt(flow.expense)
-  byCurrency.set(currency, amount)
- }
- return <section className="economy-overview-panel economy-flow" aria-labelledby="economy-flow-title">
-  <header><h2 id="economy-flow-title">Receitas e despesas</h2><p>Líquidas de estornos no período selecionado</p></header>
-  {byCurrency.size ? [...byCurrency].sort(([a], [b]) => a.localeCompare(b)).map(([currency, amounts]) => {
-   return <dl key={currency} aria-label={currency}>
-    {([
-     { label: 'Receitas', Icon: ArrowDownLeft, amount: amounts.income, kind: 'income' },
-     { label: 'Despesas', Icon: ArrowUpRight, amount: amounts.expense, kind: 'expense' },
-    ] as const).map(({ label, Icon, amount, kind }) => <div className="economy-flow-row" data-kind={kind} key={kind}>
-     <dt><Icon size={15} aria-hidden="true" />{label}</dt>
-     <dd>{money(amount, currency)}</dd>
-    </div>)}
-   </dl>
-  }) : <p className="economy-flow-empty">Nenhuma receita ou despesa registrada neste período.</p>}
-  <button className="economy-overview-link" onClick={onHistory}>Ver movimentações <ArrowUpRight size={16} aria-hidden="true" /></button>
- </section>
-}
-
 export default function Economy({onBoard,onOperations,workspaceId,name,email,onBack,context,embedded=false}:{workspaceId:string;name:string;email:string;onBoard?:()=>void;onOperations?:()=>void;onBack:()=>void;context?:ReactNode;embedded?:boolean}){
  const [tab,setTab]=useState<typeof tabs[number]>('Visão Geral'),[data,setData]=useState<Snapshot|null>(null),[error,setError]=useState(''),[busy,setBusy]=useState(false),[notice,setNotice]=useState(''),[form,setFormState]=useState('')
  const Container=embedded?'section':'main'
@@ -129,6 +99,7 @@ export default function Economy({onBoard,onOperations,workspaceId,name,email,onB
  const [reauth,setReauth]=useState(false),retry=useRef<(()=>Promise<void>)|null>(null),scope=useRef(workspaceId),serial=useRef(0)
  scope.current=workspaceId
  const query = {p_workspace:workspaceId,p_from:from,p_to:to}
+ const operations=useOSResource<{commitments:Due[];can_finance:boolean;approvals:{status:string;consumed:boolean;deadline:string}[]}>('eg_os_operations',{p_workspace:workspaceId},!!workspaceId&&tab==='Visão Geral')
  const history = useOSResource<Entry[]>('eg_economy_history', query, !!workspaceId && (tab==='Movimentações'||tab==='Visão Geral'))
  const transfer = useOSResource<Target[]>('eg_economy_targets', {p_workspace:workspaceId}, !!workspaceId && form==='transfer')
  const [earlier,setEarlier]=useState<{firstPage:Entry[];rows:Entry[];hasMore:boolean}|null>(null)
@@ -225,28 +196,17 @@ export default function Economy({onBoard,onOperations,workspaceId,name,email,onB
  const selectCompany=<label>Empresa<AppSelect name="company_id" required>{admins.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}</AppSelect></label>
  const selectAccount=(name:string,label:string)=><label>{label}<AppSelect aria-label={label} name={name} required>{(name==='to_account_id'?transfer.data??[]:editable).map(a=><option key={a.id} value={a.id}>{'company_name'in a?String(a.company_name):companyLabel(a.company_id)} · {a.name} ({a.currency})</option>)}</AppSelect></label>
  return <Container tabIndex={0} aria-label="Finanças" className={embedded?"economy-page economy-embedded":"economy-page"}>{!embedded&&<header className="economy-header economy-toolbar">
-   <button className="economy-back" aria-label="Voltar à Visão" title="Voltar à Visão" onClick={onBack}><ArrowLeft size={17}/><span>Voltar à Visão</span></button>
+   <button className="economy-back" aria-label="Voltar ao Mapa" title="Voltar ao Mapa" onClick={onBack}><ArrowLeft size={17}/><span>Voltar ao Mapa</span></button>
    <div className="economy-toolbar-brand"><EvergreenBrand compact symbol/><div><strong>Finanças</strong><small>{name}</small></div></div>
    <div className="economy-toolbar-actions"><NotificationCenter/>{onOperations&&<button onClick={onOperations}>Compromissos e aprovações</button>}</div>
- </header>}{!embedded&&context}<div className="economy-container"><div className="economy-intro"><div><h1>Finanças</h1><p>Saldo e movimentações da empresa ativa.</p></div><button aria-label="Atualizar registros" disabled={busy} onClick={()=>void load()}><RefreshCw size={16}/>Atualizar</button></div><dl className="economy-prototype-context"><div><dt>Empresa</dt><dd>{name}</dd></div><div><dt>Período</dt><dd>{periodDate.formatRange(new Date(from),new Date(to))}</dd></div><div><dt>Moeda</dt><dd>{currency==='all'?'Saldos separados por moeda':currency}</dd></div></dl><nav className="economy-tabs" aria-label="Evergreen Finanças">{tabs.map(t=><button key={t} ref={t==='Movimentações'?historyTab:undefined} aria-current={t===tab?'page':undefined} onClick={()=>{setTab(t);setForm('');setTransferReview(null)}}>{t}</button>)}</nav><EconomyFilters key={workspaceId} period={period} currencies={[...new Set([...companies.map(company=>company.currency), ...(currency==='all'?[]:[currency])])].sort()} onApply={setPeriod}/>
+ </header>}{!embedded&&context}<div className="economy-container"><div className="economy-intro"><div><h1>Finanças</h1><p>Saldo e movimentações da empresa ativa.</p></div><button aria-label="Atualizar registros" disabled={busy} onClick={()=>void load()}><RefreshCw size={16}/>Atualizar</button></div><nav className="economy-tabs" aria-label="Evergreen Finanças">{tabs.map(t=><button key={t} ref={t==='Movimentações'?historyTab:undefined} aria-current={t===tab?'page':undefined} onClick={()=>{setTab(t);setForm('');setTransferReview(null)}}>{t}</button>)}</nav><EconomyFilters key={workspaceId} period={period} currencies={[...new Set([...companies.map(company=>company.currency), ...(currency==='all'?[]:[currency])])].sort()} onApply={setPeriod}/>
  {approvalNeeded&&<section className="economy-notice" aria-label="Autorização financeira necessária"><h2>Aprovação financeira necessária</h2><p>Solicite autorização para a conta, destino e valor deste lançamento. Os dados serão apresentados ao conselho da empresa.</p>{!approvalNeeded.requested?<button disabled={busy} onClick={()=>void run(async()=>{const payload:Record<string,unknown>={...approvalNeeded.data,action:'authorization',transaction_kind:approvalNeeded.kind};await checked(db().rpc('eg_os_propose',{p_workspace:workspaceId,p_group:null,p_title:'Autorizar: '+String(payload.description),p_body:'Solicitação a partir do formulário do Cofre. Nenhuma movimentação bancária será executada.',p_kind:'finance',p_payload:payload,p_request:payload.request_id}));setApprovalNeeded(v=>v?{...v,requested:true}:null);setNotice('Solicitação registrada. Após a votação, use Autorizações de lançamento para registrar a operação.')} )}>Solicitar aprovação deste lançamento</button>:<p role="status">Solicitação já registrada para este lançamento.</p>}{onBoard&&<button onClick={onBoard}>Abrir conselho da empresa</button>}</section>}
- {error&&<p role="alert" className="economy-notice">{error}<button onClick={()=>void load()}>Tentar novamente</button></p>}{notice&&<p role="status" className="economy-notice">{notice}</p>}{busy&&<p role="status">Consultando registros autorizados…</p>}
+ {error&&<p role="alert" className="economy-notice">{error}<button onClick={()=>void load()}>Tentar novamente</button></p>}{notice&&<p role="status" className="economy-notice">{notice}</p>}{busy&&!data&&<section aria-label="Carregando indicadores" className="economy-kpis" role="status">{Array.from({length:4},(_,index)=><div key={index} className="economy-kpi economy-skeleton">Consultando registros autorizados…</div>)}</section>}
  {!data&&!busy?<section className="economy-empty"><Landmark/><h2>{workspaceId?"Finanças indisponível":"Escolha um espaço de trabalho autorizado"}</h2><p>{workspaceId?'A configuração do banco ou sua conexão precisa ser verificada. Nenhum saldo foi estimado.':'Entre com sua conta da empresa para acessar o financeiro.'}</p>{!workspaceId&&<a href='/login?next=/economy'>Entrar com a conta da empresa</a>}</section>:data&&<>
  {tab==='Visão Geral'&&<>
-  <div className="economy-quick-actions"><button disabled={!editable.length||busy} onClick={()=>{setTab('Movimentações');setForm('transfer')}}>Preparar transferência <ArrowUpRight size={16}/></button>{onOperations&&<button onClick={onOperations}>Compromissos e aprovações</button>}</div>
-  <div className="economy-overview">
-   <section className="economy-overview-panel economy-overview-balance" aria-labelledby="economy-balance-title">
-    <header><div><h2 id="economy-balance-title">Saldo consolidado</h2><p>Saldo atual das contas e reservas exibidas</p></div><Wallet size={24} aria-hidden="true" /></header>
-    {filtered.length ? <ul aria-label="Saldos por moeda">
-     {Object.entries(totals).sort(([a],[b])=>a.localeCompare(b)).map(([currency,value])=><li key={currency}><strong>{money(value,currency)}</strong></li>)}
-    </ul> : <div className="economy-overview-empty">
-     <h3>{visibleCompanies.length ? 'Nenhuma conta nesta seleção' : 'Seu financeiro começa aqui'}</h3>
-     <p>{visibleCompanies.length ? 'Escolha outra moeda ou cadastre uma conta com acesso administrativo.' : data.can_create ? 'Cadastre a empresa e sua primeira conta.' : 'Peça acesso ao administrador financeiro da empresa.'}</p>
-    </div>}
-    {filtered.length > 0 && <p className="economy-balance-note">Transferências entre as contas exibidas se anulam no consolidado.</p>}
-   </section>
-   <PeriodFlow companies={visibleCompanies} flows={data.flows} onHistory={()=>{setTab('Movimentações');setForm('');historyTab.current?.focus()}} />
-  </div>
+  <div className="economy-quick-actions"><button className="primary" disabled={!editable.length||busy} onClick={()=>{setTab('Movimentações');setForm('transfer')}}>Preparar transferência <ArrowUpRight size={16}/></button>{onOperations&&<button className="economy-pending" onClick={onOperations}>{operations.loading?'Consultando pendências…':operations.error?'Pendências indisponíveis':Array.isArray(operations.data?.approvals)?operations.data.approvals.filter(row=>!row.consumed&&['open','approved'].includes(row.status)&&Date.parse(row.deadline)>Date.now()).length+' pendências · Compromissos e aprovações':'Pendências não informadas'}</button>}</div>
+  <DecisionKpis companies={visibleCompanies} accounts={filtered} flows={data.flows} budgets={data.budgets} from={from} to={to} commitments={Array.isArray(operations.data?.commitments)?operations.data.commitments:null} restricted={operations.data?.can_finance===false} error={operations.error} loading={operations.loading} retry={operations.refresh} onBudget={()=>{setTab('Planejamento');setForm('')}} onOperations={onOperations}/>
+  {!accounts.length&&<section className="economy-empty"><h2>Seu financeiro começa aqui</h2><p>{data.can_create?'Cadastre a empresa e sua primeira conta.':'Peça acesso ao administrador financeiro da empresa.'}</p><button disabled={!data.can_create} onClick={()=>{setTab('Empresas');setForm(companies.length?'account':'company')}}>Cadastrar primeira conta</button></section>}
   <section className="economy-section economy-recent-ledger" aria-label="Movimentações recentes">
    <header><div><h2>Movimentações</h2><p>Lançamentos no período · contas autorizadas</p></div><button onClick={()=>{setTab('Movimentações');setForm('');historyTab.current?.focus()}}>Ver todas as movimentações <ArrowUpRight size={16}/></button></header>
    {history.loading?<p role="status">Carregando movimentações…</p>:history.error?<div role="alert"><p>Não foi possível carregar as movimentações: {history.error}</p><button onClick={history.refresh}>Tentar novamente</button></div>:<>

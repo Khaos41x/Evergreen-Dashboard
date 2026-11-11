@@ -14,7 +14,7 @@ export async function checkWorkspaceWorkflow({page, width, fixture, userId, work
   await page.getByRole('button',{name:/^Trocar empresa:/}).click()
   await page.getByRole('group',{name:'Escolher empresa'}).getByRole('button',{name:name+' Empresa',exact:true}).click()
   await home.waitFor()
-  await page.waitForFunction(expected=>document.querySelector('.collab-top > strong')?.textContent===expected,name)
+  await page.waitForFunction(expected=>document.querySelector('.access-trigger strong')?.textContent===expected,name)
  }
  async function saveTask(name) {
   const editor=page.getByRole('dialog',{name:'Nova tarefa',exact:true})
@@ -26,7 +26,7 @@ export async function checkWorkspaceWorkflow({page, width, fixture, userId, work
 
  await page.locator('.os-company-directory article').first().getByRole('button',{name:'Entrar',exact:true}).click()
  await home.waitFor()
- assert.equal(await page.locator('.collab-top > strong').isVisible(),true)
+ assert.equal(await page.locator('.access-trigger strong').isVisible(),true)
  await noOverflow()
  const hero=await home.locator('.reference-hero').boundingBox()
  const timer=await home.locator('.hero-timer').boundingBox()
