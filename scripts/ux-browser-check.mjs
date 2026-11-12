@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { mkdirSync, writeFileSync } from 'node:fs'
 
-export async function checkUx({page,width,fixture,workspaceId,channelId,go}) {
+export async function checkUx({page,width,fixture,channelId,go}) {
   const height=page.viewportSize().height
   const stage=process.env.UX_RECORD==='1'?'before':'after'
   const output='output/playwright/ux/'+stage
@@ -42,6 +42,8 @@ export async function checkUx({page,width,fixture,workspaceId,channelId,go}) {
       }
       return extra
     })
+    const contentScrollers=await page.locator(route==='founders'?'.founders-page':'.collab-main').evaluate(root=>[root,...root.querySelectorAll('*')].filter(element=>{const box=element.getBoundingClientRect();return box.width>0&&box.height>0&&element.scrollHeight>element.clientHeight+1&&/auto|scroll/.test(getComputedStyle(element).overflowY)}).map(element=>element.className))
+    verify(contentScrollers.length===(bounds.scrollable?1:0),'Há mais de uma região vertical no painel principal: '+contentScrollers.join(','))
     verify(ancestors.length===0,'Há região rolável envolvendo o painel '+ancestors.join(','))
     if(bounds.scrollable){
       for(const key of ['wheel','PageDown','Space','touch']){

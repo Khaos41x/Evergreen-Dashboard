@@ -2,12 +2,12 @@
 @media(min-width:601px) and (max-width:1000px){
  :root .collab-app:has(>.workspace-rail){display:grid;grid-template-columns:56px 64px minmax(0,1fr)}
  :root .collab-app>.workspace-rail{display:flex;grid-column:1}
- :root .collab-app>.collab-sidebar{display:flex;position:relative;inset:auto;grid-column:2;grid-row:1;width:64px;height:100%;min-height:0;z-index:35;background:var(--sidebar);border-right:1px solid var(--line);transition:width .15s}
+ :root .collab-app>.collab-sidebar{display:flex;position:relative;inset:auto;grid-column:2;grid-row:1;width:64px;height:100%;min-height:0;z-index:35;background:var(--sidebar);border-right:1px solid var(--line);transition:none}
  :root .collab-app>.collab-main{grid-column:3;grid-row:1}
  :root .collab-app .collab-top>.collab-mobile-only{display:none!important}
- :root .collab-app>.collab-sidebar:is(:hover,:focus-within,[data-pinned="true"],[data-expanded="true"]){width:256px;box-shadow:8px 0 16px color-mix(in srgb,var(--bg) 65%,transparent)}
+ :root .collab-app>.collab-sidebar[data-open="true"]{width:256px;box-shadow:8px 0 16px color-mix(in srgb,var(--bg) 65%,transparent)}
  :root .collab-app:has(>.collab-sidebar[data-pinned="true"]){grid-template-columns:56px 256px minmax(0,1fr)}
- :root .collab-app>.collab-sidebar header{min-height:44px;height:44px;padding:4px 10px;justify-content:flex-end}
+ :root .collab-app>.collab-sidebar header{min-height:44px;height:44px;padding:4px 10px;justify-content:flex-start}
  :root .collab-sidebar>header>.evergreen-brand,:root .collab-sidebar>header>.collab-mobile-only{display:none!important}
  :root .collab-sidebar .workspace-pin{display:inline-flex!important;min-width:36px;min-height:36px;justify-content:center}
  :root .collab-sidebar .workspace-company-label{display:none}
@@ -15,12 +15,16 @@
  :root .collab-sidebar .workspace-search{margin:4px 8px;min-height:44px;padding:10px;white-space:nowrap;position:relative}
  :root .collab-sidebar .domain-nav>button,:root .collab-sidebar .workspace-sidebar-link,:root .collab-sidebar .workspace-channel-row>button:first-child{position:relative;min-width:44px;min-height:44px;justify-content:flex-start;padding:12px;gap:12px;white-space:nowrap}
  :root .collab-sidebar .workspace-channel-row small{position:absolute;right:2px;top:0;min-width:16px;text-align:center;font-size:10px;background:var(--raised);color:var(--text);border:1px solid var(--line);border-radius:8px}
- :root .collab-sidebar:not(:hover):not(:focus-within):not([data-pinned="true"]):not([data-expanded="true"]) :is(.workspace-search>span,.domain-nav>button>span,.workspace-sidebar-link>span,.workspace-channel-row>button>span,.workspace-self-copy){position:absolute;width:1px;height:1px;clip-path:inset(50%);overflow:hidden;white-space:nowrap}
- :root .collab-sidebar:not(:hover):not(:focus-within):not([data-pinned="true"]):not([data-expanded="true"]) :is(.workspace-section-heading,.workspace-hint,.channel-favorite,.workspace-logout,.app-version){display:none}
- :root .collab-sidebar:not(:hover):not(:focus-within):not([data-pinned="true"]):not([data-expanded="true"]) .workspace-more summary{font-size:0;padding:10px 12px;min-height:44px}
- :root .collab-sidebar:not(:hover):not(:focus-within):not([data-pinned="true"]):not([data-expanded="true"]) .workspace-more button{display:none}
+ :root .collab-sidebar[data-open="false"] :is(.workspace-search>span,.domain-nav>button>span,.workspace-sidebar-link>span,.workspace-channel-row>button>span,.workspace-self-copy){position:absolute;width:1px;height:1px;clip-path:inset(50%);overflow:hidden;white-space:nowrap}
+ :root .collab-sidebar[data-open="false"] :is(.workspace-section-heading,.workspace-hint,.channel-favorite,.workspace-logout,.app-version){display:none}
+ :root .collab-sidebar[data-open="false"] .workspace-more summary{font-size:0;padding:10px 12px;min-height:44px}
+ :root .collab-sidebar[data-open="false"] .workspace-more button{display:none}
  :root .collab-sidebar .collab-sidebar-bottom{padding:8px;min-height:44px}
- :root .collab-sidebar .workspace-self{padding:4px;width:100%;justify-content:flex-start}
+ :root .collab-sidebar .workspace-self{padding:4px;width:100%;justify-content:flex-start;min-height:44px}
+ :root .collab-sidebar .workspace-self-copy{min-width:0;white-space:nowrap;overflow:hidden}
+ :root .collab-sidebar .workspace-self-copy :is(strong,small){white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+ :root .collab-sidebar .app-version{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+ :root .collab-sidebar .domain-nav>button{height:44px}
 }
 .mobile-more{display:none}
 @media(max-width:600px){

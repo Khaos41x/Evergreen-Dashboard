@@ -1,3 +1,4 @@
+import {colorGreen019} from '../appearance/visual-colors'
 import { AppSelect } from '../appearance/AppSelect'
 import {CompanyOnboarding} from '../identity/CompanyOnboarding'
 import {identity} from '../identity/client'
@@ -66,7 +67,7 @@ export function ProfessionalProfile({userId,selfId,workspaceId,workspaceName,mem
    {error&&<p role="alert" className="collab-error">{error}</p>}
    <div className={`professional-cover ${coverUrl?'has-personal-cover':''}`}>
     {coverUrl&&<img className="professional-cover-photo" src={coverUrl} alt="Capa pessoal"/>}
-    <div className="professional-cover-watermark professional-brazil-watermark" aria-hidden="true"><svg viewBox="0 0 200 140" fill="none"><path d="M100 15 182 70 100 125 18 70Z" stroke="currentColor" strokeWidth="5"/><circle cx="100" cy="70" r="34" fill="currentColor"/><path d="M69 58Q100 53 132 78" stroke="#123626" strokeWidth="7"/><g fill="#123626"><circle cx="88" cy="80" r="2"/><circle cx="103" cy="88" r="2"/><circle cx="114" cy="78" r="1.7"/><circle cx="93" cy="93" r="1.6"/><circle cx="108" cy="98" r="1.6"/><circle cx="100" cy="48" r="1.7"/></g></svg></div>
+    <div className="professional-cover-watermark professional-brazil-watermark" aria-hidden="true"><svg viewBox="0 0 200 140" fill="none"><path d="M100 15 182 70 100 125 18 70Z" stroke="currentColor" strokeWidth="5"/><circle cx="100" cy="70" r="34" fill="currentColor"/><path d="M69 58Q100 53 132 78" stroke={colorGreen019} strokeWidth="7"/><g fill={colorGreen019}><circle cx="88" cy="80" r="2"/><circle cx="103" cy="88" r="2"/><circle cx="114" cy="78" r="1.7"/><circle cx="93" cy="93" r="1.6"/><circle cx="108" cy="98" r="1.6"/><circle cx="100" cy="48" r="1.7"/></g></svg></div>
     <div className="professional-cover-brand"><EvergreenBrand compact symbol/><div className="professional-cover-copy"><span>{workspaceName||'Evergreen Holdings'}</span><small>Perfil profissional · Espaço autorizado</small></div></div>
    </div>
    <div className="professional-identity">

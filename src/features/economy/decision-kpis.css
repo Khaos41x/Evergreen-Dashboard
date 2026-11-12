@@ -45,3 +45,10 @@
 :root .collab-app .economy-embedded .economy-kpi h2{font-family:inherit;font-size:13px;font-weight:600;line-height:1.35}
 :root .collab-top .workspace-top-search{display:inline-flex;min-width:36px}
 @media(max-width:1000px){:root .collab-top .workspace-top-search span{display:none}}
+
+@media(min-width:601px){
+ :root .collab-app .economy-embedded .economy-intro>button{min-height:32px;height:32px;padding:6px 10px;font-size:12px}
+ :root .collab-app .economy-embedded .economy-intro{min-height:32px;margin-bottom:8px}
+ :root .collab-app .economy-embedded .economy-recent-ledger header>button{min-height:32px;padding:6px 10px;font-size:12px}
+ :root .collab-app .economy-embedded .economy-recent-list li{padding-block:8px}
+}

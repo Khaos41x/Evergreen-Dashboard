@@ -1,3 +1,4 @@
+import {colorBlue005,colorGreen222,colorGreen223,colorGreen224,colorGreen225,colorGreen226,colorGreen227,colorGreen228,colorGreen229,colorGreen230,colorGreen231,colorGreen232,colorGreen233,colorGreen234,colorGreen235,colorGreen236,colorGreen237,colorGreen238,colorGreen239,colorGreen240,colorGreen241,colorGreen242,colorGreen243,colorGreen244,colorGreen245,colorGreen246,colorGreen247,colorGreen248,colorGreen249,colorGreen250,colorGreen251,colorNeutral033,colorNeutral189,colorNeutral190,colorNeutral191,colorNeutral192,colorNeutral193,colorNeutral194,colorNeutral195,colorNeutral196,colorNeutral197,colorNeutral198,colorNeutral199,colorNeutral200,colorNeutral201,colorNeutral202,colorNeutral203,colorNeutral204,colorNeutral205,colorWarm028,colorWarm029,colorWarm030,colorWarm031,colorWarm032,colorWarm033,colorWarm034} from '../appearance/visual-colors'
 import {libraryGeometry} from './libraryGeometry'
 import {libraryVault} from './model'
 import {subscribeTheme} from '../appearance/theme'
@@ -108,7 +109,7 @@ function Office(props: Props) {
   const { gl, invalidate } = useThree()
   useEffect(() => {
     const apply = () => {
-      const color = getComputedStyle(gl.domElement).getPropertyValue('--panel').trim() || '#0b1510'
+      const color = getComputedStyle(gl.domElement).getPropertyValue('--panel').trim() || colorNeutral033
       gl.setClearColor(color)
       invalidate()
     }
@@ -116,7 +117,7 @@ function Office(props: Props) {
     return subscribeTheme(apply)
   }, [gl, invalidate])
   const failure = useRef(onFailure), shadowUpdates=useRef(0); failure.current = onFailure
-  const resources = useMemo(() => ({ box: new BoxGeometry(1, 1, 1), sphere: new SphereGeometry(1, 8, 6), cylinder: new CylinderGeometry(1, 1, 1, 12), matte: new MeshStandardMaterial({ color: 'white', roughness: .76, metalness: .12 }), metal: new MeshStandardMaterial({ color: 'white', roughness: .4, metalness: .5 }), luminous: new MeshStandardMaterial({ color: 'white', emissive: '#b4d9c2', emissiveIntensity: .3, roughness: .5, metalness: .08 }) }), [])
+  const resources = useMemo(() => ({ box: new BoxGeometry(1, 1, 1), sphere: new SphereGeometry(1, 8, 6), cylinder: new CylinderGeometry(1, 1, 1, 12), matte: new MeshStandardMaterial({ color: 'white', roughness: .76, metalness: .12 }), metal: new MeshStandardMaterial({ color: 'white', roughness: .4, metalness: .5 }), luminous: new MeshStandardMaterial({ color: 'white', emissive: colorGreen222, emissiveIntensity: .3, roughness: .5, metalness: .08 }) }), [])
   useEffect(() => {
     const lost = (e: Event) => { e.preventDefault(); failure.current() }
     gl.domElement.addEventListener('webglcontextlost', lost)
@@ -138,60 +139,60 @@ function Office(props: Props) {
     if(props.library)return libraryGeometry(members,selection,low)
     const wood: Item[] = [], metal: Item[] = [], screen: Item[] = [], plants: Item[] = [], planters: Item[] = [], architecture: Item[] = [], floor: Item[] = []
     const add = (list: Item[], at: Item['at'], size: Item['size'], color: string, pick?: Item['pick']) => list.push({ at, size, color, pick })
-    add(architecture, [0, -.46, 0], [layout.width + .5, .65, layout.depth + .5], '#1d3227')
-    add(architecture, [0, -.08, 0], [layout.width, .18, layout.depth], '#38463a')
-    for (let x = -layout.width / 2 + 1; x < layout.width / 2; x += 2) for (let z = -layout.depth / 2 + 1; z < layout.depth / 2; z += 2) add(floor, [x, .025, z], [1.98, .018, 1.98], (Math.round(x + z) % 3) ? '#344538' : '#394b3c')
-    add(architecture, [0, .73, -layout.depth / 2], [layout.width, 1.6, .2], '#283d30')
-    add(architecture, [-layout.width / 2, .73, 0], [.2, 1.6, layout.depth], '#263c2e')
-    add(metal, [0, 1.55, -layout.depth / 2], [layout.width, .045, .23], '#beab79')
-    add(metal, [-layout.width / 2, 1.55, 0], [.23, .045, layout.depth], '#beab79')
+    add(architecture, [0, -.46, 0], [layout.width + .5, .65, layout.depth + .5], colorNeutral189)
+    add(architecture, [0, -.08, 0], [layout.width, .18, layout.depth], colorNeutral190)
+    for (let x = -layout.width / 2 + 1; x < layout.width / 2; x += 2) for (let z = -layout.depth / 2 + 1; z < layout.depth / 2; z += 2) add(floor, [x, .025, z], [1.98, .018, 1.98], (Math.round(x + z) % 3) ? colorNeutral191 : colorNeutral192)
+    add(architecture, [0, .73, -layout.depth / 2], [layout.width, 1.6, .2], colorNeutral193)
+    add(architecture, [-layout.width / 2, .73, 0], [.2, 1.6, layout.depth], colorGreen223)
+    add(metal, [0, 1.55, -layout.depth / 2], [layout.width, .045, .23], colorWarm028)
+    add(metal, [-layout.width / 2, 1.55, 0], [.23, .045, layout.depth], colorWarm028)
     // Inlaid aisle: real floor geometry, not a full-screen decorative grid.
-    add(wood, [0, .05, 0], [.8, .025, layout.depth - .5], '#53614d')
+    add(wood, [0, .05, 0], [.8, .025, layout.depth - .5], colorNeutral194)
     members.forEach((m, i) => {
       const [x, , z] = layout.stations[i], pick = { kind: 'member' as const, id: m.id }, active = selection?.kind === 'member' && selection.id === m.id
-      const statusColor = m.presence === 'focusing' ? '#e5bb68' : m.presence === 'online' ? '#43d2a2' : '#7c9690'
-      add(wood, [x, .82, z], [2.25, .13, 1.45], active ? '#91ae89' : '#687662', pick)
-      for (const dx of [-.91, .91]) for (const dz of [-.52, .52]) add(metal, [x + dx, .4, z + dz], [.065, .8, .065], '#212f29', pick)
-      add(metal, [x, 1.42, z - .38], [1.5, .89, .13], '#192821', pick)
-      add(screen, [x, 1.43, z - .306], [1.32, .7, .025], active ? '#1b5240' : '#1e3c31', pick)
-      add(metal, [x, 1, z - .39], [.065, .3, .08], '#9da79a', pick); add(metal, [x, .91, z - .35], [.48, .025, .25], '#6c7d6e', pick)
-      add(metal, [x - .1, .91, z + .3], [.82, .035, .26], '#23342c', pick); add(metal, [x + .58, .91, z + .3], [.14, .04, .2], '#8c9d87', pick)
-      add(wood, [x, .52, z + 1.05], [.82, .13, .76], '#2b4937', pick); add(wood, [x, .87, z + 1.36], [.86, .7, .12], '#365c44', pick)
-      add(metal, [x, .25, z + 1.05], [.08, .5, .08], '#9ba68e', pick); add(metal, [x, .08, z + 1.05], [.7, .05, .65], '#26382b', pick)
+      const statusColor = m.presence === 'focusing' ? colorWarm029 : m.presence === 'online' ? colorGreen224 : colorGreen225
+      add(wood, [x, .82, z], [2.25, .13, 1.45], active ? colorGreen226 : colorNeutral195, pick)
+      for (const dx of [-.91, .91]) for (const dz of [-.52, .52]) add(metal, [x + dx, .4, z + dz], [.065, .8, .065], colorNeutral196, pick)
+      add(metal, [x, 1.42, z - .38], [1.5, .89, .13], colorNeutral197, pick)
+      add(screen, [x, 1.43, z - .306], [1.32, .7, .025], active ? colorGreen227 : colorGreen228, pick)
+      add(metal, [x, 1, z - .39], [.065, .3, .08], colorNeutral198, pick); add(metal, [x, .91, z - .35], [.48, .025, .25], colorNeutral199, pick)
+      add(metal, [x - .1, .91, z + .3], [.82, .035, .26], colorNeutral200, pick); add(metal, [x + .58, .91, z + .3], [.14, .04, .2], colorGreen229, pick)
+      add(wood, [x, .52, z + 1.05], [.82, .13, .76], colorGreen230, pick); add(wood, [x, .87, z + 1.36], [.86, .7, .12], colorGreen231, pick)
+      add(metal, [x, .25, z + 1.05], [.08, .5, .08], colorGreen232, pick); add(metal, [x, .08, z + 1.05], [.7, .05, .65], colorNeutral201, pick)
       add(screen, [x - .43, 1.64, z - .286], [.32, .045, .012], statusColor, pick)
-      add(screen, [x - .15, 1.48, z - .286], [.88, .035, .012], '#6a8a76', pick)
-      add(screen, [x - .24, 1.36, z - .286], [.7, .028, .012], '#4e6c5b', pick)
+      add(screen, [x - .15, 1.48, z - .286], [.88, .035, .012], colorGreen233, pick)
+      add(screen, [x - .24, 1.36, z - .286], [.7, .028, .012], colorGreen234, pick)
       const assigned = tasks.filter(t => t.assigneeId === m.id), progress = completion(assigned)
-      if (progress) add(screen, [x - .52 + progress / 200, 1.22, z - .284], [progress / 100, .055, .015], '#5dd6a2', pick)
+      if (progress) add(screen, [x - .52 + progress / 200, 1.22, z - .284], [progress / 100, .055, .015], colorGreen235, pick)
       add(screen, [x + .87, .94, z - .34], [.09, .11, .09], statusColor, pick)
-      if (active) { add(screen, [x, .1, z + .84], [2.45, .03, .05], '#64dfa7'); add(screen, [x - 1.2, .1, z], [.04, .03, 1.7], '#64dfa7') }
+      if (active) { add(screen, [x, .1, z + .84], [2.45, .03, .05], colorGreen236); add(screen, [x - 1.2, .1, z], [.04, .03, 1.7], colorGreen236) }
     })
     projects.forEach((p, i) => {
       const [x, , z] = layout.rooms[i], pick = { kind: 'project' as const, id: p.id }, selected = selection?.kind === 'project' && selection.id === p.id
-      add(wood, [x, .09, z], [3.25, .08, 2.7], selected ? '#426f67' : '#38514a', pick)
-      add(metal, [x, .55, z - 1.25], [3.18, .95, .1], '#2a4b45', pick)
-      add(metal, [x - 1.52, .55, z], [.1, .95, 2.5], '#355a4f', pick)
-      add(screen, [x, 1.05, z - 1.25], [3.2, .045, .12], selected ? '#80cbd1' : '#567e78', pick)
-      add(wood, [x, .57, z], [1.8, .12, 1.05], '#8b8c6e', pick)
-      add(metal, [x, .3, z], [.8, .6, .45], '#334b3b', pick)
-      add(metal, [x, .85, z - .4], [1.14, .61, .12], '#243b32', pick)
-      add(screen, [x, .86, z - .325], [1, .48, .02], '#326362', pick)
+      add(wood, [x, .09, z], [3.25, .08, 2.7], selected ? colorGreen237 : colorGreen238, pick)
+      add(metal, [x, .55, z - 1.25], [3.18, .95, .1], colorGreen239, pick)
+      add(metal, [x - 1.52, .55, z], [.1, .95, 2.5], colorGreen240, pick)
+      add(screen, [x, 1.05, z - 1.25], [3.2, .045, .12], selected ? colorBlue005 : colorGreen241, pick)
+      add(wood, [x, .57, z], [1.8, .12, 1.05], colorGreen242, pick)
+      add(metal, [x, .3, z], [.8, .6, .45], colorGreen243, pick)
+      add(metal, [x, .85, z - .4], [1.14, .61, .12], colorGreen244, pick)
+      add(screen, [x, .86, z - .325], [1, .48, .02], colorGreen245, pick)
       const progress = completion(tasks.filter(t => t.projectId === p.id))
-      if (progress) add(screen, [x - .4 + progress / 250, .8, z - .309], [progress / 125, .045, .01], '#92d5c7', pick)
+      if (progress) add(screen, [x - .4 + progress / 250, .8, z - .309], [progress / 125, .045, .01], colorGreen246, pick)
     })
     for (const [x, z] of [[-layout.width / 2 + .65, -layout.depth / 2 + .7], [layout.width / 2 - .8, -layout.depth / 2 + .8], [-layout.width / 2 + .8, layout.depth / 2 - .8]]) {
-      add(planters, [x, .33, z], [.33, .65, .33], '#8c8970'); add(metal, [x, 1, z], [.055, 1.3, .055], '#675f3c')
-      add(plants, [x, 1.65, z], [.58, .76, .52], '#467f52'); add(plants, [x + .26, 1.35, z + .13], [.44, .47, .4], '#55915c'); add(plants, [x - .24, 1.5, z - .1], [.4, .52, .41], '#376d46')
+      add(planters, [x, .33, z], [.33, .65, .33], colorWarm030); add(metal, [x, 1, z], [.055, 1.3, .055], colorWarm031)
+      add(plants, [x, 1.65, z], [.58, .76, .52], colorGreen247); add(plants, [x + .26, 1.35, z + .13], [.44, .47, .4], colorGreen248); add(plants, [x - .24, 1.5, z - .1], [.4, .52, .41], colorGreen249)
     }
     // Lounge and access ramp are architecture, never fake employee stations.
-    add(wood, [0, .45, layout.depth / 2 - .8], [2.3, .75, .8], '#b0a58a'); add(metal, [0, .13, layout.depth / 2 + .4], [3.1, .2, 1.1], '#364d3c')
+    add(wood, [0, .45, layout.depth / 2 - .8], [2.3, .75, .8], colorWarm032); add(metal, [0, .13, layout.depth / 2 + .4], [3.1, .2, 1.1], colorGreen250)
     return { wood, metal, screen, plants, planters, architecture, floor }
   }, [members, projects, tasks, selection, layout,props.library,low])
   useEffect(()=>{gl.shadowMap.needsUpdate=true;invalidate()},[batches,gl,invalidate])
   return <group dispose={null}>
-    <ambientLight intensity={props.library ? .46 : .65} /><hemisphereLight args={props.library ? ['#edf3f0', '#667b70', 1.65] : ['#c7d8ca', '#2f4431', 2.2]} />
-    <directionalLight position={[6, 15, 9]} intensity={props.library ? 2.45 : 3.2} color={props.library ? "#fff2dd" : "#ffe7bf"} castShadow={!low} shadow-mapSize={[1024, 1024]} shadow-camera-left={-18} shadow-camera-right={18} shadow-camera-top={18} shadow-camera-bottom={-18} shadow-normalBias={.035} shadow-bias={-.0001} />
-    <directionalLight position={[-9, 6, -6]} intensity={props.library ? .85 : 1.5} color="#8cc7ba" />
+    <ambientLight intensity={props.library ? .46 : .65} /><hemisphereLight args={props.library ? [colorNeutral202, colorNeutral203, 1.65] : [colorNeutral204, colorNeutral205, 2.2]} />
+    <directionalLight position={[6, 15, 9]} intensity={props.library ? 2.45 : 3.2} color={props.library ? colorWarm033 : colorWarm034} castShadow={!low} shadow-mapSize={[1024, 1024]} shadow-camera-left={-18} shadow-camera-right={18} shadow-camera-top={18} shadow-camera-bottom={-18} shadow-normalBias={.035} shadow-bias={-.0001} />
+    <directionalLight position={[-9, 6, -6]} intensity={props.library ? .85 : 1.5} color={colorGreen251} />
     <Batch items={batches.architecture} geometry={resources.box} material={resources.matte} onSelect={onSelect} />
     <Batch items={batches.floor} geometry={resources.box} material={resources.matte} onSelect={onSelect} />
     <Batch items={batches.wood} geometry={resources.box} material={resources.matte} onSelect={onSelect} />
@@ -205,5 +206,5 @@ function Office(props: Props) {
   </group>
 }
 export default function WorldScene(props: Props) {
-  return <Canvas orthographic camera={{ position: [24, 22, 24], near: .1, far: 200, zoom: 25 }} dpr={props.low ? 1 : [1, 1.5]} shadows={!props.low} frameloop={props.visible ? 'demand' : 'never'} gl={{ antialias: !props.low, alpha: false, powerPreference: 'low-power' }} onCreated={({ gl }) => { gl.setClearColor('#0b1510'); gl.toneMappingExposure = 1.15 }} fallback={<p>WebGL não está disponível. Selecione Diretório 2D.</p>} onPointerMissed={() => props.onSelect(null)} aria-label="Sala isométrica do Evergreen. Use o diretório ao lado para navegar por teclado."><Office {...props} /></Canvas>
+  return <Canvas orthographic camera={{ position: [24, 22, 24], near: .1, far: 200, zoom: 25 }} dpr={props.low ? 1 : [1, 1.5]} shadows={!props.low} frameloop={props.visible ? 'demand' : 'never'} gl={{ antialias: !props.low, alpha: false, powerPreference: 'low-power' }} onCreated={({ gl }) => { gl.setClearColor(colorNeutral033); gl.toneMappingExposure = 1.15 }} fallback={<p>WebGL não está disponível. Selecione Diretório 2D.</p>} onPointerMissed={() => props.onSelect(null)} aria-label="Sala isométrica do Evergreen. Use o diretório ao lado para navegar por teclado."><Office {...props} /></Canvas>
 }

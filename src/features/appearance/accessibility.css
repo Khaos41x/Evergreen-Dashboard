@@ -1,0 +1,29 @@
+html[data-theme]{--font-body:"Geist Variable",system-ui,sans-serif;--heading-font:var(--font-body)}
+html[data-theme] body{font-family:var(--font-body)}
+html[data-theme] :is(.economy-page,.collab-app,.world-page){font-family:var(--font-body)}
+html[data-theme] body :is(.collab-app,.economy-page,.founders-page) :is(input,textarea,select,[role="combobox"]){border-color:var(--control-border)}
+html[data-theme] :where(button,input,textarea,select,summary,a[href],[tabindex]):focus-visible{outline:2px solid var(--focus-ring);outline-offset:3px;scroll-margin-block:var(--content-gap,24px) var(--bottom-inset,24px)}
+html[data-theme] .professional-experience :is(p,small,label,button,input,select){font-family:var(--font-body)}
+html[data-theme] .domain-nav button[aria-current="page"]{font-weight:700;border-inline-start:3px solid var(--text)}
+html[data-theme] .world-mode-switch button[aria-pressed="true"]{font-weight:700;border-bottom:2px solid var(--text)}
+html[data-theme] .collab-modal>section{max-height:calc(var(--app-height,100dvh) - 32px);overflow-y:auto;overscroll-behavior:contain}
+html[data-theme] .professional-level-table-wrap:focus-visible{outline:2px solid var(--focus-ring);outline-offset:2px}
+@media(max-width:600px){
+ html[data-theme] :is(.collab-app,.founders-page,.economy-page) :where(button,summary,[role="combobox"]){min-height:44px;min-width:44px}
+ html[data-theme] :is(input:not([type="checkbox"]):not([type="radio"]),textarea,select){font-size:16px;min-height:44px}
+ html[data-theme] label:has(>input:is([type="checkbox"],[type="radio"])){min-height:44px;display:flex;align-items:center}
+ :root .collab-app .collab-top>button,:root .collab-app .collab-top .workspace-top-profile{width:44px;min-width:44px;min-height:44px}
+}
+@media(max-width:600px) and (max-height:600px){
+ :root .collab-app .collab-top>.world-mode-switch{display:none}
+}
+@media(prefers-reduced-motion:reduce){
+ *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+}
+
+@media(max-width:600px){:root[data-theme] .collab-app .economy-embedded .economy-tabs button{min-height:44px}}
+
+/* Selection remains recognizable without relying on the highlight color. */
+:root .collab-app :is(button[aria-current="page"],[role="tab"][aria-selected="true"],button[aria-pressed="true"]){font-weight:700}
+:root .workspace-rail>button{position:relative}
+:root .workspace-rail>button[aria-current="page"]::before{content:"";position:absolute;left:2px;top:calc(50% - 10px);width:3px;height:20px;border-radius:2px;background:currentColor}

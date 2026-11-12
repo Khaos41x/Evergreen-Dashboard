@@ -1,11 +1,13 @@
 import assert from 'node:assert/strict'
-export async function checkNavigation({page,width,fixture,workspaceId}){
+export async function checkNavigation({page,width,fixture}){
  await page.locator('.os-company-directory article').first().getByRole('button',{name:'Entrar',exact:true}).click()
  const sidebar=page.locator('#workspace-sidebar'),rail=page.getByRole('navigation',{name:'Empresas da holding'})
  await page.screenshot({path:'output/playwright/ux/'+(process.env.UX_RECORD==='1'?'before':'after')+'/navigation-'+width+'.png'})
  if(width>600&&width<=1000){
   assert.equal(await sidebar.isVisible(),true,'Barra contextual não está acessível sem drawer')
   assert.equal(await rail.isVisible(),true)
+  const selected=await rail.locator('[aria-current="page"]').evaluate(element=>({weight:parseFloat(getComputedStyle(element).fontWeight),marker:getComputedStyle(element,'::before').content,width:parseFloat(getComputedStyle(element,'::before').width)}))
+  assert.ok(selected.weight>=700&&selected.marker!=='none'&&selected.width>=3)
   assert.ok((await sidebar.boundingBox()).width<=72)
   await page.locator('.collab-main').hover()
   await page.keyboard.press('Control+Shift+\\')

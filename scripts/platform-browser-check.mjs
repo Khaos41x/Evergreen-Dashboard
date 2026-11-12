@@ -217,7 +217,7 @@ try{
  await page.waitForFunction(()=>!!window.__vaultTiming.opening)
  await page.getByRole('heading',{name:'Economy QA',exact:true}).waitFor();assert.ok(Date.now()-started>=600);const timing=await page.evaluate(()=>window.__vaultTiming);assert.ok(timing.entered-timing.opening>=600,JSON.stringify(timing));assert.equal(new URL(page.url()).pathname,'/economy')
  await page.getByText('workspace-qa / qa-user',{exact:true}).waitFor()
- await page.getByRole('button',{name:'Voltar ao Vision QA'}).click();await page.getByRole('heading',{name:"Evergreen Visão",exact:true}).waitFor()
+ await page.getByRole('button',{name:'Voltar ao Vision QA'}).click();await page.getByRole('heading',{name:"Evergreen Mapa",exact:true}).waitFor()
  await page.goBack();await page.getByRole('heading',{name:'Economy QA',exact:true}).waitFor()
  assert.equal(requested.some(r=>r.includes('/api/backend')),false);assert.deepEqual(errors,[])
  results.push({width,vaultRaycast:true,touch:width<700,hoverLabel:true,openingDelay:true,contextPreserved:true,historyNavigation:true,noFinancialQueriesInScene:true})

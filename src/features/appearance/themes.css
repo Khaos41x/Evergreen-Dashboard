@@ -360,3 +360,10 @@ html[data-theme]:not([data-theme="evergreen"]) :where(*:focus-visible) {
   .weekly-progress { grid-template-columns: minmax(0, 1fr); gap: 16px; padding: 16px; }
   .weekly-milestones { padding-top: 12px; border-top: 1px solid var(--line); }
 }
+
+/* Essential control and focus boundaries: contrast >= 3:1 on each theme surface. */
+:root[data-theme="atlas"]{color-scheme:dark;--control-border:#777777;--focus-ring:var(--atlas-primary)}
+:root[data-theme="evergreen"]{color-scheme:dark;--control-border:#829b8b;--focus-ring:#60e4b5}
+:root[data-theme="black"]{color-scheme:dark;--control-border:#888888;--focus-ring:#d7e0dc}
+:root[data-theme="electric"]{color-scheme:dark;--control-border:#8493bf;--focus-ring:#93b4ff}
+:root[data-theme="light"]{color-scheme:light;--control-border:#747e78;--focus-ring:#175d43}

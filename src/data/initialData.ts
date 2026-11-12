@@ -1,3 +1,4 @@
+import {colorWarm005} from '../features/appearance/visual-colors'
 import type { InboxItem, Objective, Person, Project, Task, TeamMember, WorkspaceActivity } from '../types'
 
 // Temporary local state until the corresponding Supabase queries are connected.
@@ -6,7 +7,7 @@ export const currentUser: Person = {
   id: 'joao',
   name: 'Você',
   initials: 'VC',
-  tone: '#b87852',
+  tone: colorWarm005,
 }
 
 export const initialPeople: Person[] = [currentUser]

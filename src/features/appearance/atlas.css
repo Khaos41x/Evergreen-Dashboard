@@ -382,11 +382,11 @@ html[data-input-modality="pointer"] :focus {
   box-shadow: none !important;
 }
 html[data-input-modality="keyboard"] :is(button, a[href], summary, select, input, textarea, [contenteditable], [tabindex]):focus:not([data-slot="select-content"], [data-slot="select-item"]) {
-  outline: 1px solid var(--atlas-ring, var(--emerald)) !important;
+  outline: 2px solid var(--focus-ring, var(--emerald)) !important;
   outline-offset: 2px !important;
   box-shadow: none !important;
 }
-html[data-input-modality] :is(input:not([type="button"], [type="submit"], [type="reset"], [type="checkbox"], [type="radio"], [type="range"], [type="file"], [type="color"]), textarea, [contenteditable="true"]):focus {
+html[data-input-modality="pointer"] :is(input:not([type="button"], [type="submit"], [type="reset"], [type="checkbox"], [type="radio"], [type="range"], [type="file"], [type="color"]), textarea, [contenteditable="true"]):focus {
   border-color: var(--atlas-muted-foreground, var(--muted)) !important;
   outline: none !important;
   box-shadow: none !important;

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-export async function checkFinance({page,width,fixture,workspaceId}){
+export async function checkFinance({page,width,fixture}){
  await page.locator('.os-company-directory article').first().getByRole('button',{name:'Entrar',exact:true}).click()
  const navigate=path=>page.evaluate(path=>{history.pushState(null,'',path);dispatchEvent(new PopStateEvent('popstate'))},path)
  fixture.financeDelay=500
@@ -38,6 +38,13 @@ export async function checkFinance({page,width,fixture,workspaceId}){
  await page.getByRole('heading',{name:'Livro de movimentações',exact:true}).waitFor()
  await navigate('/economy')
  await page.getByRole('button',{name:'Visão Geral',exact:true}).click()
+ fixture.operationsReadOnly=true
+ await page.getByRole('button',{name:'Visão Geral',exact:true}).click()
+ await page.getByRole('button',{name:'Movimentações',exact:true}).click()
+ await page.getByRole('button',{name:'Visão Geral',exact:true}).click()
+ await page.getByRole('region',{name:'Vencimentos · 7 dias',exact:true}).getByText('BRL 700,00',{exact:true}).waitFor({timeout:3000})
+ await page.getByRole('button',{name:'1 pendência · Compromissos e aprovações',exact:true}).waitFor()
+ fixture.operationsReadOnly=false
  fixture.financeEmpty=true
  await page.getByRole('button',{name:'Atualizar registros',exact:true}).click()
  await page.getByRole('heading',{name:'Seu financeiro começa aqui',exact:true}).waitFor()
@@ -48,5 +55,5 @@ export async function checkFinance({page,width,fixture,workspaceId}){
  fixture.financeDenied=false
  await page.getByRole('button',{name:'Tentar novamente',exact:true}).first().click()
  await page.getByText('Receita autorizada QA',{exact:true}).waitFor()
- return {item:'P1-1',width,checks:14}
+ return {item:'P1-1',width,checks:16}
 }

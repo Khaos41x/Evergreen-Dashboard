@@ -21,14 +21,14 @@ if(workflow||surfaces){
 }
 if(surfaces)fixture.members.push({workspace_id:w,user_id:'00000000-0000-4000-8000-000000000002',display_name:'Fixture Bruno',role:'member'})
 mkdirSync('output/playwright',{recursive:true})
-writeFileSync('output/playwright/fixture.html',`<!doctype html><meta name="viewport" content="width=device-width, initial-scale=1"><div id="root"></div><script type="module">
+writeFileSync('output/playwright/fixture.html',`<!doctype html><html lang="pt-BR"><title>Evergreen · Teste de interface</title><meta name="viewport" content="width=device-width, initial-scale=1"><div id="root"></div><script type="module">
 import React from 'react';
 import {createRoot} from 'react-dom/client';
 import {Collaboration} from '/src/collaboration/Collaboration.tsx';
 ${process.env.EG_NATIVE_CSS?"import '/src/features/layout/viewport.css'; import {AppViewport} from '/src/features/layout/AppViewport.tsx'; import '/src/mobile/mobile.css';document.documentElement.dataset.native='true';document.documentElement.style.setProperty('--safe-area-inset-top','28px');document.documentElement.style.setProperty('--safe-area-inset-bottom','24px');":''}
 import '/src/features/layout/viewport.css'; import {AppViewport} from '/src/features/layout/AppViewport.tsx'; import '/src/mobile/mobile.css'; import '/src/styles.css'; import '/src/styles-extra.css'; import '/src/home-reference.css'; import '/src/collaboration/collaboration.css';
 import '/src/features/appearance/themes.css'; import { initializeTheme } from '/src/features/appearance/theme.ts';
-import '/src/features/appearance/atlas.css'; import '@fontsource-variable/geist'; import { initializeFocusModality } from '/src/features/appearance/focus.ts';
+import '/src/features/appearance/atlas.css'; import '/src/features/appearance/accessibility.css'; import '@fontsource-variable/geist'; import { initializeFocusModality } from '/src/features/appearance/focus.ts';
 ${atlas ? '' : "localStorage.setItem('evergreen.appearance.v1',localStorage.getItem('evergreen.appearance.v1')||'evergreen');"}
 ${presentation?"localStorage.setItem('evergreen.appearance.v1','light');":''}
 initializeTheme();initializeFocusModality();
@@ -37,7 +37,7 @@ createRoot(document.getElementById('root')).render(React.createElement(React.Fra
 // A second server with fixture-only public environment; no .env or user server modifications.
 const server=spawn(process.execPath,['node_modules/vite/bin/vite.js','--config','scripts/vite-fixture.config.ts','--host','127.0.0.1','--port','5187','--strictPort'],{env:{...process.env,VITE_SUPABASE_URL:'https://fixture.supabase.invalid',VITE_SUPABASE_PUBLISHABLE_KEY:'sb_publishable_fixture_only'},windowsHide:true,stdio:['ignore','pipe','pipe']})
 let logs=''; server.stdout.on('data',d=>logs+=d); server.stderr.on('data',d=>logs+=d)
-await new Promise((resolve,reject)=>{const timeout=setTimeout(()=>reject(new Error(logs)),15000); const ready=d=>{if(String(d).includes('5187')){clearTimeout(timeout);resolve()}};server.stdout.on('data',ready);server.on('error',reject)})
+await new Promise((resolve,reject)=>{const timeout=setTimeout(()=>reject(new Error(logs)),15000); const ready=d=>{if(String(d).includes('http://127.0.0.1:5187')){clearTimeout(timeout);resolve()}};server.stdout.on('data',ready);server.on('error',reject)})
 const browser=await chromium.launch({executablePath:process.env.BROWSER_PATH ?? 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',headless:true})
 const results=[]
 try {
@@ -103,7 +103,7 @@ try {
      const id=crypto.randomUUID();fixture.channels.push({id,workspace_id:payload.p_workspace,name:payload.p_name,is_private:payload.p_private,description:'',archived:false,dm_key:null});fixture.channel_members.push({channel_id:id,user_id:a})
      return route.fulfill({status:200,headers,body:JSON.stringify(id)})
     }
-    if(process.env.UX_ITEM==='P1-1'&&table==='os_operations')return route.fulfill({status:200,headers,body:JSON.stringify({can_finance:true,commitments:[],approvals:[]})})
+    if(process.env.UX_ITEM==='P1-1'&&table==='os_operations')return route.fulfill({status:200,headers,body:JSON.stringify({can_finance:!fixture.operationsReadOnly,commitments:fixture.operationsReadOnly?[{id:'due-qa',account_id:'account-'+w,kind:'payable',cents:'70000',currency:'BRL',due_on:new Date().toLocaleDateString('en-CA'),state:'open'}]:[],approvals:[]})})
     if(surfaces&&table.startsWith('economy_')){
      if(fixture.financeDelay)await new Promise(resolve=>setTimeout(resolve,fixture.financeDelay))
      if(fixture.financeEmpty&&table==='economy_snapshot')return route.fulfill({status:200,headers,body:JSON.stringify({companies:[],accounts:[],goals:[],budgets:[],flows:[],can_create:true})})
@@ -166,7 +166,7 @@ try {
   await context.route('**/api/identity/sessions',route=>route.fulfill({contentType:'application/json',body:'{"sessions":[]}'}))
   await context.route('https://fixture.supabase.invalid/storage/**',r=>r.fulfill({contentType:'image/png',body:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5+AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAASSURBVBhXY1DJ8/iPjBlIFwAA2jkdkdPy0oAAAAAASUVORK5CYII=','base64')}))
   const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error'&&!m.text().includes('WebSocket'))console.log(m.text())})
-  await page.goto(`${origin}/output/playwright/fixture.html`,{waitUntil:'domcontentloaded'})
+  await page.goto(`${origin}/output/playwright/fixture.html`,{waitUntil:'domcontentloaded',timeout:60000})
   async function go(label){
    if(label==='Configurações'){
     if(width<=600){await page.getByRole('navigation',{name:'Navegação mobile'}).getByRole('button',{name:'Mais',exact:true}).click();await page.getByRole('dialog',{name:'Mais destinos'}).getByRole('button',{name:'Ajustes',exact:true}).click()}
@@ -182,6 +182,18 @@ try {
    if(label==='Mensagens')await page.locator('.conversation-directory-list').getByRole('button').first().click()
   }
   await page.locator('.collab-top').waitFor()
+  if(process.env.UX_ITEM==='P2-extras'){
+   const {checkExtras}=await import('./ux-extras-check.mjs')
+   results.push(await checkExtras({page,width,fixture,workspaceId:w,userId:a}));await context.close();continue
+  }
+  if(process.env.UX_ITEM==='preserve'){
+   const {checkPreserved}=await import('./ux-preservation-check.mjs')
+   results.push(await checkPreserved({page,width}));await context.close();continue
+  }
+  if(process.env.UX_ITEM==='P2'){
+   const {checkAccessibility}=await import('./ux-accessibility-check.mjs')
+   results.push(await checkAccessibility({page,width,fixture}));await context.close();continue
+  }
   if(process.env.UX_ITEM==='P1-3'){
    const {checkNavigation}=await import('./ux-navigation-check.mjs')
    results.push(await checkNavigation({page,width,fixture,workspaceId:w}));await context.close();continue
@@ -271,7 +283,7 @@ try {
    await mention.focus()
    await page.keyboard.press('Tab')
    await page.keyboard.press('Shift+Tab')
-   assert.deepEqual(await mention.evaluate(el=>[document.activeElement===el,getComputedStyle(el).outlineWidth,getComputedStyle(el).outlineOffset]),[true,'1px','2px'])
+   assert.deepEqual(await mention.evaluate(el=>[document.activeElement===el,getComputedStyle(el).outlineWidth,getComputedStyle(el).outlineOffset]),[true,'2px','2px'])
    await page.keyboard.press('ArrowDown')
    const alice=page.getByRole('option',{name:'Fixture Alice'})
    await alice.waitFor()

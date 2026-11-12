@@ -5,9 +5,9 @@ const localSections=['home','chat','conversations','tasks','records','objectives
 export function useCompanySections({userId,workspaceId,screen,channelId,surface,enabled}:{userId:string;workspaceId:string;screen:WorkspaceScreen;channelId:string;surface:string;enabled:boolean}){
  const key='evergreen.company-sections.'+userId
  const remembered=useRef<Record<string,Section>>({})
- const initialized=useRef(false)
- if(!initialized.current){
-  initialized.current=true
+ const initialized=useRef('')
+ if(initialized.current!==key){
+  initialized.current=key;remembered.current={}
   try{const value=JSON.parse(sessionStorage.getItem(key)||'{}');if(value&&typeof value==='object'&&!Array.isArray(value))remembered.current=value}catch{/* Optional navigation preference. */}
  }
  useEffect(()=>{

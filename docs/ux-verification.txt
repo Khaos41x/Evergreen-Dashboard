@@ -1,0 +1,864 @@
+EVERGREEN — VERIFICAÇÃO DE UX — 11/11/2026
+
+Ambiente: Chromium real, React real e respostas HTTP controladas. Não é validação hospedada, RLS, duas contas ou dispositivo físico. Erros 403 nestes logs são respostas deliberadas para testar recuperação e revogação.
+
+Resultados finais: {"suites":[{"name":"features","exit":0},{"name":"extras","exit":0},{"name":"matrix","exit":0},{"name":"regression","exit":0},{"name":"accessibility","exit":0}],"matrixCases":80,"routeThemeScreens":30,"axeScans":40,"reflow":{"cssWidth":320,"cssHeight":180,"dpr":4,"visualScale":1,"savedCssPixels":[320,180],"actualSystemZoom":false}}
+
+=== npm run lint ===
+
+> evergreen-tasks@1.3.0 lint
+> oxlint src server scripts vite.config.ts && npm run check:tokens
+
+server/security.mjs:13:23: warning unicorn(prefer-string-starts-ends-with): Prefer String#startsWith over a regex with a caret. help: Replace `/^sb_secret_/.test(key)` with `key.startsWith('sb_secret_')`.
+src/features/organizations/Boardroom.tsx:8:92: warning eslint(no-unused-vars): Type 'OrganizationSnapshot' is imported but never used. help: Consider removing this import.
+server/push-providers.mjs:20:59: warning eslint(no-unused-expressions): Expected expression to be used help: Consider using this expression or removing it
+src/features/productivity/ProfileSettings.tsx:17:41: warning eslint(no-unused-vars): Parameter 'workspaceId' is declared but never used. Unused parameters should start with a '_'. help: Consider removing this parameter.
+src/collaboration/Collaboration.tsx:20:9: warning eslint(no-unused-vars): Identifier 'EvergreenBrand' is imported but never used. help: Consider removing this import.
+src/collaboration/Collaboration.tsx:60:10: warning eslint(no-unused-vars): Identifier 'productivityRepository' is imported but never used. help: Consider removing this import.
+scripts/mobile-ota-live-check.mjs:3:20: warning eslint(no-unused-vars): Identifier 'createPublicKey' is imported but never used. help: Consider removing this import.
+scripts/mobile-ota-check.mjs:4:14: warning eslint(no-unused-vars): Identifier 'resolve' is imported but never used. help: Consider removing this import.
+scripts/mobile-ota-browser-check.mjs:4:33: warning eslint(no-unused-vars): Identifier 'readFileSync' is imported but never used. help: Consider removing this import.
+src/components/TaskDrawer.tsx:7:106: warning eslint(no-unused-vars): Parameter 'onSuggest' is declared but never used. Unused parameters should start with a '_'. help: Consider removing this parameter.
+scripts/identity-check.mjs:53:8: warning eslint(no-unused-vars): Variable 'sessionCookies' is declared but never used. Unused variables should start with a '_'. help: Consider removing this declaration.
+scripts/holding-sql-check.mjs:13:20: warning eslint(no-unused-vars): Variable 'before' is declared but never used. Unused variables should start with a '_'. help: Consider removing this declaration.
+scripts/functional-check.mjs:68:7: warning eslint(no-unused-vars): Variable 'progressA' is declared but never used. Unused variables should start with a '_'. help: Consider removing this declaration.
+scripts/functional-check.mjs:70:7: warning eslint(no-unused-vars): Variable 'progressB' is declared but never used. Unused variables should start with a '_'. help: Consider removing this declaration.
+scripts/e2e-real.mjs:16:79: warning eslint(no-unused-vars): Variable 'contextC' is declared but never used. Unused variables should start with a '_'. help: Consider removing this declaration.
+src/features/founders/Founders.tsx:13:29: warning eslint(no-unused-vars): Identifier 'Compass' is imported but never used. help: Consider removing this import.
+
+> evergreen-tasks@1.3.0 check:tokens
+> node scripts/check-tokens.mjs
+
+{
+  "checked": "src CSS declarations and TS/TSX string literals",
+  "violations": 0,
+  "examples": []
+}
+
+[exit 0]
+
+=== npm run typecheck ===
+
+> evergreen-tasks@1.3.0 typecheck
+> tsc -b
+
+
+[exit 0]
+
+=== npm test ===
+
+> evergreen-tasks@1.3.0 test
+> npm run test:holding:model && npm run test:world:model
+
+
+> evergreen-tasks@1.3.0 test:holding:model
+> node --experimental-strip-types scripts/holding-model-check.mjs
+
+Model assertions passed: calendar periods/leap year, exact variations, expense ceilings, CSV injection protection, stable office/vault bounds and central aisle.
+
+> evergreen-tasks@1.3.0 test:world:model
+> node --experimental-strip-types scripts/world-model-check.mjs
+
+{
+  "environment": "Pure model checks with labeled fixtures; not hosted authorization",
+  "scopeFiltering": true,
+  "archivedExcluded": true,
+  "noInventedPresence": true,
+  "permissionsDoNotBroaden": true,
+  "taskDerivedProgress": true,
+  "uniqueBoundedLayout": true,
+  "localIdentityExplicit": true
+}
+
+[exit 0]
+
+=== npm run build ===
+
+> evergreen-tasks@1.3.0 build
+> node scripts/auth-config-check.mjs && tsc -b && vite build && node scripts/mobile-ota.mjs
+
+Local/native bundle: server auth origin is validated at runtime; hosted deployment check not applicable.
+vite v8.3.4 building client environment for production...
+transforming...
+✓ 2201 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                                              0.94 kB │ gzip:   0.45 kB
+dist/assets/geist-cyrillic-ext-wght-normal-DjL33-gN.woff2    7.42 kB
+dist/assets/geist-vietnamese-wght-normal-6IgcOCM7.woff2      8.00 kB
+dist/assets/geist-cyrillic-wght-normal-BEAKL7Jp.woff2       15.08 kB
+dist/build-manifest.json                                    16.19 kB │ gzip:   2.06 kB
+dist/assets/geist-latin-ext-wght-normal-DC-KSUi6.woff2      16.51 kB
+dist/assets/geist-latin-wght-normal-BgDaEnEv.woff2          29.40 kB
+dist/assets/AppVersion-DfX57DvM.css                          0.30 kB │ gzip:   0.21 kB
+dist/assets/client-6yS88GNr.css                              1.13 kB │ gzip:   0.53 kB
+dist/assets/company-onboarding-CvUmOGr8.css                  2.75 kB │ gzip:   0.78 kB
+dist/assets/Reauthenticate-CJzGkqSl.css                      2.86 kB │ gzip:   0.92 kB
+dist/assets/Founders-C4EAMQ9o.css                            3.17 kB │ gzip:   0.92 kB
+dist/assets/Economy-C2uOv8Zk.css                             5.16 kB │ gzip:   1.20 kB
+dist/assets/holding-Bnulv4l0.css                            11.69 kB │ gzip:   2.62 kB
+dist/assets/organizations-KqyowIFk.css                      12.73 kB │ gzip:   2.95 kB
+dist/assets/economy-6ME1SysH.css                            20.65 kB │ gzip:   4.31 kB
+dist/assets/Avatars-DqxlVXkn.css                            22.31 kB │ gzip:   4.65 kB
+dist/assets/Collaboration-DNZVfovV.css                      67.38 kB │ gzip:  12.26 kB
+dist/assets/index-BviPfbVR.css                             160.27 kB │ gzip:  33.21 kB
+dist/assets/arrow-right-left-BXZ6RHRm.js                     0.27 kB │ gzip:   0.21 kB
+dist/assets/award-xNdJk_Fm.js                                0.30 kB │ gzip:   0.24 kB
+dist/assets/shield-check-uOxgGc1a.js                         0.34 kB │ gzip:   0.26 kB
+dist/assets/web-CqL3M3Mf.js                                  0.36 kB │ gzip:   0.24 kB
+dist/assets/AppVersion-D07fsIrY.js                           0.36 kB │ gzip:   0.28 kB
+dist/assets/money-XvredguZ.js                                0.58 kB │ gzip:   0.39 kB
+dist/assets/trash-lgd1Yw7g.js                                0.58 kB │ gzip:   0.34 kB
+dist/assets/refresh-cw-Dn-06BNT.js                           0.73 kB │ gzip:   0.38 kB
+dist/assets/useOperation-DtvNtR_A.js                         0.78 kB │ gzip:   0.47 kB
+dist/assets/web-DDSz74CS.js                                  0.84 kB │ gzip:   0.40 kB
+dist/assets/GroupConversation-D0gy9vDE.js                    1.40 kB │ gzip:   0.77 kB
+dist/assets/attachmentStorage-h3PvF95c.js                    2.01 kB │ gzip:   1.14 kB
+dist/assets/HoldingOffice-BkhxIdkK.js                        2.02 kB │ gzip:   1.03 kB
+dist/assets/GlobalSearch-DhXvgwW7.js                         2.98 kB │ gzip:   1.42 kB
+dist/assets/organizations-4Rp8so0V.js                        3.79 kB │ gzip:   1.49 kB
+dist/assets/CompanyOnboarding-CRh_n8Tc.js                    3.93 kB │ gzip:   1.60 kB
+dist/assets/esm-Cgz8Ku4Z.js                                  4.16 kB │ gzip:   1.67 kB
+dist/assets/web-w4UCtRiF.js                                  5.14 kB │ gzip:   1.37 kB
+dist/assets/CompanyFiles-D2tPvTi5.js                         6.56 kB │ gzip:   2.57 kB
+dist/assets/jsx-runtime-D3jfb0Ew.js                          8.90 kB │ gzip:   3.38 kB
+dist/assets/OrganizationHub-KrzYwiEj.js                     10.95 kB │ gzip:   3.80 kB
+dist/assets/Auth-DafskWN7.js                                11.81 kB │ gzip:   4.00 kB
+dist/assets/Reauthenticate-W3mNf1sC.js                      12.38 kB │ gzip:   4.75 kB
+dist/assets/ProfessionalProfile-DtrSeoNc.js                 13.62 kB │ gzip:   4.64 kB
+dist/assets/CompanyPeople-CYSmrwqh.js                       13.81 kB │ gzip:   4.47 kB
+dist/assets/WorldEntry-BjdzTarM.js                          22.54 kB │ gzip:   7.74 kB
+dist/assets/FinancialAnalysis-5emOJl08.js                   24.48 kB │ gzip:   7.88 kB
+dist/assets/Founders-C3QTMCZa.js                            32.89 kB │ gzip:   9.38 kB
+dist/assets/Economy-fD6Dxqnb.js                             36.85 kB │ gzip:  10.88 kB
+dist/assets/HoldingCenter-b1q7BXrB.js                       39.61 kB │ gzip:  11.93 kB
+dist/assets/App-DtOjZ119.js                                 42.88 kB │ gzip:  12.26 kB
+dist/assets/OrganizationWorkspace-jZBozkmL.js               54.74 kB │ gzip:  14.56 kB
+dist/assets/client-ClJY-T_I.js                              94.26 kB │ gzip:  32.61 kB
+dist/assets/Collaboration-C7XKustv.js                      160.35 kB │ gzip:  44.44 kB
+dist/assets/index-B1vGb0Ly.js                              243.93 kB │ gzip:  77.99 kB
+dist/assets/Avatars-Cbj1I6HY.js                            270.15 kB │ gzip:  73.47 kB
+dist/assets/WorldScene-jMPHaIIX.js                         952.57 kB │ gzip: 253.80 kB
+
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+[INEFFECTIVE_DYNAMIC_IMPORT] node_modules/@capacitor/core/dist/index.js is dynamically imported by src/mobile/live-updates.ts but also statically imported by node_modules/@capacitor/app/dist/esm/index.js, node_modules/@capacitor/app/dist/esm/web.js, node_modules/@capacitor/browser/dist/esm/index.js, node_modules/@capacitor/browser/dist/esm/web.js, node_modules/@capacitor/push-notifications/dist/esm/index.js, ..., dynamic import will not move module into another chunk.
+
+[INEFFECTIVE_DYNAMIC_IMPORT] node_modules/@capacitor/app/dist/esm/index.js is dynamically imported by src/mobile/live-updates.ts but also statically imported by src/mobile/UpdateNotice.tsx, src/mobile/runtime.ts, dynamic import will not move module into another chunk.
+
+✓ built in 9.26s
+[PLUGIN_TIMINGS] JavaScript callbacks ran for 8.6s of this 9.2s build (93%).
+The slowest callbacks, timed inside each callback (the wait before a callback starts is excluded, the time it awaits is included):
+  - plugin vite:build-html transform (53%, 4.9s, 1 call)
+Additional callback time came from the callbacks below and from callbacks under 1s.
+1 callback is listed without a time. Its calls overlapped, so the time inside one call includes work from other calls. To find its cost, profile the build with `node --cpu-prof`:
+  - plugin vite:css transform (31 calls)
+See https://rolldown.rs/reference/InputOptions.checks#bundlertimings for more details.
+
+{"liveUpdate":{"sequence":1794440812683,"version":"1.3.0+1794440812683","bytes":4762544,"sha256":"5cf2d6bc6a95072586b0d2ca9259d7edea5dd0b20ba68cf331d31b7d340162da","zipSha256":"5d650f39b363fd29aecaec884d333be98a21399c34870c85b4fc5d002003d4ca","fileCount":68,"keyVerified":true}}
+
+[exit 0]
+
+=== npm run check:build ===
+
+> evergreen-tasks@1.3.0 check:build
+> node scripts/check-build.mjs
+
+{"initialJavaScriptGzipBytes":242214,"baseline":244603,"scanned":277,"matchedSecrets":0}
+
+[exit 0]
+
+=== node scripts/test-ux-features.mjs ===
+{"item":"P0-2","width":390,"checks":9,"source":"respostas HTTP controladas; sem servidor hospedado"}
+{"item":"P0-2","width":734,"checks":9,"source":"respostas HTTP controladas; sem servidor hospedado"}
+{"item":"P0-2","width":1440,"checks":9,"source":"respostas HTTP controladas; sem servidor hospedado"}
+[
+  {
+    "item": "P0-2",
+    "width": 390,
+    "checks": 9
+  },
+  {
+    "item": "P0-2",
+    "width": 734,
+    "checks": 9
+  },
+  {
+    "item": "P0-2",
+    "width": 1440,
+    "checks": 9
+  }
+]
+Failed to load resource: the server responded with a status of 403 (Forbidden)
+{"width":734,"dataHeight":409.21875,"panelHeight":642.921875,"ratio":0.6364984081464019}
+Failed to load resource: the server responded with a status of 403 (Forbidden)
+Failed to load resource: the server responded with a status of 403 (Forbidden)
+[
+  {
+    "item": "P1-1",
+    "width": 390,
+    "checks": 16
+  },
+  {
+    "item": "P1-1",
+    "width": 734,
+    "checks": 16
+  },
+  {
+    "item": "P1-1",
+    "width": 1440,
+    "checks": 16
+  }
+]
+[
+  {
+    "item": "P1-2",
+    "width": 390,
+    "checks": 8
+  },
+  {
+    "item": "P1-2",
+    "width": 734,
+    "checks": 8
+  },
+  {
+    "item": "P1-2",
+    "width": 1440,
+    "checks": 8
+  }
+]
+[
+  {
+    "item": "P1-3",
+    "width": 390,
+    "checks": 13
+  },
+  {
+    "item": "P1-3",
+    "width": 734,
+    "checks": 13
+  },
+  {
+    "item": "P1-3",
+    "width": 1000,
+    "checks": 13
+  }
+]
+
+[exit 0]
+
+=== UX_ITEM=P2-extras node scripts/collaboration-ui-check.mjs (390,734) ===
+{"extrasStart":390}
+{"width":390,"clicks":[{"type":"pointerdown","text":"Tarefas","open":"false"},{"type":"pointerup","text":"Tarefas","open":"false"},{"type":"click","text":"Tarefas","open":"false"}]}
+{"extrasStart":734}
+{"width":734,"clicks":[{"type":"pointerdown","text":"Trabalho","open":"false"},{"type":"pointerup","text":"Trabalho","open":"true"},{"type":"click","text":"Trabalho","open":"true"}]}
+[
+  {
+    "item": "P2-extras",
+    "width": 390,
+    "keyboardMoveWithoutDrag": true,
+    "readCanSwitch": true,
+    "staleCompanyResponseIgnored": true
+  },
+  {
+    "item": "P2-extras",
+    "width": 734,
+    "keyboardMoveWithoutDrag": true,
+    "readCanSwitch": true,
+    "staleCompanyResponseIgnored": true
+  }
+]
+
+[exit 0]
+
+=== node scripts/test-ux-accessibility.mjs ===
+{"theme":"atlas","route":"hub","serious":[],"smallSerif":0,"overflow":false,"scheme":"dark","smallTargets":[],"contrast":{"text":17.937464630197162,"muted":7.3709355625018365,"soft":11.177626417098676,"control":4.421114387232604,"focus":16.181579956636703},"mobileUnder44":0}
+Failed to load resource: the server responded with a status of 403 (Forbidden)
+{"theme":"atlas","route":"economy","serious":[],"smallSerif":0,"overflow":false,"scheme":"dark","smallTargets":[],"contrast":{"text":17.937464630197162,"muted":7.3709355625018365,"soft":11.177626417098676,"control":4.421114387232604,"focus":16.181579956636703},"mobileUnder44":0}
+{"theme":"atlas","route":"founders","serious":[],"smallSerif":0,"overflow":false,"scheme":"dark","smallTargets":[],"contrast":{"text":17.937464630197162,"muted":7.3709355625018365,"soft":11.177626417098676,"control":4.421114387232604,"focus":16.181579956636703},"mobileUnder44":0}
+{"theme":"evergreen","route":"hub","serious":[],"smallSerif":0,"overflow":false,"scheme":"dark","smallTargets":[],"contrast":{"text":18.017281473370016,"muted":5.56803192801756,"soft":11.474075001811903,"control":6.445999525416235,"focus":12.553974168191974},"mobileUnder44":0}
+Failed to load resource: the server responded with a status of 403 (Forbidden)
+{"theme":"evergreen","route":"economy","serious":[],"smallSerif":0,"overflow":false,"scheme":"dark","smallTargets":[],"contrast":{"text":18.017281473370016,"muted":5.56803192801756,"soft":11.474075001811903,"control":6.445999525416235,"focus":12.553974168191974},"mobileUnder44":0}
+{"theme":"evergreen","route":"founders","serious":[],"smallSerif":0,"overflow":false,"scheme":"dark","smallTargets":[],"contrast":{"text":18.017281473370016,"muted":5.56803192801756,"soft":11.474075001811903,"control":6.445999525416235,"focus":12.553974168191974},"mobileUnder44":0}
+{"theme":"black","route":"hub","serious":[],"smallSerif":0,"overflow":false,"scheme":"dark","smallTargets":[],"contrast":{"text":19.261973035868383,"muted":8.128002882918869,"soft":12.422496589297461,"control":5.924026534156709,"focus":15.585137808876974},"mobileUnder44":0}
+Failed to load resource: the server responded with a status of 403 (Forbidden)
+{"theme":"black","route":"economy","serious":[],"smallSerif":0,"overflow":false,"scheme":"dark","smallTargets":[],"contrast":{"text":19.261973035868383,"muted":8.128002882918869,"soft":12.422496589297461,"control":5.924026534156709,"focus":15.585137808876974},"mobileUnder44":0}
+{"theme":"black","route":"founders","serious":[],"smallSerif":0,"overflow":false,"scheme":"dark","smallTargets":[],"contrast":{"text":19.261973035868383,"muted":8.128002882918869,"soft":12.422496589297461,"control":5.924026534156709,"focus":15.585137808876974},"mobileUnder44":0}
+{"theme":"electric","route":"hub","serious":[],"smallSerif":0,"overflow":false,"scheme":"dark","smallTargets":[],"contrast":{"text":17.758374010906266,"muted":8.734965259954915,"soft":12.548346363780135,"control":5.753192510202061,"focus":9.424118281729667},"mobileUnder44":0}
+Failed to load resource: the server responded with a status of 403 (Forbidden)
+{"theme":"electric","route":"economy","serious":[],"smallSerif":0,"overflow":false,"scheme":"dark","smallTargets":[],"contrast":{"text":17.758374010906266,"muted":8.734965259954915,"soft":12.548346363780135,"control":5.753192510202061,"focus":9.424118281729667},"mobileUnder44":0}
+{"theme":"electric","route":"founders","serious":[],"smallSerif":0,"overflow":false,"scheme":"dark","smallTargets":[],"contrast":{"text":17.758374010906266,"muted":8.734965259954915,"soft":12.548346363780135,"control":5.753192510202061,"focus":9.424118281729667},"mobileUnder44":0}
+{"theme":"light","route":"hub","serious":[],"smallSerif":0,"overflow":false,"scheme":"light","smallTargets":[],"contrast":{"text":13.961316418975334,"muted":5.876990464146835,"soft":7.374143216237662,"control":4.2015497448977035,"focus":7.228283509763885},"mobileUnder44":0}
+Failed to load resource: the server responded with a status of 403 (Forbidden)
+{"theme":"light","route":"economy","serious":[],"smallSerif":0,"overflow":false,"scheme":"light","smallTargets":[],"contrast":{"text":13.961316418975334,"muted":5.876990464146835,"soft":7.374143216237662,"control":4.2015497448977035,"focus":7.228283509763885},"mobileUnder44":0}
+{"theme":"light","route":"founders","serious":[],"smallSerif":0,"overflow":false,"scheme":"light","smallTargets":[],"contrast":{"text":13.961316418975334,"muted":5.876990464146835,"soft":7.374143216237662,"control":4.2015497448977035,"focus":7.228283509763885},"mobileUnder44":0}
+{"reflowMetrics":{"cssWidth":320,"cssHeight":180,"dpr":4,"visualScale":1}}
+{"width":320,"keyboardRegions":true,"reducedMotion":true,"reflow400Equivalent":true}
+{"theme":"atlas","route":"hub","serious":[],"smallSerif":0,"overflow":false,"scheme":"dark","smallTargets":[],"contrast":{"text":17.937464630197162,"muted":7.3709355625018365,"soft":11.177626417098676,"control":4.421114387232604,"focus":16.181579956636703},"mobileUnder44":0}
+Failed to load resource: the server responded with a status of 403 (Forbidden)
+{"theme":"atlas","route":"economy","serious":[],"smallSerif":0,"overflow":false,"scheme":"dark","smallTargets":[],"contrast":{"text":17.937464630197162,"muted":7.3709355625018365,"soft":11.177626417098676,"control":4.421114387232604,"focus":16.181579956636703},"mobileUnder44":0}
+{"theme":"atlas","route":"founders","serious":[],"smallSerif":0,"overflow":false,"scheme":"dark","smallTargets":[],"contrast":{"text":17.937464630197162,"muted":7.3709355625018365,"soft":11.177626417098676,"control":4.421114387232604,"focus":16.181579956636703},"mobileUnder44":0}
+{"theme":"evergreen","route":"hub","serious":[],"smallSerif":0,"overflow":false,"scheme":"dark","smallTargets":[],"contrast":{"text":18.017281473370016,"muted":5.56803192801756,"soft":11.474075001811903,"control":6.445999525416235,"focus":12.553974168191974},"mobileUnder44":0}
+Failed to load resource: the server responded with a status of 403 (Forbidden)
+{"theme":"evergreen","route":"economy","serious":[],"smallSerif":0,"overflow":false,"scheme":"dark","smallTargets":[],"contrast":{"text":18.017281473370016,"muted":5.56803192801756,"soft":11.474075001811903,"control":6.445999525416235,"focus":12.553974168191974},"mobileUnder44":0}
+{"theme":"evergreen","route":"founders","serious":[],"smallSerif":0,"overflow":false,"scheme":"dark","smallTargets":[],"contrast":{"text":18.017281473370016,"muted":5.56803192801756,"soft":11.474075001811903,"control":6.445999525416235,"focus":12.553974168191974},"mobileUnder44":0}
+{"theme":"black","route":"hub","serious":[],"smallSerif":0,"overflow":false,"scheme":"dark","smallTargets":[],"contrast":{"text":19.261973035868383,"muted":8.128002882918869,"soft":12.422496589297461,"control":5.924026534156709,"focus":15.585137808876974},"mobileUnder44":0}
+Failed to load resource: the server responded with a status of 403 (Forbidden)
+{"theme":"black","route":"economy","serious":[],"smallSerif":0,"overflow":false,"scheme":"dark","smallTargets":[],"contrast":{"text":19.261973035868383,"muted":8.128002882918869,"soft":12.422496589297461,"control":5.924026534156709,"focus":15.585137808876974},"mobileUnder44":0}
+{"theme":"black","route":"founders","serious":[],"smallSerif":0,"overflow":false,"scheme":"dark","smallTargets":[],"contrast":{"text":19.261973035868383,"muted":8.128002882918869,"soft":12.422496589297461,"control":5.924026534156709,"focus":15.585137808876974},"mobileUnder44":0}
+{"theme":"electric","route":"hub","serious":[],"smallSerif":0,"overflow":false,"scheme":"dark","smallTargets":[],"contrast":{"text":17.758374010906266,"muted":8.734965259954915,"soft":12.548346363780135,"control":5.753192510202061,"focus":9.424118281729667},"mobileUnder44":0}
+Failed to load resource: the server responded with a status of 403 (Forbidden)
+{"theme":"electric","route":"economy","serious":[],"smallSerif":0,"overflow":false,"scheme":"dark","smallTargets":[],"contrast":{"text":17.758374010906266,"muted":8.734965259954915,"soft":12.548346363780135,"control":5.753192510202061,"focus":9.424118281729667},"mobileUnder44":0}
+{"theme":"electric","route":"founders","serious":[],"smallSerif":0,"overflow":false,"scheme":"dark","smallTargets":[],"contrast":{"text":17.758374010906266,"muted":8.734965259954915,"soft":12.548346363780135,"control":5.753192510202061,"focus":9.424118281729667},"mobileUnder44":0}
+{"theme":"light","route":"hub","serious":[],"smallSerif":0,"overflow":false,"scheme":"light","smallTargets":[],"contrast":{"text":13.961316418975334,"muted":5.876990464146835,"soft":7.374143216237662,"control":4.2015497448977035,"focus":7.228283509763885},"mobileUnder44":0}
+Failed to load resource: the server responded with a status of 403 (Forbidden)
+{"theme":"light","route":"economy","serious":[],"smallSerif":0,"overflow":false,"scheme":"light","smallTargets":[],"contrast":{"text":13.961316418975334,"muted":5.876990464146835,"soft":7.374143216237662,"control":4.2015497448977035,"focus":7.228283509763885},"mobileUnder44":0}
+{"theme":"light","route":"founders","serious":[],"smallSerif":0,"overflow":false,"scheme":"light","smallTargets":[],"contrast":{"text":13.961316418975334,"muted":5.876990464146835,"soft":7.374143216237662,"control":4.2015497448977035,"focus":7.228283509763885},"mobileUnder44":0}
+{"width":734,"keyboardRegions":true,"reducedMotion":true,"reflow400Equivalent":false}
+[
+  {
+    "item": "P2",
+    "width": 320,
+    "screens": 15,
+    "axeScans": 20,
+    "serious": 0
+  },
+  {
+    "item": "P2",
+    "width": 734,
+    "screens": 15,
+    "axeScans": 20,
+    "serious": 0
+  }
+]
+
+[exit 0]
+
+=== node scripts/test-ux.mjs ===
+{"route":"hub","width":390,"height":480,"keyboard":false,"failures":[]}
+{"route":"hub","width":390,"height":280,"keyboard":true,"failures":[]}
+{"route":"economy","width":390,"height":480,"keyboard":false,"failures":[]}
+{"route":"economy","width":390,"height":280,"keyboard":true,"failures":[]}
+{"route":"founders","width":390,"height":480,"keyboard":false,"failures":[]}
+{"route":"founders","width":390,"height":280,"keyboard":true,"failures":[]}
+{"route":"conversation","width":390,"height":480,"keyboard":false,"failures":[]}
+{"route":"conversation","width":390,"height":280,"keyboard":true,"failures":[]}
+{"route":"hub","width":734,"height":480,"keyboard":false,"failures":[]}
+{"route":"economy","width":734,"height":480,"keyboard":false,"failures":[]}
+{"route":"founders","width":734,"height":480,"keyboard":false,"failures":[]}
+{"route":"conversation","width":734,"height":480,"keyboard":false,"failures":[]}
+{"route":"hub","width":1024,"height":480,"keyboard":false,"failures":[]}
+{"route":"economy","width":1024,"height":480,"keyboard":false,"failures":[]}
+{"route":"founders","width":1024,"height":480,"keyboard":false,"failures":[]}
+{"route":"conversation","width":1024,"height":480,"keyboard":false,"failures":[]}
+{"route":"hub","width":1440,"height":480,"keyboard":false,"failures":[]}
+{"route":"economy","width":1440,"height":480,"keyboard":false,"failures":[]}
+{"route":"founders","width":1440,"height":480,"keyboard":false,"failures":[]}
+{"route":"conversation","width":1440,"height":480,"keyboard":false,"failures":[]}
+[
+  {
+    "width": 390,
+    "height": 480,
+    "stage": "after",
+    "failed": 0
+  },
+  {
+    "width": 734,
+    "height": 480,
+    "stage": "after",
+    "failed": 0
+  },
+  {
+    "width": 1024,
+    "height": 480,
+    "stage": "after",
+    "failed": 0
+  },
+  {
+    "width": 1440,
+    "height": 480,
+    "stage": "after",
+    "failed": 0
+  }
+]
+{"route":"hub","width":390,"height":600,"keyboard":false,"failures":[]}
+{"route":"hub","width":390,"height":400,"keyboard":true,"failures":[]}
+{"route":"economy","width":390,"height":600,"keyboard":false,"failures":[]}
+{"route":"economy","width":390,"height":400,"keyboard":true,"failures":[]}
+{"route":"founders","width":390,"height":600,"keyboard":false,"failures":[]}
+{"route":"founders","width":390,"height":400,"keyboard":true,"failures":[]}
+{"route":"conversation","width":390,"height":600,"keyboard":false,"failures":[]}
+{"route":"conversation","width":390,"height":400,"keyboard":true,"failures":[]}
+{"route":"hub","width":734,"height":600,"keyboard":false,"failures":[]}
+{"route":"economy","width":734,"height":600,"keyboard":false,"failures":[]}
+{"route":"founders","width":734,"height":600,"keyboard":false,"failures":[]}
+{"route":"conversation","width":734,"height":600,"keyboard":false,"failures":[]}
+{"route":"hub","width":1024,"height":600,"keyboard":false,"failures":[]}
+{"route":"economy","width":1024,"height":600,"keyboard":false,"failures":[]}
+{"route":"founders","width":1024,"height":600,"keyboard":false,"failures":[]}
+{"route":"conversation","width":1024,"height":600,"keyboard":false,"failures":[]}
+{"route":"hub","width":1440,"height":600,"keyboard":false,"failures":[]}
+{"route":"economy","width":1440,"height":600,"keyboard":false,"failures":[]}
+{"route":"founders","width":1440,"height":600,"keyboard":false,"failures":[]}
+{"route":"conversation","width":1440,"height":600,"keyboard":false,"failures":[]}
+[
+  {
+    "width": 390,
+    "height": 600,
+    "stage": "after",
+    "failed": 0
+  },
+  {
+    "width": 734,
+    "height": 600,
+    "stage": "after",
+    "failed": 0
+  },
+  {
+    "width": 1024,
+    "height": 600,
+    "stage": "after",
+    "failed": 0
+  },
+  {
+    "width": 1440,
+    "height": 600,
+    "stage": "after",
+    "failed": 0
+  }
+]
+{"route":"hub","width":390,"height":715,"keyboard":false,"failures":[]}
+{"route":"hub","width":390,"height":515,"keyboard":true,"failures":[]}
+{"route":"economy","width":390,"height":715,"keyboard":false,"failures":[]}
+{"route":"economy","width":390,"height":515,"keyboard":true,"failures":[]}
+{"route":"founders","width":390,"height":715,"keyboard":false,"failures":[]}
+{"route":"founders","width":390,"height":515,"keyboard":true,"failures":[]}
+{"route":"conversation","width":390,"height":715,"keyboard":false,"failures":[]}
+{"route":"conversation","width":390,"height":515,"keyboard":true,"failures":[]}
+{"route":"hub","width":734,"height":715,"keyboard":false,"failures":[]}
+{"route":"economy","width":734,"height":715,"keyboard":false,"failures":[]}
+{"route":"founders","width":734,"height":715,"keyboard":false,"failures":[]}
+{"route":"conversation","width":734,"height":715,"keyboard":false,"failures":[]}
+{"route":"hub","width":1024,"height":715,"keyboard":false,"failures":[]}
+{"route":"economy","width":1024,"height":715,"keyboard":false,"failures":[]}
+{"route":"founders","width":1024,"height":715,"keyboard":false,"failures":[]}
+{"route":"conversation","width":1024,"height":715,"keyboard":false,"failures":[]}
+{"route":"hub","width":1440,"height":715,"keyboard":false,"failures":[]}
+{"route":"economy","width":1440,"height":715,"keyboard":false,"failures":[]}
+{"route":"founders","width":1440,"height":715,"keyboard":false,"failures":[]}
+{"route":"conversation","width":1440,"height":715,"keyboard":false,"failures":[]}
+[
+  {
+    "width": 390,
+    "height": 715,
+    "stage": "after",
+    "failed": 0
+  },
+  {
+    "width": 734,
+    "height": 715,
+    "stage": "after",
+    "failed": 0
+  },
+  {
+    "width": 1024,
+    "height": 715,
+    "stage": "after",
+    "failed": 0
+  },
+  {
+    "width": 1440,
+    "height": 715,
+    "stage": "after",
+    "failed": 0
+  }
+]
+{"route":"hub","width":390,"height":900,"keyboard":false,"failures":[]}
+{"route":"hub","width":390,"height":700,"keyboard":true,"failures":[]}
+{"route":"economy","width":390,"height":900,"keyboard":false,"failures":[]}
+{"route":"economy","width":390,"height":700,"keyboard":true,"failures":[]}
+{"route":"founders","width":390,"height":900,"keyboard":false,"failures":[]}
+{"route":"founders","width":390,"height":700,"keyboard":true,"failures":[]}
+{"route":"conversation","width":390,"height":900,"keyboard":false,"failures":[]}
+{"route":"conversation","width":390,"height":700,"keyboard":true,"failures":[]}
+{"route":"hub","width":734,"height":900,"keyboard":false,"failures":[]}
+{"route":"economy","width":734,"height":900,"keyboard":false,"failures":[]}
+{"route":"founders","width":734,"height":900,"keyboard":false,"failures":[]}
+{"route":"conversation","width":734,"height":900,"keyboard":false,"failures":[]}
+{"route":"hub","width":1024,"height":900,"keyboard":false,"failures":[]}
+{"route":"economy","width":1024,"height":900,"keyboard":false,"failures":[]}
+{"route":"founders","width":1024,"height":900,"keyboard":false,"failures":[]}
+{"route":"conversation","width":1024,"height":900,"keyboard":false,"failures":[]}
+{"route":"hub","width":1440,"height":900,"keyboard":false,"failures":[]}
+{"route":"economy","width":1440,"height":900,"keyboard":false,"failures":[]}
+{"route":"founders","width":1440,"height":900,"keyboard":false,"failures":[]}
+{"route":"conversation","width":1440,"height":900,"keyboard":false,"failures":[]}
+[
+  {
+    "width": 390,
+    "height": 900,
+    "stage": "after",
+    "failed": 0
+  },
+  {
+    "width": 734,
+    "height": 900,
+    "stage": "after",
+    "failed": 0
+  },
+  {
+    "width": 1024,
+    "height": 900,
+    "stage": "after",
+    "failed": 0
+  },
+  {
+    "width": 1440,
+    "height": 900,
+    "stage": "after",
+    "failed": 0
+  }
+]
+
+[exit 0]
+
+=== COLLAB_SURFACES=1 COLLAB_ATLAS=1 node scripts/collaboration-ui-check.mjs (390,734,1440) ===
+Failed to load resource: the server responded with a status of 403 (Forbidden)
+Failed to load resource: the server responded with a status of 403 (Forbidden)
+Failed to load resource: the server responded with a status of 403 (Forbidden)
+Failed to load resource: the server responded with a status of 403 (Forbidden)
+Failed to load resource: the server responded with a status of 403 (Forbidden)
+Failed to load resource: the server responded with a status of 403 (Forbidden)
+Failed to load resource: the server responded with a status of 403 (Forbidden)
+Failed to load resource: the server responded with a status of 403 (Forbidden)
+Failed to load resource: the server responded with a status of 403 (Forbidden)
+Failed to load resource: the server responded with a status of 403 (Forbidden)
+Failed to load resource: the server responded with a status of 403 (Forbidden)
+Failed to load resource: the server responded with a status of 403 (Forbidden)
+[
+  {
+    "width": 390,
+    "conversationDirectory": true,
+    "conversationNavigationAndCreateInsideChannel": true,
+    "directMessageCreationWithRealMemberIds": true,
+    "consumedRequestDoesNotReopen": true,
+    "channelSearchAndEmpty": true,
+    "privateChannelCreated": true,
+    "realChatComponent": true,
+    "companyFilesListUploadDownloadDelete": true,
+    "invalidFileBlocked": true,
+    "storageErrorRetry": true,
+    "companyFileIsolation": true,
+    "financeInsideWorkspace": true,
+    "financeWheelScroll": true,
+    "financeBottomSpace": true,
+    "hubDocumentBounded": true,
+    "foundersNeutralTheme": "covered at 734/1440",
+    "prototypeBalanceAndRecentEntries": true,
+    "transferReviewBeforeWrite": true,
+    "transferExactCents": true,
+    "financeContextSwitch": true,
+    "accessRevocationClearsBalance": true,
+    "noOverflow": true,
+    "evidence": "HTTP fixtures only; no hosted Storage/RLS or two-account verification"
+  },
+  {
+    "width": 734,
+    "conversationDirectory": true,
+    "conversationNavigationAndCreateInsideChannel": true,
+    "directMessageCreationWithRealMemberIds": true,
+    "consumedRequestDoesNotReopen": true,
+    "channelSearchAndEmpty": true,
+    "privateChannelCreated": true,
+    "realChatComponent": true,
+    "companyFilesListUploadDownloadDelete": true,
+    "invalidFileBlocked": true,
+    "storageErrorRetry": true,
+    "companyFileIsolation": true,
+    "financeInsideWorkspace": true,
+    "financeWheelScroll": true,
+    "financeBottomSpace": true,
+    "hubDocumentBounded": true,
+    "foundersNeutralTheme": true,
+    "prototypeBalanceAndRecentEntries": true,
+    "transferReviewBeforeWrite": true,
+    "transferExactCents": true,
+    "financeContextSwitch": true,
+    "accessRevocationClearsBalance": true,
+    "noOverflow": true,
+    "evidence": "HTTP fixtures only; no hosted Storage/RLS or two-account verification"
+  },
+  {
+    "width": 1440,
+    "conversationDirectory": true,
+    "conversationNavigationAndCreateInsideChannel": true,
+    "directMessageCreationWithRealMemberIds": true,
+    "consumedRequestDoesNotReopen": true,
+    "channelSearchAndEmpty": true,
+    "privateChannelCreated": true,
+    "realChatComponent": true,
+    "companyFilesListUploadDownloadDelete": true,
+    "invalidFileBlocked": true,
+    "storageErrorRetry": true,
+    "companyFileIsolation": true,
+    "financeInsideWorkspace": true,
+    "financeWheelScroll": true,
+    "financeBottomSpace": true,
+    "hubDocumentBounded": true,
+    "foundersNeutralTheme": true,
+    "prototypeBalanceAndRecentEntries": true,
+    "transferReviewBeforeWrite": true,
+    "transferExactCents": true,
+    "financeContextSwitch": true,
+    "accessRevocationClearsBalance": true,
+    "noOverflow": true,
+    "evidence": "HTTP fixtures only; no hosted Storage/RLS or two-account verification"
+  }
+]
+
+[exit 0]
+
+=== npm run check:tokens ===
+
+> evergreen-tasks@1.3.0 check:tokens
+> node scripts/check-tokens.mjs
+
+{
+  "checked": "src CSS declarations and TS/TSX string literals",
+  "violations": 0,
+  "examples": []
+}
+
+[exit 0]
+
+=== node scripts/test-tokens.mjs ===
+PASS: check:tokens rejects hex, rgb/hsl and fixed palette classes; semantic text-emerald resolves through var(--emerald).
+
+[exit 0]
+
+=== node scripts/compare-ux-themes.mjs ===
+[
+  {
+    "theme": "atlas",
+    "route": "hub",
+    "changedPixels": 37,
+    "maxDelta": 1,
+    "overOne": 0,
+    "bounds": [
+      8,
+      98,
+      154,
+      403
+    ],
+    "totalPixels": 524810
+  },
+  {
+    "theme": "atlas",
+    "route": "economy",
+    "changedPixels": 29,
+    "maxDelta": 1,
+    "overOne": 0,
+    "bounds": [
+      8,
+      98,
+      49,
+      313
+    ],
+    "totalPixels": 524810
+  },
+  {
+    "theme": "atlas",
+    "route": "founders",
+    "changedPixels": 0,
+    "maxDelta": 0,
+    "overOne": 0,
+    "bounds": null,
+    "totalPixels": 524810
+  },
+  {
+    "theme": "evergreen",
+    "route": "hub",
+    "changedPixels": 0,
+    "maxDelta": 0,
+    "overOne": 0,
+    "bounds": null,
+    "totalPixels": 524810
+  },
+  {
+    "theme": "evergreen",
+    "route": "economy",
+    "changedPixels": 0,
+    "maxDelta": 0,
+    "overOne": 0,
+    "bounds": null,
+    "totalPixels": 524810
+  },
+  {
+    "theme": "evergreen",
+    "route": "founders",
+    "changedPixels": 0,
+    "maxDelta": 0,
+    "overOne": 0,
+    "bounds": null,
+    "totalPixels": 524810
+  },
+  {
+    "theme": "black",
+    "route": "hub",
+    "changedPixels": 0,
+    "maxDelta": 0,
+    "overOne": 0,
+    "bounds": null,
+    "totalPixels": 524810
+  },
+  {
+    "theme": "black",
+    "route": "economy",
+    "changedPixels": 0,
+    "maxDelta": 0,
+    "overOne": 0,
+    "bounds": null,
+    "totalPixels": 524810
+  },
+  {
+    "theme": "black",
+    "route": "founders",
+    "changedPixels": 0,
+    "maxDelta": 0,
+    "overOne": 0,
+    "bounds": null,
+    "totalPixels": 524810
+  },
+  {
+    "theme": "electric",
+    "route": "hub",
+    "changedPixels": 0,
+    "maxDelta": 0,
+    "overOne": 0,
+    "bounds": null,
+    "totalPixels": 524810
+  },
+  {
+    "theme": "electric",
+    "route": "economy",
+    "changedPixels": 0,
+    "maxDelta": 0,
+    "overOne": 0,
+    "bounds": null,
+    "totalPixels": 524810
+  },
+  {
+    "theme": "electric",
+    "route": "founders",
+    "changedPixels": 0,
+    "maxDelta": 0,
+    "overOne": 0,
+    "bounds": null,
+    "totalPixels": 524810
+  },
+  {
+    "theme": "light",
+    "route": "hub",
+    "changedPixels": 0,
+    "maxDelta": 0,
+    "overOne": 0,
+    "bounds": null,
+    "totalPixels": 524810
+  },
+  {
+    "theme": "light",
+    "route": "economy",
+    "changedPixels": 0,
+    "maxDelta": 0,
+    "overOne": 0,
+    "bounds": null,
+    "totalPixels": 524810
+  },
+  {
+    "theme": "light",
+    "route": "founders",
+    "changedPixels": 0,
+    "maxDelta": 0,
+    "overOne": 0,
+    "bounds": null,
+    "totalPixels": 524810
+  }
+]
+
+[exit 0]
+
+=== node scripts/compare-ux-preservation.mjs ===
+{
+  "tree": [
+    {
+      "width": 390,
+      "tree": {
+        "filter": "none",
+        "points": "45190",
+        "opacity": "0.44"
+      }
+    },
+    {
+      "width": 1440,
+      "tree": {
+        "filter": "none",
+        "points": "45190",
+        "opacity": "0.68"
+      }
+    }
+  ],
+  "originalAssetsIdentical": true,
+  "professional": [
+    {
+      "width": 390,
+      "pixels": 67304,
+      "changedPixels": 0,
+      "maxDelta": 0
+    },
+    {
+      "width": 1440,
+      "pixels": 165120,
+      "changedPixels": 0,
+      "maxDelta": 0
+    }
+  ]
+}
+
+[exit 0]
+
+=== npm run test:mobile:ota ===
+
+> evergreen-tasks@1.3.0 test:mobile:ota
+> node scripts/mobile-ota-check.mjs
+
+(node:30392) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+{
+  "environment": "Actual local crypto and archive, controlled transport and plugin doubles; no device installation or native rollback execution",
+  "prepared": {
+    "sequence": 1001,
+    "version": "1.3.0+1001",
+    "bytes": 4762224,
+    "sha256": "783b120772ecd81521af7bdc6f863955e7524ee493f82e79a7bc9d00fe5814ac",
+    "zipSha256": "a340cf574660d3a059cd75e7c98fccc4d138dc3a97b29efc25158371264c335d",
+    "fileCount": 68,
+    "keyVerified": true
+  },
+  "checks": [
+    "real RSA-PSS manifest verification; modified signatures and signed invalid metadata denied",
+    "actual generated encrypted ZIP round-trip; native RSA/AES/checksum format; CSP, no nested updates or private key",
+    "publisher rejects a different signing key",
+    "public credential-free manifest transport; oversized, unavailable and offline responses denied",
+    "new content staged without foreground reload; current, rollback, failed and incompatible builds blocked; downloaded bundle reused",
+    "native plugin source declares deferred activation, signature requirements and rollback; cloud endpoints disabled (not runtime proof)",
+    "publisher stops after native dependency changes until compatibility is reviewed"
+  ]
+}
+
+[exit 0]
+
+REPRODUÇÕES ANTERIORES
+Os registros antes da correção permanecem em output/playwright/ux/before e nos logs ux-*-before.log. Consulte ux-fixes.md para as limitações e os relatos não reproduzidos.

@@ -5,9 +5,10 @@ export function requestContextChange(target:string){
 }
 export function useSensitiveDraft(active:boolean,scope:string,discard:()=>void,busy=false){
  useEffect(()=>{
-  if(!active&&!busy)return
+  if(!active)return
   const guard=(event:Event)=>{
-   if(busy||!window.confirm('Há uma ação em andamento em '+scope+'. Trocar o contexto descarta o rascunho. Você precisará revisar e confirmar novamente. Descartar e trocar?'))event.preventDefault()
+   if(busy){window.alert('Uma operação está sendo registrada em '+scope+'. Aguarde a confirmação para trocar o contexto.');event.preventDefault();return}
+   if(!window.confirm('Há uma ação em andamento em '+scope+'. Trocar o contexto descarta o rascunho. Você precisará revisar e confirmar novamente. Descartar e trocar?'))event.preventDefault()
    else discard()
   }
   window.addEventListener(eventName,guard)

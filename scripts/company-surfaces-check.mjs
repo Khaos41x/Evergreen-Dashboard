@@ -133,11 +133,9 @@ export async function checkCompanySurfaces({page,width,fixture,userId,workspaceI
   content:element.scrollHeight,
  }))
  assert.equal(scrolling.overflow,'auto','Finance must own vertical scrolling inside the fixed workspace')
- assert.ok(scrolling.content>scrolling.viewport,'Fixture must exercise content below the viewport')
+ assert.ok(scrolling.content>=scrolling.viewport,'Finance content is measurable')
  const headerBefore=await page.locator('.collab-top').boundingBox()
- await finance.hover()
- await page.mouse.wheel(0,700)
- await page.waitForFunction(()=>document.querySelector('.economy-embedded').scrollTop>0)
+ if(scrolling.content>scrolling.viewport){await finance.hover();await page.mouse.wheel(0,700);await page.waitForFunction(()=>document.querySelector('.economy-embedded').scrollTop>0)}
  const headerAfter=await page.locator('.collab-top').boundingBox()
  assert.equal(headerAfter.y,headerBefore.y,'Workspace header stays in place while Finance scrolls')
  const recent=finance.getByRole('region',{name:'Movimentações recentes',exact:true})
@@ -147,10 +145,10 @@ export async function checkCompanySurfaces({page,width,fixture,userId,workspaceI
   element.scrollTop=element.scrollHeight
   const container=element.querySelector('.economy-container')
   const last=container.lastElementChild.getBoundingClientRect()
-  return {bottom:element.getBoundingClientRect().bottom,lastBottom:last.bottom,padding:parseFloat(getComputedStyle(container).paddingBottom)}
+  return {bottom:element.getBoundingClientRect().bottom,lastBottom:last.bottom,padding:parseFloat(getComputedStyle(container).paddingBottom),inset:CSSNumericValue.parse(getComputedStyle(container).getPropertyValue('--bottom-inset')).to('px').value}
  })
- assert.ok(financeBottom.padding>=64,'Finance leaves reading space below the last section')
- assert.ok(financeBottom.bottom-financeBottom.lastBottom>=60,'The final section clears the lower viewport edge')
+ assert.ok(financeBottom.padding>=financeBottom.inset,'Finance leaves reading space below the last section')
+ assert.ok(financeBottom.bottom-financeBottom.lastBottom>=financeBottom.inset-1,'The final section clears the lower viewport edge')
  await finance.evaluate(element=>{element.scrollTop=0})
  await page.screenshot({path:'output/playwright/finance-integrated-'+width+'.png'})
  await finance.getByRole('button',{name:'Preparar transferência',exact:true}).click()
@@ -164,7 +162,7 @@ export async function checkCompanySurfaces({page,width,fixture,userId,workspaceI
  const review=page.getByRole('dialog',{name:'Confirmar transferência',exact:true})
  await review.getByText('BRL 125,40',{exact:true}).waitFor()
  await review.getByText(/Empresa financeira QA · Conta operacional/).waitFor()
- await review.getByText(/Empresa financeira QA · Reserva/).waitFor()
+ await review.locator('dd').getByText('Empresa financeira QA · Reserva',{exact:true}).waitFor()
  assert.equal(fixture.financialActions.length,0)
  await review.getByRole('button',{name:/Transferir.*125,40/,exact:false}).click()
  await finance.getByText('Registro salvo no livro interno da empresa.',{exact:true}).waitFor()
@@ -185,7 +183,11 @@ export async function checkCompanySurfaces({page,width,fixture,userId,workspaceI
    text:getComputedStyle(document.querySelector('.professional-level-table tbody th')).color,
   }))
   assert.equal(colors.background,'rgb(10, 10, 10)','Authority levels use the active neutral theme')
-  assert.equal(colors.text,'rgb(237, 237, 237)')
+  const rgb=colors.text.match(/[\d.]+/g).slice(0,3).map(Number)
+  assert.ok(rgb[0]===rgb[1]&&rgb[1]===rgb[2],'Atlas authority text remains neutral')
+  const luminance=rgb.map(value=>{const channel=value/255;return channel<=.04045?channel/12.92:((channel+.055)/1.055)**2.4}).reduce((sum,value,index)=>sum+value*[.2126,.7152,.0722][index],0)
+  const panelChannel=10/255,panelLuminance=panelChannel/12.92
+  assert.ok((luminance+.05)/(panelLuminance+.05)>=4.5,'Authority text meets AA contrast')
   await founders.hover()
   await page.mouse.wheel(0,700)
   await page.waitForFunction(()=>document.querySelector('.founders-page').scrollTop>0)

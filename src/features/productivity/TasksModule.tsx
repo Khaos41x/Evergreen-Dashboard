@@ -1,3 +1,4 @@
+import {colorGreen146} from '../appearance/visual-colors'
 import { AppSelect } from '../appearance/AppSelect'
 import {codeLabel} from '../../i18n/pt-BR'
 import { useCallback, useEffect, useMemo, useState } from 'react'
@@ -17,7 +18,7 @@ export function TasksModule({workspaceId,userId,members,records,domain,refresh,o
  const [editing,setEditing]=useState<string|null|undefined>(),[busy,setBusy]=useState(false),[error,setError]=useState(''),[optimistic,setOptimistic]=useState<Record<string,TaskStatus>>({})
  const close=useCallback(()=>setEditing(undefined),[])
  useEffect(()=>{if(requestCreate){setEditing(null);onConsumeCreate?.()}},[requestCreate,onConsumeCreate])
- const people:Person[]=members.map(m=>({id:m.user_id,name:m.display_name,initials:m.display_name.slice(0,2).toUpperCase(),tone:'#27664d'}))
+ const people:Person[]=members.map(m=>({id:m.user_id,name:m.display_name,initials:m.display_name.slice(0,2).toUpperCase(),tone:colorGreen146}))
  const projects=records.filter(r=>r.kind==='project'&&!r.archived_at).map(r=>({id:r.id,name:r.title}))
  const objectives=records.filter(r=>r.kind==='objective'&&!r.archived_at).map(r=>({id:r.id,title:r.title,progress:r.progress}))
  const run=async(job:()=>Promise<void>)=>{setBusy(true);setError('');try{await job();await refresh()}catch(e){setError(failure(e))}finally{setBusy(false)}}

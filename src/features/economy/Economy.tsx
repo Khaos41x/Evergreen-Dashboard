@@ -11,10 +11,10 @@ import {useOSResource} from '../organizations/model'
 import {codeLabel} from '../../i18n/pt-BR'
 import {EvergreenBrand} from '../../components/EvergreenBrand'
 import {useEffect,useRef,useState,type FormEvent} from 'react'
-import {ArrowDownLeft,ArrowLeft,ArrowUpRight,Building2,CalendarDays,ChevronDown,Landmark,Plus,RefreshCw,ShieldCheck} from 'lucide-react'
+import {ArrowLeft,ArrowUpRight,Building2,CalendarDays,ChevronDown,Landmark,Plus,RefreshCw,ShieldCheck} from 'lucide-react'
 import {checked,db,failure} from '../../collaboration/client'
 import {Reauthenticate} from '../identity/Reauthenticate'
-import {cents,money,totalByCurrency} from './money'
+import {cents,money} from './money'
 import './economy.css'
 type Company={id:string;name:string;currency:string;role:string}
 type Account={id:string;company_id:string;name:string;kind:string;currency:string;balance:string}
@@ -77,7 +77,7 @@ export default function Economy({onBoard,onOperations,workspaceId,name,email,onB
  const Container=embedded?'section':'main'
  const [transferReview,setTransferReview]=useState<{body:Record<string,unknown>;origin:string;destination:string;currency:string;workspace:string;permission:string}|null>(null)
  const [accessReview,setAccessReview]=useState<Record<string,unknown>|null>(null)
- useSensitiveDraft(['transfer','grant'].includes(form)||!!transferReview||!!accessReview,name,()=>{setForm('');setTransferReview(null);setAccessReview(null);setApprovalNeeded(null)},busy)
+ useSensitiveDraft(['transfer','grant'].includes(form)||!!transferReview||!!accessReview,name,()=>{setForm('');setTransferReview(null);setAccessReview(null);setApprovalNeeded(null);retry.current=null;setReauth(false)},busy)
  const editor=useRef<HTMLElement>(null),editorTrigger=useRef<HTMLElement|null>(null)
  const historyTab=useRef<HTMLButtonElement>(null)
  const companyToFocus=useRef<string|null>(null)
@@ -190,7 +190,8 @@ export default function Economy({onBoard,onOperations,workspaceId,name,email,onB
    }else if(form==='grant')setAccessReview(body);else await action(form,body)
   })
  }
- const companies=data?.companies||[],accounts=data?.accounts||[],filtered=accounts.filter(a=>currency==='all'||a.currency===currency),totals=totalByCurrency(filtered),admins=companies.filter(c=>c.role==='admin'),editable=accounts.filter(a=>companies.find(c=>c.id===a.company_id)?.role!=='viewer')
+ const companies=data?.companies||[],accounts=data?.accounts||[],filtered=accounts.filter(a=>currency==='all'||a.currency===currency),admins=companies.filter(c=>c.role==='admin'),editable=accounts.filter(a=>companies.find(c=>c.id===a.company_id)?.role!=='viewer')
+ const pendingRecords=Array.isArray(operations.data?.approvals)&&Array.isArray(operations.data?.commitments)?operations.data.approvals.filter(row=>!row.consumed&&['open','approved'].includes(row.status)&&Date.parse(row.deadline)>Date.now()).length+operations.data.commitments.filter(row=>row.state==='open').length:null
  const visibleCompanies=companies.filter(company=>currency==='all'||company.currency===currency)
  const companyLabel=(id:string)=>companies.find(c=>c.id===id)?.name||'Empresa'
  const selectCompany=<label>Empresa<AppSelect name="company_id" required>{admins.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}</AppSelect></label>
@@ -204,8 +205,8 @@ export default function Economy({onBoard,onOperations,workspaceId,name,email,onB
  {error&&<p role="alert" className="economy-notice">{error}<button onClick={()=>void load()}>Tentar novamente</button></p>}{notice&&<p role="status" className="economy-notice">{notice}</p>}{busy&&!data&&<section aria-label="Carregando indicadores" className="economy-kpis" role="status">{Array.from({length:4},(_,index)=><div key={index} className="economy-kpi economy-skeleton">Consultando registros autorizados…</div>)}</section>}
  {!data&&!busy?<section className="economy-empty"><Landmark/><h2>{workspaceId?"Finanças indisponível":"Escolha um espaço de trabalho autorizado"}</h2><p>{workspaceId?'A configuração do banco ou sua conexão precisa ser verificada. Nenhum saldo foi estimado.':'Entre com sua conta da empresa para acessar o financeiro.'}</p>{!workspaceId&&<a href='/login?next=/economy'>Entrar com a conta da empresa</a>}</section>:data&&<>
  {tab==='Visão Geral'&&<>
-  <div className="economy-quick-actions"><button className="primary" disabled={!editable.length||busy} onClick={()=>{setTab('Movimentações');setForm('transfer')}}>Preparar transferência <ArrowUpRight size={16}/></button>{onOperations&&<button className="economy-pending" onClick={onOperations}>{operations.loading?'Consultando pendências…':operations.error?'Pendências indisponíveis':Array.isArray(operations.data?.approvals)?operations.data.approvals.filter(row=>!row.consumed&&['open','approved'].includes(row.status)&&Date.parse(row.deadline)>Date.now()).length+' pendências · Compromissos e aprovações':'Pendências não informadas'}</button>}</div>
-  <DecisionKpis companies={visibleCompanies} accounts={filtered} flows={data.flows} budgets={data.budgets} from={from} to={to} commitments={Array.isArray(operations.data?.commitments)?operations.data.commitments:null} restricted={operations.data?.can_finance===false} error={operations.error} loading={operations.loading} retry={operations.refresh} onBudget={()=>{setTab('Planejamento');setForm('')}} onOperations={onOperations}/>
+  <div className="economy-quick-actions"><button className="primary" disabled={!editable.length||busy} onClick={()=>{setTab('Movimentações');setForm('transfer')}}>Preparar transferência <ArrowUpRight size={16}/></button>{onOperations&&<button className="economy-pending" onClick={onOperations}>{operations.loading?'Consultando pendências…':operations.error?'Pendências indisponíveis':pendingRecords!==null?pendingRecords+(pendingRecords===1?' pendência':' pendências')+' · Compromissos e aprovações':'Pendências não informadas'}</button>}</div>
+  <DecisionKpis companies={visibleCompanies} accounts={filtered} flows={data.flows} budgets={data.budgets} from={from} to={to} commitments={Array.isArray(operations.data?.commitments)?operations.data.commitments:null} canManage={operations.data?.can_finance===true} error={operations.error} loading={operations.loading} retry={operations.refresh} onBudget={()=>{setTab('Planejamento');setForm('')}} onOperations={onOperations}/>
   {!accounts.length&&<section className="economy-empty"><h2>Seu financeiro começa aqui</h2><p>{data.can_create?'Cadastre a empresa e sua primeira conta.':'Peça acesso ao administrador financeiro da empresa.'}</p><button disabled={!data.can_create} onClick={()=>{setTab('Empresas');setForm(companies.length?'account':'company')}}>Cadastrar primeira conta</button></section>}
   <section className="economy-section economy-recent-ledger" aria-label="Movimentações recentes">
    <header><div><h2>Movimentações</h2><p>Lançamentos no período · contas autorizadas</p></div><button onClick={()=>{setTab('Movimentações');setForm('');historyTab.current?.focus()}}>Ver todas as movimentações <ArrowUpRight size={16}/></button></header>

@@ -30,7 +30,7 @@ export default function Founders({userId,email,onBack,onWorkspace,onEconomy,onCh
  const [error,setError]=useState(''),[busy,setBusy]=useState(false),[notice,setNotice]=useState(''),[reauth,setReauth]=useState(false),retry=useRef<(()=>Promise<void>)|null>(null),generation=useRef(0)
  const today=new Date().toLocaleDateString('en-CA'),[from,setFrom]=useState(today.slice(0,7)+'-01'),[to,setTo]=useState(today)
  const self=groups.find(g=>g.id===group)
- useSensitiveDraft(['grant','scope','self_scope','link'].includes(form)||!!review,self?.name||'Grupo',()=>{setReview(null);setForm('')},busy)
+ useSensitiveDraft(['grant','scope','self_scope','link'].includes(form)||!!review,self?.name||'Grupo',()=>{setReview(null);setForm('');retry.current=null;setReauth(false)},busy)
  function reviewAction(type:string,body:Record<string,unknown>){setReview({type,body,group,name:(body.workspace_id?snapshot?.companies.find(row=>row.id===body.workspace_id)?.name||snapshot?.scope_options.find(row=>row.id===body.workspace_id)?.name:null)||self?.name||'Grupo',permission:[self?.role,...(self?.capabilities||[])].filter(Boolean).map(code=>codeLabel(String(code))).join(' · ')})}
  async function list(){const r=await checked(db().rpc('eg_founders_groups')) as Group[];setGroups(r);setGroup(g=>r.some(x=>x.id===g)?g:r[0]?.id||'')}
  useEffect(()=>{void list().catch(e=>setError(failure(e)))},[])

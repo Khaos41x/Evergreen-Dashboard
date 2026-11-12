@@ -19,7 +19,7 @@
   background: none;
   opacity: .68;
   mix-blend-mode: normal;
-  mask-image: linear-gradient(to right, transparent, #000 42%);
+  mask-image: linear-gradient(to right, transparent, var(--palette-neutral-062) 42%);
   pointer-events: none;
 }
 
@@ -118,7 +118,7 @@
   .reference-hero:has(.hero-team) .hero-copy { padding-inline-end: 40px; }
   .reference-hero > .hero-art:has(.hero-tree-geometry) {
     opacity: .44;
-    mask-image: linear-gradient(to bottom, transparent 12%, #000 60%);
+    mask-image: linear-gradient(to bottom, transparent 12%, var(--palette-neutral-062) 60%);
   }
   .reference-hero .hero-timer > div { gap: 2px; }
   .reference-hero .hero-timer span { max-width: 64px; font-size: 9px; }
